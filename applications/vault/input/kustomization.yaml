@@ -1,0 +1,16 @@
+---
+helmCharts:
+  - name: vault
+    namespace: vault
+    includeCRDs: false
+    valuesFile: charts/vault/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder
+#    valuesInline:
+#      vault:
+#        server:
+#          route:
+#            host: vault.apps.sno.${BASE_DOMAIN}
+#          extraEnvironmentVars:
+#            VAULT_TLS_SERVER_NAME: vault.apps.sno.${BASE_DOMAIN}

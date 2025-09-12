@@ -1,0 +1,13 @@
+apiVersion: v2
+name: base
+description: Base Infra
+type: application
+version: 0.0.1
+appVersion: 0.0.1
+maintainers:
+  - name: eformat
+dependencies:
+  - name: vault
+    version: "0.30.0"
+    repository: https://helm.releases.hashicorp.com
+    condition: vault.enabled

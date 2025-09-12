@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: roadshow-app-of-apps
+  namespace: openshift-gitops
+  labels:
+    rht-gitops.com/openshift-gitops: policies
+spec:
+  destination:
+    namespace: openshift-gitops
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    path: gitops/app-of-apps/roadshow
+    directory:
+      include: "*.yaml"
+    repoURL: https://github.com/eformat/rhoai-policy-collection.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - Validate=true

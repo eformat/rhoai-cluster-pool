@@ -1,0 +1,43 @@
+# list of operators
+operators:
+  # openshift-gitops
+  - name: openshift-gitops-operator
+    namespace:
+      name: openshift-operators
+      create: false
+    channels: [latest] # v0,1
+    version: "1.17.1" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+    config:
+      env:
+        - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
+          value: "true"
+        - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+          value: openshift-gitops
+
+  # acm
+  - name: advanced-cluster-management
+    namespace:
+      name: open-cluster-management
+      create: true
+    channels: [release-2.14] # v0,1
+    version: "2.14.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # cert-manager
+  - name: openshift-cert-manager-operator
+    namespace:
+      name: cert-manager-operator
+      create: true
+    channels: [stable-v1] # v0,1
+    version: "1.17.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

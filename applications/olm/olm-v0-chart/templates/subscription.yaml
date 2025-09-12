@@ -1,0 +1,27 @@
+{{- if .Values.operators }}
+{{- range $app := .Values.operators }}
+{{- $name := $app.name }}
+{{- $namespace := $app.namespace.name }}
+{{- $channels := $app.channels }}
+{{- $source := $app.source }}
+{{- $sourceNamespace := $app.sourceNamespace }}
+{{- $config := $app.config }}
+{{- if $app.enabled }}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+spec:
+  channel: {{ (first $channels) }}
+  installPlanApproval: Automatic
+  name: {{ $name }}
+  source: {{ $source }}
+  sourceNamespace: {{ $sourceNamespace }}
+  {{- if $config }}
+  config: {{ $config | toYaml | nindent 4}}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
