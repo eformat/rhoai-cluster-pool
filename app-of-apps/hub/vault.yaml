@@ -26,8 +26,8 @@ spec:
         server: "{{.server}}"
         namespace: vault
       source:
-        repoURL: https://github.com/eformat/rhoai-policy-collection.git
-        path: gitops/applications/vault
+        repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+        path: applications/vault
         plugin:
           name: argocd-novault-plugin-kustomize
         targetRevision: main
