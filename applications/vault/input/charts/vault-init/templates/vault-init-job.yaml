@@ -1,86 +1,77 @@
 ---
-kind: Secret
-apiVersion: v1
-stringData:
-  password: $UNSEAL_KEY
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: vault-init
   namespace: vault
-type: Opaque
----
-kind: Job
-apiVersion: batch/v1
-metadata:
-  name: cronjob-vault-init
-  namespace: vault
 spec:
-  concurrencyPolicy: Forbid
-  suspend: false
-  jobTemplate:
+  backoffLimit: 5
+  activeDeadlineSeconds: 600
+  template:
     metadata:
-      creationTimestamp: null
+      name: vault-init
     spec:
-      backoffLimit: 0
-      template:
-        metadata:
-          creationTimestamp: null
-        spec:
-          restartPolicy: Never
-          activeDeadlineSeconds: 500
-          serviceAccountName: vault
-          schedulerName: default-scheduler
-          terminationGracePeriodSeconds: 30
-          securityContext: {}
-          containers:
-            - name: vault-init
-              image: 'quay.io/eformat/toolbox:latest'
-              command:
-                - /bin/sh
-                - '-x'
-                - /tmp/vault-setup.sh
-              resources: {}
-              volumeMounts:
-                - name: vault-init
-                  mountPath: /etc/secrets
-                - name: vault-setup
-                  mountPath: /tmp/vault-setup.sh
-              terminationMessagePath: /dev/termination-log
-              terminationMessagePolicy: File
-              imagePullPolicy: Always
-          serviceAccount: vault
-          volumes:
-            - name: vault-init
-              secret:
-                secretName: vault-init
-                defaultMode: 420
-            - name: vault-setup
-              configMap:
-                items:
-                  - key: vault-setup
-                    mode: 509
-                    path: vault-setup.sh
-                name: argocd-vault-plugins
-          dnsPolicy: ClusterFirst
-  successfulJobsHistoryLimit: 5
-  failedJobsHistoryLimit: 5
+      containers:
+      - name: vault-init
+        image: 'quay.io/eformat/toolbox:latest'
+        command:
+        - /bin/sh
+        - '-x'
+        - /tmp/vault-config/vault-setup.sh
+        resources: {}
+        volumeMounts:
+        - name: vault-init
+          mountPath: /tmp/secrets
+        - name: vault-config
+          mountPath: /tmp/vault-config
+        - mountPath: /tmp
+          name: vault-tmp
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: Always
+      serviceAccount: vault
+      serviceAccountName: vault
+      securityContext: {}
+      restartPolicy: OnFailure
+      volumes:
+      - name: vault-init
+        secret:
+          secretName: vault-init
+          defaultMode: 420
+      - name: vault-config
+        configMap:
+          items:
+          - key: vault-setup.sh
+            mode: 509
+            path: vault-setup.sh
+          name: vault-init
+      - emptyDir: {}
+        name: vault-tmp
+      dnsPolicy: ClusterFirst
 ---
-kind: Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: vault-init
   namespace: vault
 rules:
   - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["create", "get", "list", "update", "watch", "delete"]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch",]
   - apiGroups: [""]
     resources: ["pods/exec"]
     verbs: ["create"]
   - apiGroups: [""]
     resources: ["pods/log"]
     verbs: ["get"]
+  - apiGroups: ["config.openshift.io"]
+    resources: ["ingresses", "dnses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["project.openshift.io"]
+    resources: ["projects"]
+    verbs: ["get"]
 ---
-kind: RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: vault-init
@@ -88,7 +79,8 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: vault
+    namespace: vault
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: vault-init
   apiGroup: rbac.authorization.k8s.io

@@ -6,28 +6,22 @@ readonly GREEN='\033[0;32m'
 readonly ORANGE='\033[38;5;214m'
 readonly NC='\033[0m' # No Color
 
-[ -z "$ANSIBLE_VAULT_SECRET" ] && echo "🕱 Error: must supply ANSIBLE_VAULT_SECRET in env" && exit 1
+export HOME=/tmp
 
-ENVIRONMENT=roadshow
+ANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)
+if [ -z "${ANSIBLE_VAULT_SECRET}" ]; then
+    echo -e "🕱${RED}Failed - to get secret ANSIBLE_VAULT_SECRET ?${NC}"
+    exit 1
+fi
+
+ENVIRONMENT=${ENVIRONMENT:-roadshow}
+if [ -z "${ENVIRONMENT}" ]; then
+    echo -e "🕱${RED}Failed - to get secret ENVIRONMENT ?${NC}"
+    exit 1
+fi
+
 CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
 BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
-
-wait_for_openshift_api() {
-    local i=0
-    HOST=https://api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443/healthz
-    until [ $(curl --connect-timeout 3 -k -s -o /dev/null -w %{http_code} ${HOST}) = "200" ]
-    do
-        echo -e "${GREEN}Waiting for 200 response from openshift api ${HOST}.${NC}"
-        sleep 5
-        ((i=i+1))
-        if [ $i -gt 100 ]; then
-            echo -e "🕱${RED}Failed - OpenShift api ${HOST} never ready?.${NC}"
-            exit 1
-        fi
-    done
-    echo "🌴 wait_for_openshift_api ran OK"
-}
-wait_for_openshift_api
 
 wait_for_project() {
     local i=0
@@ -134,7 +128,7 @@ unseal() {
 }
 unseal
 
-export VAULT_ROUTE=vault-vault.apps.${CLUSTER_NAME}.${BASE_DOMAIN}
+export VAULT_ROUTE=vault.vault.svc.cluster.local:8200
 export VAULT_ADDR=https://${VAULT_ROUTE}
 export VAULT_SKIP_VERIFY=true
 
@@ -159,7 +153,6 @@ login
 
 export APP_NAME=vault
 export PROJECT_NAME=openshift-gitops
-export CLUSTER_DOMAIN=apps.${CLUSTER_NAME}.${BASE_DOMAIN}
 
 vault auth enable -path=$CLUSTER_DOMAIN-${PROJECT_NAME} kubernetes
 
@@ -183,8 +176,8 @@ vault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config \
 kubernetes_host="$(oc whoami --show-server)" \
 kubernetes_ca_cert="$CA_CRT"
 
-wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-roadshow
-if [ ! -f "/tmp/vault-roadshow" ]; then
+wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-${ENVIRONMENT}
+if [ ! -f "/tmp/vault-${ENVIRONMENT}" ]; then
     echo -e "🕱${RED}Failed - to get secret file ?${NC}"
     exit 1
 fi

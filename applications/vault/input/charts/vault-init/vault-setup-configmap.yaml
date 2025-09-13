@@ -2,29 +2,12 @@ apiVersion: v1
 data:
   vault-setup.sh: "#!/bin/bash\nset -o pipefail\n\nreadonly RED='\\033[0;31m'\nreadonly
     GREEN='\\033[0;32m'\nreadonly ORANGE='\\033[38;5;214m'\nreadonly NC='\\033[0m'
-    # No Color\n\n# setup secrets for gitops\n# https://eformat.github.io/rainforest-docs/#/2-platform-work/3-secrets\n\nENVIRONMENT=${ENVIRONMENT:-roadshow}\n\n[
-    -z \"$AWS_PROFILE\" ] && echo \"\U0001F571 Error: must supply AWS_PROFILE in env\"
-    && exit 1\n[ -z \"$BASE_DOMAIN\" ] && echo \"\U0001F571 Error: must supply BASE_DOMAIN
-    in env\" && exit 1\n[ -z \"$ADMIN_PASSWORD\" ] && echo \"\U0001F571 Error: must
-    supply ADMIN_PASSWORD in env\" && exit 1\n[ -z \"$CLUSTER_NAME\" ] && echo \"\U0001F571
-    Error: must supply CLUSTER_NAME in env\" && exit 1\n[ -z \"$ANSIBLE_VAULT_SECRET\"
-    ] && echo \"\U0001F571 Error: must supply ANSIBLE_VAULT_SECRET in env\" && exit
-    1\n[ -z \"$ENVIRONMENT\" ] && echo \"\U0001F571 Error: must supply ENVIRONMENT
-    in env or cli\" && exit 1\n\n# use login\nexport KUBECONFIG=~/.kube/config.${AWS_PROFILE}\n\nwait_for_openshift_api()
-    {\n    local i=0\n    HOST=https://api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443/healthz\n
-    \   until [ $(curl --connect-timeout 3 -k -s -o /dev/null -w %{http_code} ${HOST})
-    = \"200\" ]\n    do\n        echo -e \"${GREEN}Waiting for 200 response from openshift
-    api ${HOST}.${NC}\"\n        sleep 5\n        ((i=i+1))\n        if [ $i -gt 100
-    ]; then\n            echo -e \"\U0001F571${RED}Failed - OpenShift api ${HOST}
-    never ready?.${NC}\"\n            exit 1\n        fi\n    done\n    echo \"\U0001F334
-    wait_for_openshift_api ran OK\"\n}\nwait_for_openshift_api\n\nlogin () {\n    echo
-    \"\U0001F4A5 Login to OpenShift...\"\n    local i=0\n    oc login -u admin -p
-    ${ADMIN_PASSWORD} --server=https://api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443\n    until
-    [ \"$?\" == 0 ]\n    do\n        echo -e \"${GREEN}Waiting for 0 rc from oc commands.${NC}\"\n
-    \       ((i=i+1))\n        if [ $i -gt 300 ]; then\n            echo -e \"\U0001F571${RED}Failed
-    - oc login never ready?.${NC}\"\n            exit 1\n        fi\n        sleep
-    10\n        oc login -u admin -p ${ADMIN_PASSWORD} --server=https://api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443\n
-    \   done\n    echo \"\U0001F4A5 Login to OpenShift Done\"\n}\nlogin\n\nwait_for_project()
+    # No Color\n\nexport HOME=/tmp\n\nANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)\nif
+    [ -z \"${ANSIBLE_VAULT_SECRET}\" ]; then\n    echo -e \"\U0001F571${RED}Failed
+    - to get secret ANSIBLE_VAULT_SECRET ?${NC}\"\n    exit 1\nfi\n\nENVIRONMENT=${ENVIRONMENT:-roadshow}\nif
+    [ -z \"${ENVIRONMENT}\" ]; then\n    echo -e \"\U0001F571${RED}Failed - to get
+    secret ENVIRONMENT ?${NC}\"\n    exit 1\nfi\n\nCLUSTER_DOMAIN=$(oc get ingress.config/cluster
+    -o 'jsonpath={.spec.domain}')\nBASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')\n\nwait_for_project()
     {\n    local i=0\n    local project=\"$1\"\n    STATUS=$(oc get project $project
     -o=go-template --template='{{ .status.phase }}')\n    until [ \"$STATUS\" == \"Active\"
     ]\n    do\n        echo -e \"${GREEN}Waiting for project $project.${NC}\"\n        sleep
@@ -48,26 +31,26 @@ data:
     then\n    echo -e \"\\n\U0001F33B${GREEN}Vault setup OK.${NC}\U0001F33B\\n\"\n
     \   exit 0;\nfi\n\ninit () {\n    echo \"\U0001F4A5 Init Vault...\"\n    local
     i=0\n    oc -n vault exec vault-0 -- vault operator init -key-threshold=1 -key-shares=1
-    -tls-skip-verify 2>&1 | tee /tmp/vault-init-${AWS_PROFILE}\n    until [ \"${PIPESTATUS[0]}\"
+    -tls-skip-verify 2>&1 | tee /tmp/vault-init-${ENVIRONMENT}\n    until [ \"${PIPESTATUS[0]}\"
     == 0 ]\n    do\n        echo -e \"${GREEN}Waiting for 0 rc from oc commands.${NC}\"\n
     \       ((i=i+1))\n        if [ $i -gt 100 ]; then\n            echo -e \"\U0001F571${RED}Failed
     - vault init never ready?.${NC}\"\n            exit 1\n        fi\n        sleep
     10\n        oc -n vault exec vault-0 -- vault operator init -key-threshold=1 -key-shares=1
-    -tls-skip-verify 2>&1 | tee /tmp/vault-init-${AWS_PROFILE}\n    done\n    echo
-    \"\U0001F4A5 Init Vault Done\"\n}\ninit\n\nexport UNSEAL_KEY=$(cat /tmp/vault-init-${AWS_PROFILE}
+    -tls-skip-verify 2>&1 | tee /tmp/vault-init-${ENVIRONMENT}\n    done\n    echo
+    \"\U0001F4A5 Init Vault Done\"\n}\ninit\n\nexport UNSEAL_KEY=$(cat /tmp/vault-init-${ENVIRONMENT}
     | grep -e 'Unseal Key 1' | awk '{print $4}')\nif [ -z \"$UNSEAL_KEY\" ]; then\n
     \   echo -e \"\U0001F571${RED}Failed - to extract unseal key from vault init output${NC}\"\n
-    \   exit 1\nfi\nexport ROOT_TOKEN=$(cat /tmp/vault-init-${AWS_PROFILE} | grep
+    \   exit 1\nfi\nexport ROOT_TOKEN=$(cat /tmp/vault-init-${ENVIRONMENT} | grep
     -e 'Initial Root Token' | awk '{print $4}')\nif [ -z \"$ROOT_TOKEN\" ]; then\n
     \   echo -e \"\U0001F571${RED}Failed - to get root token ?${NC}\"\n    exit 1\nfi\nrm
-    -f /tmp/vault-init-${AWS_PROFILE} 2>&1>/dev/null\n\nunseal() {\n    echo \"\U0001F4A5
+    -f /tmp/vault-init-${ENVIRONMENT} 2>&1>/dev/null\n\nunseal() {\n    echo \"\U0001F4A5
     Unseal Vault...\"\n    local i=0\n    oc -n vault exec vault-0 -- vault operator
     unseal -tls-skip-verify $UNSEAL_KEY\n    until [ \"$?\" == 0 ]\n    do\n        echo
     -e \"${GREEN}Waiting for 0 rc from oc commands.${NC}\"\n        ((i=i+1))\n        if
     [ $i -gt 30 ]; then\n            echo -e \"\U0001F571${RED}Failed - to unseal
     vault ?${NC}\"\n            exit 1\n        fi\n        sleep 5\n        oc -n
     vault exec vault-0 -- vault operator unseal -tls-skip-verify $UNSEAL_KEY\n    done\n
-    \   echo \"\U0001F4A5 Unseal Vault Done\"\n}\nunseal\n\nexport VAULT_ROUTE=vault-vault.apps.${CLUSTER_NAME}.${BASE_DOMAIN}\nexport
+    \   echo \"\U0001F4A5 Unseal Vault Done\"\n}\nunseal\n\nexport VAULT_ROUTE=vault.vault.svc.cluster.local:8200\nexport
     VAULT_ADDR=https://${VAULT_ROUTE}\nexport VAULT_SKIP_VERIFY=true\n\nlogin() {\n
     \   echo \"\U0001F4A5 Login Vault...\"\n    local i=0\n    vault login token=${ROOT_TOKEN}\n
     \   until [ \"$?\" == 0 ]\n    do\n        echo -e \"${GREEN}Waiting for 0 rc
@@ -75,31 +58,35 @@ data:
     \           echo -e \"\U0001F571${RED}Failed - to login to vault ?${NC}\"\n            exit
     1\n        fi\n        sleep 10\n        vault login token=${ROOT_TOKEN}\n    done\n
     \   echo \"\U0001F4A5 Login Vault Done\"\n}\nlogin\n\nexport APP_NAME=vault\nexport
-    PROJECT_NAME=openshift-gitops\nexport CLUSTER_DOMAIN=apps.${CLUSTER_NAME}.${BASE_DOMAIN}\n\nvault
-    auth enable -path=$CLUSTER_DOMAIN-${PROJECT_NAME} kubernetes\n\nvault policy write
-    $CLUSTER_DOMAIN-$PROJECT_NAME-kv-read -<< EOF\npath \"kv/data/ocp/${CLUSTER_NAME}/*\"
-    {\ncapabilities=[\"read\",\"list\"]\n}\nEOF\n\nvault secrets enable -path=kv/
-    -version=2 kv\n\nvault write auth/$CLUSTER_DOMAIN-$PROJECT_NAME/role/$APP_NAME
+    PROJECT_NAME=openshift-gitops\n\nvault auth enable -path=$CLUSTER_DOMAIN-${PROJECT_NAME}
+    kubernetes\n\nvault policy write $CLUSTER_DOMAIN-$PROJECT_NAME-kv-read -<< EOF\npath
+    \"kv/data/ocp/${CLUSTER_NAME}/*\" {\ncapabilities=[\"read\",\"list\"]\n}\nEOF\n\nvault
+    secrets enable -path=kv/ -version=2 kv\n\nvault write auth/$CLUSTER_DOMAIN-$PROJECT_NAME/role/$APP_NAME
     \\\nbound_service_account_names=$APP_NAME \\\nbound_service_account_namespaces=$PROJECT_NAME
     \\\npolicies=$CLUSTER_DOMAIN-$PROJECT_NAME-kv-read \\\nperiod=120s\n\nCA_CRT=$(openssl
     s_client -showcerts -connect api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443 2>&1 | awk
     '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')\n\nvault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config
-    \\\nkubernetes_host=\"$(oc whoami --show-server)\" \\\nkubernetes_ca_cert=\"$CA_CRT\"\n\nansible-vault
-    decrypt secrets/vault-${ENVIRONMENT} --vault-password-file <(echo \"$ANSIBLE_VAULT_SECRET\")\nsh
-    secrets/vault-${ENVIRONMENT} $ROOT_TOKEN\nansible-vault encrypt secrets/vault-${ENVIRONMENT}
-    --vault-password-file <(echo \"$ANSIBLE_VAULT_SECRET\")\n\ncreate_vault_unseal_job()
-    {\n    echo \"\U0001F4A5 Create vault unseal job\"\n    cat gitops/bootstrap/vault-unseal-cronjob.yaml
+    \\\nkubernetes_host=\"$(oc whoami --show-server)\" \\\nkubernetes_ca_cert=\"$CA_CRT\"\n\nwget
+    -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-${ENVIRONMENT}\nif
+    [ ! -f \"/tmp/vault-${ENVIRONMENT}\" ]; then\n    echo -e \"\U0001F571${RED}Failed
+    - to get secret file ?${NC}\"\n    exit 1\nfi\nrm -f /tmp/vault-init-${ENVIRONMENT}
+    2>&1>/dev/null\n\nansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file
+    <(echo \"$ANSIBLE_VAULT_SECRET\")\nsh /tmp/vault-${ENVIRONMENT} $ROOT_TOKEN\nansible-vault
+    /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo \"$ANSIBLE_VAULT_SECRET\")\n\ncreate_vault_unseal_job()
+    {\n    echo \"\U0001F4A5 Create vault unseal job\"\n\n    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-unseal-cronjob.yaml\n
+    \   if [ ! -f \"/tmp/vault-unseal-cronjob.yaml\" ]; then\n        echo -e \"\U0001F571${RED}Failed
+    - to get cronjob file ?${NC}\"\n        exit 1\n    fi\n\n    cat /tmp/vault-unseal-cronjob.yaml
     | envsubst | oc apply -f-\n    until [ \"${PIPESTATUS[2]}\" == 0 ]\n    do\n        echo
     -e \"${GREEN}Waiting for 0 rc from oc commands.${NC}\"\n        ((i=i+1))\n        if
     [ $i -gt 50 ]; then\n            echo -e \"\U0001F571${RED}Failed - vault unseal
     job never done ?.${NC}\"\n            exit 1\n        fi\n        sleep 10\n        cat
-    gitops/bootstrap/vault-unseal-cronjob.yaml | envsubst | oc apply -f-\n    done\n
-    \   echo \"\U0001F4A5 Create vault unseal job Done\"\n}\ncreate_vault_unseal_job\n\necho
-    -e \"\\n\U0001F33B${GREEN}Vault setup OK.${NC}\U0001F33B\\n\"\nexit 0"
+    /tmp/vault-unseal-cronjob.yaml | envsubst | oc apply -f-\n    done\n    echo \"\U0001F4A5
+    Create vault unseal job Done\"\n}\ncreate_vault_unseal_job\n\necho -e \"\\n\U0001F33B${GREEN}Vault
+    setup OK.${NC}\U0001F33B\\n\"\nexit 0"
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2025-09-12T22:35:38Z"
-  name: vault-setup
+  creationTimestamp: "2025-09-13T03:11:44Z"
+  name: vault-init
   namespace: vault
-  resourceVersion: "155972705"
-  uid: 8efd51a0-c6f8-4325-a779-523578477e17
+  resourceVersion: "729641"
+  uid: 15e1f2f6-168a-4daa-b9f9-102d35b0297c
