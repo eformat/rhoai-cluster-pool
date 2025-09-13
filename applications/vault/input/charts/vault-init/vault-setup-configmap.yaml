@@ -93,8 +93,5 @@ data:
     setup OK.${NC}\U0001F33B\\n\"\nexit 0"
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2025-09-13T03:37:45Z"
   name: vault-init
   namespace: vault
-  resourceVersion: "745119"
-  uid: efef7171-a185-4e1d-b469-46d956eb00c5
