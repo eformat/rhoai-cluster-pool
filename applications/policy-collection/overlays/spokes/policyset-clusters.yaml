@@ -6,8 +6,7 @@ metadata:
 spec:
   description: "Policies for cluster configuration"
   policies:
-#    - gpu-node-label-sno
-    - cluster-admin-sno
+    - cluster-admin-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
