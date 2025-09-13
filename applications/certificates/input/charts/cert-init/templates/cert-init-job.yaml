@@ -3,64 +3,67 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/name: vault-init
-  name: vault-init
-  namespace: vault
+    app.kubernetes.io/name: cert-init
+  name: cert-init
+  namespace: openshift-config
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: vault-init
-  namespace: vault
+  name: cert-init
+  namespace: openshift-config
 spec:
   backoffLimit: 5
   activeDeadlineSeconds: 600
   template:
     metadata:
-      name: vault-init
+      name: cert-init
     spec:
       containers:
-      - name: vault-init
+      - name: cert-init
         image: 'quay.io/eformat/toolbox:latest'
+        env:
+        - name: EMAIL
+          value: mhepburn@redhat.com
+        - name: HOSTED_ZONE
+          value: Z05892971MAAXA28FMYD7
+        - name: AWS_DEFAULT_REGION
+          value: us-east-2
+        - name: ACME_STAGING
+          value: "True"
         command:
         - /bin/sh
         - '-x'
-        - /tmp/vault-config/vault-setup.sh
+        - /tmp/cert-config/certificates-spoke.sh
         resources: {}
         volumeMounts:
-        - name: vault-init
-          mountPath: /tmp/secrets
-        - name: vault-config
-          mountPath: /tmp/vault-config
+        - name: cert-config
+          mountPath: /tmp/cert-config
         - mountPath: /tmp
-          name: vault-tmp
+          name: cert-tmp
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         imagePullPolicy: Always
-      serviceAccount: vault-init
-      serviceAccountName: vault-init
+      serviceAccount: cert-init
+      serviceAccountName: cert-init
       securityContext: {}
       restartPolicy: OnFailure
       volumes:
-      - name: vault-init
-        secret:
-          secretName: vault-init
-          defaultMode: 420
-      - name: vault-config
+      - name: cert-config
         configMap:
           items:
-          - key: vault-setup.sh
+          - key: certificates-spoke.sh
             mode: 509
-            path: vault-setup.sh
-          name: vault-init
+            path: certificates-spoke.sh
+          name: cert-init
       - emptyDir: {}
-        name: vault-tmp
+        name: cert-tmp
       dnsPolicy: ClusterFirst
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: vault-init
+  name: cert-init
 rules:
   - apiGroups: [""]
     resources: ["pods", "services", "secrets"]
@@ -87,12 +90,12 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: vault-init
+  name: cert-init
 subjects:
   - kind: ServiceAccount
-    name: vault-init
-    namespace: vault
+    name: cert-init
+    namespace: openshift-config
 roleRef:
   kind: ClusterRole
-  name: vault-init
+  name: cert-init
   apiGroup: rbac.authorization.k8s.io

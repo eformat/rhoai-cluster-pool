@@ -1,0 +1,12 @@
+---
+resources:
+  - charts/cert-init/cert-setup-configmap.yaml
+
+helmCharts:
+  - name: cert-init
+    namespace: openshift-config
+    includeCRDs: false
+    valuesFile: charts/cert-init/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder

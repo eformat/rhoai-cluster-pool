@@ -1,0 +1,23 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: PolicySet
+metadata:
+  name: hub-cluster
+spec:
+  description: "Policies for cluster configuration"
+  policies:
+#    - gpu-node-label-sno
+    - cluster-admin-sno
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-hub-cluster
+placementRef:
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+  name: placement-hub-openshift
+subjects:
+  - apiGroup: policy.open-cluster-management.io
+    kind: PolicySet
+    name: hub-cluster

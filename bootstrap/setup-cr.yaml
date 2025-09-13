@@ -46,6 +46,37 @@ spec:
           matchExpressions:
             - {key: local-cluster, operator: In, values: ["true"]}
 ---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  labels:
+    custom: gitops-operator-policy
+  name: placement-spokes-openshift
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - production
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - {key: vendor, operator: In, values: ["OpenShift"]}
+            - {key: name, operator: NotIn, values: ["local-cluster"]}
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: all-clusters
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - production
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - {key: vendor, operator: In, values: ["OpenShift", "Other"]}
+---
 apiVersion: user.openshift.io/v1
 kind: Group
 metadata:

@@ -25,7 +25,7 @@ Create htpasswd admin user
 Install LE Certs
 
 ```bash
-./bootstrap/certificates.sh
+./bootstrap/certificates-hub.sh
 ```
 
 Apps
