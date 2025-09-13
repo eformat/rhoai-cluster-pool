@@ -19,25 +19,7 @@ create_aws_secrets() {
     echo "🌴 Running create_aws_secrets..."
 
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-config/' | oc -n openshift-config apply -f-
-    if [ "$?" != 0 ]; then
-        if grep -q "already exists" /tmp/oc-error-file; then
-            echo -e "${GREEN}Ignoring - secret already exists${NC}"
-        else
-            echo -e "🚨${RED}Failed - to run create_aws_secrets ?${NC}"
-            exit 1
-        fi
-    fi
-
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-ingress/' | oc -n openshift-ingress apply -f-
-    if [ "$?" != 0 ]; then
-        if grep -q "already exists" /tmp/oc-error-file; then
-            echo -e "${GREEN}Ignoring - secret already exists${NC}"
-        else
-            echo -e "🚨${RED}Failed - to run create_aws_secrets ?${NC}"
-            exit 1
-        fi
-    fi
-
     export AWS_ACCESS_KEY_ID=$(oc get secret aws-creds -n kube-system -o template='{{index .data "aws_access_key_id"}}' | base64 -d)
     if [ "$?" != 0 ]; then
         echo -e "🚨${RED}Failed - to find aws_access_key_id ?${NC}"
@@ -342,7 +324,7 @@ EOF
 [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit 1
 
 # set these
-LE_API=$(oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././')
+LE_API=api.$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 LE_WILDCARD=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
 [ -z "$LE_API" ] && echo "🕱 Error: LE_API could not set" && exit 1
 [ -z "$LE_WILDCARD" ] && echo "🕱 Error: LE_WILDCARD could not set" && exit 1
