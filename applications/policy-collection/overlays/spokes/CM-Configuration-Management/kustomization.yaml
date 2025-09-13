@@ -1,0 +1,3 @@
+---
+resources:
+  - policy-gpu-node-label.yaml

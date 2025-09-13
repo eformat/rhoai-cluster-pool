@@ -1,0 +1,139 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: gpu-node-label-sno
+  namespace: openshift-gitops
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration, Rolling Restart - None  # None, Control, Compute, All
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: gpu-node-label-sno
+        spec:
+          remediationAction: inform
+          severity: low
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRole
+                metadata:
+                  name: gpu-node-label
+                  namespace: default
+                rules:
+                  - apiGroups:
+                      - security.openshift.io
+                    resourceNames:
+                      - privileged
+                    resources:
+                      - securitycontextconstraints
+                    verbs:
+                      - use
+                  - apiGroups:
+                      - ""
+                    resources:
+                      - nodes
+                    verbs:
+                      - get
+                      - list
+                      - patch
+            - complianceType: musthave
+              objectDefinition:
+                kind: ClusterRoleBinding
+                apiVersion: rbac.authorization.k8s.io/v1
+                metadata:
+                  name: use-privileged-scc
+                subjects:
+                  - kind: ServiceAccount
+                    name: gpu-node-label
+                    namespace: default
+                roleRef:
+                  kind: ClusterRole
+                  name: gpu-node-label
+                  apiGroup: rbac.authorization.k8s.io
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: ServiceAccount
+                metadata:
+                  name: gpu-node-label
+                  namespace: default
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: apps/v1
+                kind: DaemonSet
+                metadata:
+                  name: gpu-node-label
+                  labels:
+                    app.kubernetes.io/name: gpu-node-label
+                    app.kubernetes.io/component: configurator
+                  namespace: default
+                spec:
+                  selector:
+                    matchLabels:
+                      app.kubernetes.io/name: gpu-node-label
+                      app.kubernetes.io/component: configurator
+                  template:
+                    metadata:
+                      name: gpu-node-label
+                      labels:
+                        app.kubernetes.io/name: gpu-node-label
+                        app.kubernetes.io/component: configurator
+                    spec:
+                      affinity:
+                        nodeAffinity:
+                          requiredDuringSchedulingIgnoredDuringExecution:
+                            nodeSelectorTerms:
+                              - matchExpressions:
+                                  - key: gpu-node-label/node-configured
+                                    operator: DoesNotExist
+                                  - key: node-role.kubernetes.io/worker
+                                    operator: Exists
+                      serviceAccount: gpu-node-label
+                      serviceAccountName: gpu-node-label
+                      containers:
+                        - name: gpu-node-label
+                          image: registry.redhat.io/openshift4/ose-cli:latest
+                          imagePullPolicy: Always
+                          command:
+                            - /bin/bash
+                            - -c
+                            - |
+                              export TOKEN="$(cat /run/secrets/kubernetes.io/serviceaccount/token)"
+                              set -xe
+                              chroot /host <<EOT
+                              oc label node \$NODE_NAME nvidia.com/device-plugin.config=NVIDIA-L4 --token \$TOKEN --server https://172.30.0.1:443 --insecure-skip-tls-verify --overwrite
+                              oc label node \$NODE_NAME gpu-node-label/node-configured=$(date +%s) --token \$TOKEN --server https://172.30.0.1:443 --insecure-skip-tls-verify --overwrite
+                              EOT
+                          env:
+                            - name: NODE_NAME
+                              valueFrom:
+                                fieldRef:
+                                  fieldPath: spec.nodeName
+                          volumeMounts:
+                            - mountPath: /host
+                              name: host
+                          securityContext:
+                            allowPrivilegeEscalation: true
+                            runAsUser: 0
+                            runAsGroup: 0
+                            privileged: true
+                            capabilities:
+                              add:
+                                - SYS_CHROOT
+                          tty: true
+                      securityContext:
+                        fsGroup: 0
+                      volumes:
+                        - hostPath:
+                            path: /
+                            type: Directory
+                          name: host

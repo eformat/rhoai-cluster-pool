@@ -1,4 +1,7 @@
 ---
+resources:
+  - charts/vault-init/vault-setup-configmap.yaml
+
 helmCharts:
   - name: vault
     namespace: vault
@@ -7,10 +10,11 @@ helmCharts:
     version: 0.0.1
     releaseName: vault
     repo:  # we expand chart in folder
-#    valuesInline:
-#      vault:
-#        server:
-#          route:
-#            host: vault.apps.sno.${BASE_DOMAIN}
-#          extraEnvironmentVars:
-#            VAULT_TLS_SERVER_NAME: vault.apps.sno.${BASE_DOMAIN}
+
+  # - name: vault-init
+  #   namespace: vault
+  #   includeCRDs: false
+  #   valuesFile: charts/vault-init/values.yaml
+  #   version: 0.0.1
+  #   releaseName: vault
+  #   repo:  # we expand chart in folder
