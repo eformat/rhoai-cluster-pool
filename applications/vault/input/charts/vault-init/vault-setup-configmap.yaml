@@ -1,6 +1,7 @@
 apiVersion: v1
 data:
-  vault-setup.sh: "#!/bin/bash\nset -o pipefail\n\nreadonly RED='\\033[0;31m'\nreadonly
+  vault-setup.sh: |-
+    "#!/bin/bash\nset -o pipefail\n\nreadonly RED='\\033[0;31m'\nreadonly
     GREEN='\\033[0;32m'\nreadonly ORANGE='\\033[38;5;214m'\nreadonly NC='\\033[0m'
     # No Color\n\nexport HOME=/tmp\n\nANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)\nif
     [ -z \"${ANSIBLE_VAULT_SECRET}\" ]; then\n    echo -e \"\U0001F571${RED}Failed
