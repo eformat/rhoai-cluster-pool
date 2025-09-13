@@ -183,7 +183,12 @@ vault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config \
 kubernetes_host="$(oc whoami --show-server)" \
 kubernetes_ca_cert="$CA_CRT"
 
-wget 
+wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-roadshow
+if [ ! -f "/tmp/vault-roadshow" ]; then
+    echo -e "🕱${RED}Failed - to get secret file ?${NC}"
+    exit 1
+fi
+rm -f /tmp/vault-init-${ENVIRONMENT} 2>&1>/dev/null
 
 ansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo "$ANSIBLE_VAULT_SECRET")
 sh /tmp/vault-${ENVIRONMENT} $ROOT_TOKEN
@@ -191,7 +196,14 @@ ansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo "$ANSIBLE_V
 
 create_vault_unseal_job() {
     echo "💥 Create vault unseal job"
-    cat gitops/bootstrap/vault-unseal-cronjob.yaml | envsubst | oc apply -f-
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-unseal-cronjob.yaml
+    if [ ! -f "/tmp/vault-unseal-cronjob.yaml" ]; then
+        echo -e "🕱${RED}Failed - to get cronjob file ?${NC}"
+        exit 1
+    fi
+
+    cat /tmp/vault-unseal-cronjob.yaml | envsubst | oc apply -f-
     until [ "${PIPESTATUS[2]}" == 0 ]
     do
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
@@ -201,7 +213,7 @@ create_vault_unseal_job() {
             exit 1
         fi
         sleep 10
-        cat gitops/bootstrap/vault-unseal-cronjob.yaml | envsubst | oc apply -f-
+        cat /tmp/vault-unseal-cronjob.yaml | envsubst | oc apply -f-
     done
     echo "💥 Create vault unseal job Done"
 }

@@ -1,0 +1,94 @@
+---
+kind: Secret
+apiVersion: v1
+stringData:
+  password: $UNSEAL_KEY
+metadata:
+  name: vault-init
+  namespace: vault
+type: Opaque
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: cronjob-vault-init
+  namespace: vault
+spec:
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          restartPolicy: Never
+          activeDeadlineSeconds: 500
+          serviceAccountName: vault
+          schedulerName: default-scheduler
+          terminationGracePeriodSeconds: 30
+          securityContext: {}
+          containers:
+            - name: vault-init
+              image: 'quay.io/eformat/toolbox:latest'
+              command:
+                - /bin/sh
+                - '-x'
+                - /tmp/vault-setup.sh
+              resources: {}
+              volumeMounts:
+                - name: vault-init
+                  mountPath: /etc/secrets
+                - name: vault-setup
+                  mountPath: /tmp/vault-setup.sh
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+          serviceAccount: vault
+          volumes:
+            - name: vault-init
+              secret:
+                secretName: vault-init
+                defaultMode: 420
+            - name: vault-setup
+              configMap:
+                items:
+                  - key: vault-setup
+                    mode: 509
+                    path: vault-setup.sh
+                name: argocd-vault-plugins
+          dnsPolicy: ClusterFirst
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-init
+  namespace: vault
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "update", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-init
+  namespace: vault
+subjects:
+  - kind: ServiceAccount
+    name: vault
+roleRef:
+  kind: Role
+  name: vault-init
+  apiGroup: rbac.authorization.k8s.io
