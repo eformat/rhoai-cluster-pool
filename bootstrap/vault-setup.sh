@@ -109,6 +109,18 @@ if [ -z "$ROOT_TOKEN" ]; then
 fi
 rm -f /tmp/vault-init-${ENVIRONMENT} 2>&1>/dev/null
 
+oc create secret generic vault-unseal --from-literal=password=${UNSEAL_KEY} -n vault
+if [ "$?" != 0 ]; then
+    echo -e "🕱${RED}Failed - to create vault-unseal secret ${NC}"
+    exit 1
+fi
+
+oc create secret generic vault-root-token --from-literal=password=${ROOT_TOKEN} -n vault
+if [ "$?" != 0 ]; then
+    echo -e "🕱${RED}Failed - to create vault-root-token secret ${NC}"
+    exit 1
+fi
+
 unseal() {
     echo "💥 Unseal Vault..."
     local i=0

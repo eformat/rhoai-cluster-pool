@@ -1,13 +1,4 @@
 ---
-kind: Secret
-apiVersion: v1
-stringData:
-  password: $UNSEAL_KEY
-metadata:
-  name: vault-unseal
-  namespace: vault
-type: Opaque
----
 kind: CronJob
 apiVersion: batch/v1
 metadata:
