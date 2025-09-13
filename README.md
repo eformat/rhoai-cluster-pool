@@ -1,6 +1,6 @@
 # rhoai-cluster-pool
 
-## Bootstrap
+## Bootstrap Hub
 
 Installs ArgoCD and ACM
 
@@ -26,4 +26,10 @@ Install LE Certs
 
 ```bash
 ./bootstrap/certificates.sh
+```
+
+Apps
+
+```bash
+oc apply -f app-of-apps/hub-app-of-apps.yaml
 ```
