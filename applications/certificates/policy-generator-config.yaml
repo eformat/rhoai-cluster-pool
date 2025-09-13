@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: certs
 policyDefaults:
   placement:
-    placementName: placement-hub-openshift
+    placementName: placement-spokes-openshift
   categories:
     - CM Configuration Management
   complianceType: "musthave"
