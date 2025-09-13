@@ -20,8 +20,8 @@ if [ -z "${ENVIRONMENT}" ]; then
     exit 1
 fi
 
-CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
-BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+export CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
+export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 
 wait_for_project() {
     local i=0
@@ -183,9 +183,12 @@ if [ ! -f "/tmp/vault-${ENVIRONMENT}" ]; then
 fi
 rm -f /tmp/vault-init-${ENVIRONMENT} 2>&1>/dev/null
 
-ansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo "$ANSIBLE_VAULT_SECRET")
+ansible-vault decrypt /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo "$ANSIBLE_VAULT_SECRET")
 sh /tmp/vault-${ENVIRONMENT} $ROOT_TOKEN
-ansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo "$ANSIBLE_VAULT_SECRET")
+if [ "$?" != 0 ]; then
+    echo -e "🕱${RED}Failed - to hydrate secrets ${NC}"
+    exit 1
+fi
 
 create_vault_unseal_job() {
     echo "💥 Create vault unseal job"

@@ -56,8 +56,8 @@ metadata:
   namespace: vault
 rules:
   - apiGroups: [""]
-    resources: ["pods", "services"]
-    verbs: ["get", "list", "watch",]
+    resources: ["pods", "services", "secrets"]
+    verbs: ["get", "list", "watch", "create"]
   - apiGroups: [""]
     resources: ["pods/exec"]
     verbs: ["create"]

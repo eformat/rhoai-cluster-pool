@@ -6,11 +6,12 @@ data:
     [ -z \"${ANSIBLE_VAULT_SECRET}\" ]; then\n    echo -e \"\U0001F571${RED}Failed
     - to get secret ANSIBLE_VAULT_SECRET ?${NC}\"\n    exit 1\nfi\n\nENVIRONMENT=${ENVIRONMENT:-roadshow}\nif
     [ -z \"${ENVIRONMENT}\" ]; then\n    echo -e \"\U0001F571${RED}Failed - to get
-    secret ENVIRONMENT ?${NC}\"\n    exit 1\nfi\n\nCLUSTER_DOMAIN=$(oc get ingress.config/cluster
-    -o 'jsonpath={.spec.domain}')\nBASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')\n\nwait_for_project()
-    {\n    local i=0\n    local project=\"$1\"\n    STATUS=$(oc get project $project
-    -o=go-template --template='{{ .status.phase }}')\n    until [ \"$STATUS\" == \"Active\"
-    ]\n    do\n        echo -e \"${GREEN}Waiting for project $project.${NC}\"\n        sleep
+    secret ENVIRONMENT ?${NC}\"\n    exit 1\nfi\n\nexport CLUSTER_DOMAIN=$(oc get
+    ingress.config/cluster -o 'jsonpath={.spec.domain}')\nexport BASE_DOMAIN=$(oc
+    get dns cluster -o jsonpath='{.spec.baseDomain}')\n\nwait_for_project() {\n    local
+    i=0\n    local project=\"$1\"\n    STATUS=$(oc get project $project -o=go-template
+    --template='{{ .status.phase }}')\n    until [ \"$STATUS\" == \"Active\" ]\n    do\n
+    \       echo -e \"${GREEN}Waiting for project $project.${NC}\"\n        sleep
     5\n        ((i=i+1))\n        if [ $i -gt 300 ]; then\n            echo -e \"\U0001F6A8${RED}Failed
     waiting for project $project never Succeeded?.${NC}\"\n            exit 1\n        fi\n
     \       STATUS=$(oc get project $project -o=go-template --template='{{ .status.phase
@@ -70,10 +71,11 @@ data:
     -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-${ENVIRONMENT}\nif
     [ ! -f \"/tmp/vault-${ENVIRONMENT}\" ]; then\n    echo -e \"\U0001F571${RED}Failed
     - to get secret file ?${NC}\"\n    exit 1\nfi\nrm -f /tmp/vault-init-${ENVIRONMENT}
-    2>&1>/dev/null\n\nansible-vault /tmp/vault-${ENVIRONMENT} --vault-password-file
-    <(echo \"$ANSIBLE_VAULT_SECRET\")\nsh /tmp/vault-${ENVIRONMENT} $ROOT_TOKEN\nansible-vault
-    /tmp/vault-${ENVIRONMENT} --vault-password-file <(echo \"$ANSIBLE_VAULT_SECRET\")\n\ncreate_vault_unseal_job()
-    {\n    echo \"\U0001F4A5 Create vault unseal job\"\n\n    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-unseal-cronjob.yaml\n
+    2>&1>/dev/null\n\nansible-vault decrypt /tmp/vault-${ENVIRONMENT} --vault-password-file
+    <(echo \"$ANSIBLE_VAULT_SECRET\")\nsh /tmp/vault-${ENVIRONMENT} $ROOT_TOKEN\nif
+    [ \"$?\" != 0 ]; then\n    echo -e \"\U0001F571${RED}Failed - to hydrate secrets
+    ${NC}\"\n    exit 1\nfi\n\ncreate_vault_unseal_job() {\n    echo \"\U0001F4A5
+    Create vault unseal job\"\n\n    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-unseal-cronjob.yaml\n
     \   if [ ! -f \"/tmp/vault-unseal-cronjob.yaml\" ]; then\n        echo -e \"\U0001F571${RED}Failed
     - to get cronjob file ?${NC}\"\n        exit 1\n    fi\n\n    cat /tmp/vault-unseal-cronjob.yaml
     | envsubst | oc apply -f-\n    until [ \"${PIPESTATUS[2]}\" == 0 ]\n    do\n        echo
@@ -85,8 +87,8 @@ data:
     setup OK.${NC}\U0001F33B\\n\"\nexit 0"
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2025-09-13T03:11:44Z"
+  creationTimestamp: "2025-09-13T03:19:32Z"
   name: vault-init
   namespace: vault
-  resourceVersion: "729641"
-  uid: 15e1f2f6-168a-4daa-b9f9-102d35b0297c
+  resourceVersion: "734293"
+  uid: 7d29109b-4396-4ef3-93ad-b6fda3cb9948
