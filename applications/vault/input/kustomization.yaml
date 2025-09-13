@@ -11,10 +11,10 @@ helmCharts:
     releaseName: vault
     repo:  # we expand chart in folder
 
-  # - name: vault-init
-  #   namespace: vault
-  #   includeCRDs: false
-  #   valuesFile: charts/vault-init/values.yaml
-  #   version: 0.0.1
-  #   releaseName: vault
-  #   repo:  # we expand chart in folder
+  - name: vault-init
+    namespace: vault
+    includeCRDs: false
+    valuesFile: charts/vault-init/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder
