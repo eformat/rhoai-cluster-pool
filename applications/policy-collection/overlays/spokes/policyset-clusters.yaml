@@ -7,6 +7,7 @@ spec:
   description: "Policies for cluster configuration"
   policies:
     - cluster-admin-spokes
+    - operators-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
