@@ -33,6 +33,14 @@ spec:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: admin
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: user.openshift.io/v1
+                kind: Group
+                metadata:
+                  name: admin
+                users:
+                  - admin
           remediationAction: inform
           severity: low
   remediationAction: enforce
