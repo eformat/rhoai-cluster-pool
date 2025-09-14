@@ -7,7 +7,10 @@ spec:
   description: "Policies for cluster configuration"
   policies:
     - cluster-admin-spokes
+    - oauth-htpasswd
     - operators-spokes
+    - acm-spokes
+    - argocd-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

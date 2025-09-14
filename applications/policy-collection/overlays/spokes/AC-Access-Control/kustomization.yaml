@@ -1,3 +1,4 @@
 ---
 resources:
   - policy-cluster-admin.yaml
+  - policy-oauth-htpasswd.yaml
