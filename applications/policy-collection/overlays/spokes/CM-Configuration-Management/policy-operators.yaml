@@ -29,14 +29,6 @@ spec:
                   name: cert-manager-operator
             - complianceType: musthave
               objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  labels:
-                    openshift.io/cluster-monitoring: "true"
-                  name: open-cluster-management
-            - complianceType: musthave
-              objectDefinition:
                 apiVersion: operators.coreos.com/v1
                 kind: OperatorGroup
                 metadata:
@@ -45,17 +37,6 @@ spec:
                 spec:
                   targetNamespaces:
                   - cert-manager-operator
-                  upgradeStrategy: Default
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: operators.coreos.com/v1
-                kind: OperatorGroup
-                metadata:
-                  name: advanced-cluster-management-og
-                  namespace: open-cluster-management
-                spec:
-                  targetNamespaces:
-                  - open-cluster-management
                   upgradeStrategy: Default
             - complianceType: musthave
               objectDefinition:
@@ -68,19 +49,6 @@ spec:
                   channel: stable-v1
                   installPlanApproval: Automatic
                   name: openshift-cert-manager-operator
-                  source: redhat-operators
-                  sourceNamespace: openshift-marketplace
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: operators.coreos.com/v1alpha1
-                kind: Subscription
-                metadata:
-                  name: advanced-cluster-management
-                  namespace: open-cluster-management
-                spec:
-                  channel: release-2.14
-                  installPlanApproval: Automatic
-                  name: advanced-cluster-management
                   source: redhat-operators
                   sourceNamespace: openshift-marketplace
             - complianceType: musthave

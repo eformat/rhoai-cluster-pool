@@ -1,5 +1,4 @@
 ---
 resources:
   - policy-operators.yaml
-  - policy-acm.yaml
   - policy-argocd.yaml
