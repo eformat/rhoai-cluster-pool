@@ -1,0 +1,60 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: argocd
+spec:
+  applicationMenu:
+    section: SRE
+    imageURL: https://argo-cd.readthedocs.io/en/stable/assets/logo.png
+  href: https://global-policy-server-openshift-gitops.apps.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: argocd
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: minio
+spec:
+  applicationMenu:
+    section: GenAI
+    imageURL: https://min.io/resources/img/logo/MINIO_Bird.png
+  href: https://minio-minio.apps.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: minio
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: milvus
+spec:
+  applicationMenu:
+    imageURL: https://raw.githubusercontent.com/milvus-io/artwork/refs/heads/master/icon/color/milvus-icon-color.svg
+    section: GenAI
+  href: https://milvus-console-milvus.apps.$BASE_DOMAIN/webui
+  location: ApplicationMenu
+  text: milvus
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: vault
+spec:
+  applicationMenu:
+    section: SRE
+    imageURL: https://www.datocms-assets.com/2885/1620155128-brandhcvaultverticalcolor.svg
+  href: https://vault-vault.apps.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: vault
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: llama-stack-playground
+spec:
+  applicationMenu:
+    section: GenAI
+    imageURL: https://avatars.githubusercontent.com/u/153379578?s=48&v=4
+  href: https://llama-stack-playground-llama-stack.apps.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: llama-stack-playground

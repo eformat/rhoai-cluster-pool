@@ -3,3 +3,4 @@ resources:
   - policy-operators.yaml
   - policy-argocd.yaml
   - policy-vault.yaml
+  - policy-gpu-node-label.yaml

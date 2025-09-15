@@ -11,6 +11,7 @@ spec:
     - operators-spokes
     - argocd-spokes
     - vault-spokes
+    - gpu-node-label-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
