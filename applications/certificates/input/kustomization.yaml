@@ -1,6 +1,6 @@
 ---
 resources:
-  - charts/cert-init/cert-setup-configmap.yaml
+  - charts/cert-init/cert-setup-configmap.json
 
 helmCharts:
   - name: cert-init
