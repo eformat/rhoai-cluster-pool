@@ -13,6 +13,7 @@ policyDefaults:
   complianceType: "musthave"
   controls:
     - CM-2 Baseline Configuration
+  configurationPolicyAnnotations: {"policy.open-cluster-management.io/disable-templates": "true"}
   consolidateManifests: false
   copyPolicyMetadata: false
   disabled: false
