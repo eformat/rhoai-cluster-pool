@@ -1,0 +1,64 @@
+# list of operators
+operators:
+  # rhoai
+  - name: rhods-operator
+    namespace:
+      name: redhat-ods-operator
+      create: true
+      global: true
+    channels: [fast] # v0,1
+    version: "2.19.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # authorino
+  - name: authorino-operator
+    namespace:
+      name: openshift-authorino
+      create: true
+      global: true
+    channels: [stable] # v0,1
+    version: "1.2.2" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # tekton pipelines
+  - name: openshift-pipelines-operator-rh
+    namespace:
+      name: openshift-operators
+      create: false
+    channels: [latest] # v0,1
+    version: "1.18.1" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # serverless
+  - name: serverless-operator
+    namespace:
+      name: openshift-serverless
+      create: true
+      global: true
+    channels: [stable] # v0,1
+    version: "1.35.1" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # servicemesh
+  - name: servicemeshoperator
+    namespace:
+      name: openshift-operators
+      create: false
+    channels: [stable] # v0,1
+    version: "2.6.7-0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
