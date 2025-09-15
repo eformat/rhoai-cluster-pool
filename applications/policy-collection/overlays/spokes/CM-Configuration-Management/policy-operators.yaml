@@ -34,14 +34,6 @@ spec:
                 metadata:
                   labels:
                     openshift.io/cluster-monitoring: "true"
-                  name: vault
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  labels:
-                    openshift.io/cluster-monitoring: "true"
                   name: agent-demo
             - complianceType: musthave
               objectDefinition:
