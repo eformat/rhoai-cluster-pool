@@ -9,5 +9,4 @@ spec:
   resources:
     requests:
       storage: 80Gi
-  storageClassName: lvms-vgsno
   volumeMode: Filesystem
