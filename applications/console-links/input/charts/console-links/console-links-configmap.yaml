@@ -11,10 +11,12 @@ data:
     export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
     if [ -z "${BASE_DOMAIN}" ]; then
         echo -e "🚨Failed - to find base domain ?"
+        exit 1
     fi
-    cat bootstrap/console-links-roadshow.yaml | envsubst | oc apply -f-
+    cat /tmp/console-links-roadshow.yaml | envsubst | oc apply -f-
     if [ "$?" != 0 ]; then
         echo -e "🚨Failed - to find configure console links ?"
+        exit 1
     fi
     echo -e "\n🌻${GREEN}Console links configured OK.${NC}🌻\n"
     exit 0
