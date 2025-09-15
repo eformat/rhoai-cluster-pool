@@ -169,7 +169,7 @@ export PROJECT_NAME=openshift-gitops
 vault auth enable -path=$CLUSTER_DOMAIN-${PROJECT_NAME} kubernetes
 
 vault policy write $CLUSTER_DOMAIN-$PROJECT_NAME-kv-read -<< EOF
-path "kv/data/ocp/${CLUSTER_NAME}/*" {
+path "kv/data/ocp/*" {
 capabilities=["read","list"]
 }
 EOF
@@ -182,7 +182,7 @@ bound_service_account_namespaces=$PROJECT_NAME \
 policies=$CLUSTER_DOMAIN-$PROJECT_NAME-kv-read \
 period=120s
 
-CA_CRT=$(openssl s_client -showcerts -connect api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
+CA_CRT=$(openssl s_client -showcerts -connect api.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
 
 vault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config \
 kubernetes_host="$(oc whoami --show-server)" \
@@ -226,6 +226,31 @@ create_vault_unseal_job() {
     echo "💥 Create vault unseal job Done"
 }
 create_vault_unseal_job
+
+vault_secret() {
+    echo "💥 Install vault secret"
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-secret.yaml
+    if [ ! -f "/tmp/vault-secret.yaml" ]; then
+        echo -e "🕱${RED}Failed - to get secret file ?${NC}"
+        exit 1
+    fi
+
+    cat /tmp/vault-secret.yaml | envsubst | oc apply -f-
+    until [ "${PIPESTATUS[2]}" == 0 ]
+    do
+        echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
+        ((i=i+1))
+        if [ $i -gt 50 ]; then
+            echo -e "🕱${RED}Failed - vault secret never done ?.${NC}"
+            exit 1
+        fi
+        sleep 10
+        cat /tmp/vault-secret.yaml | envsubst | oc apply -f-
+    done
+    echo "💥 Install vault secret Done"
+}
+vault_secret
 
 echo -e "\n🌻${GREEN}Vault setup OK.${NC}🌻\n"
 exit 0
