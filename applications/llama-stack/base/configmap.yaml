@@ -1,0 +1,162 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: llama-stack-config
+data:
+  run.yaml: |
+    # Llama Stack Configuration
+    version: '2'
+    image_name: remote-vllm
+    apis:
+    - agents
+    - datasetio
+    - eval
+    - inference
+    - safety
+    - scoring
+    - telemetry
+    - tool_runtime
+    - vector_io
+    models:
+    - metadata: {}
+      model_id: ${env.LLAMA3B_MODEL:=}
+      provider_id: llama-3b
+      model_type: llm
+    - metadata: {}
+      model_id: ${env.DEEPSEEK_MODEL:=}
+      provider_id: deepseek
+      model_type: llm
+    - metadata: {}
+      model_id: llama-4-scout-17b-16e-w4a16
+      provider_id: vllm-llama-4-guard
+      provider_model_id: llama-4-scout-17b-16e-w4a16
+      model_type: llm
+    - metadata:
+        embedding_dimension: 384
+      model_id: all-MiniLM-L6-v2
+      provider_id: sentence-transformers
+      model_type: embedding
+    providers:
+      inference:
+      - provider_id: llama-3b
+        provider_type: remote::vllm
+        config:
+          url: ${env.LLAMA3B_URL:=}
+          max_tokens: ${env.LLAMA3B_TOKENS:=15000}
+          api_token: ${env.LLAMA3B_API_TOKEN:=fake}
+          tls_verify: ${env.LLAMA3B_TLS_VERIFY:=false}
+      - provider_id: deepseek
+        provider_type: remote::vllm
+        config:
+          url: ${env.DEEPSEEK_URL:=}
+          max_tokens: ${env.DEEPSEEK_TOKENS:=10000}
+          api_token: ${env.DEEPSEEK_API_TOKEN:=fake}
+          tls_verify: ${env.DEEPSEEK_TLS_VERIFY:=false}
+      - provider_id: sentence-transformers
+        provider_type: inline::sentence-transformers
+        config: {}
+      - provider_id: vllm-llama-4-guard
+        provider_type: "remote::vllm"
+        config:
+          url: "https://llama-4-scout-17b-16e-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1"
+          max_tokens: 110000
+          api_token: ${env.LLAMA_4_SCOUT_17B_16E_W4A16_API_TOKEN}
+          tls_verify: true
+      safety:
+      - provider_id: llama-guard
+        provider_type: inline::llama-guard
+        config:
+          excluded_categories: []
+      agents:
+      - provider_id: meta-reference
+        provider_type: inline::meta-reference
+        config:
+          persistence_store:
+            type: sqlite
+            namespace: null
+            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/agents_store.db
+          responses_store:
+            type: sqlite
+            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/responses_store.db
+      eval:
+      - provider_id: meta-reference
+        provider_type: inline::meta-reference
+        config:
+          kvstore:
+            type: sqlite
+            namespace: null
+            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/meta_reference_eval.db
+      scoring:
+      - provider_id: basic
+        provider_type: inline::basic
+        config: {}
+      - provider_id: llm-as-judge
+        provider_type: inline::llm-as-judge
+        config: {}
+      - provider_id: braintrust
+        provider_type: inline::braintrust
+        config:
+          openai_api_key: ${env.OPENAI_API_KEY:}
+      telemetry:
+      - provider_id: meta-reference
+        provider_type: inline::meta-reference
+        config:
+          service_name: ${env.OTEL_SERVICE_NAME:=llama-stack}
+          sinks: ${env.TELEMETRY_SINKS:=console, sqlite, otel_metric, otel_trace}
+          otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
+          sqlite_db_path: ${env.SQLITE_DB_PATH:=~/.llama/distributions/remote-vllm/trace_store.db}
+      vector_io:
+      - provider_id: milvus
+        provider_type: remote::milvus
+        config:
+          uri: http://milvus-service.milvus.svc.cluster.local:19530
+          token: null
+          kvstore:
+            type: sqlite
+            db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/milvus_registry.db
+      tool_runtime:
+      - provider_id: rag-runtime
+        provider_type: inline::rag-runtime
+        config: {}
+      - provider_id: model-context-protocol
+        provider_type: remote::model-context-protocol
+        config: {}
+      - provider_id: brave-search
+        provider_type: remote::brave-search
+        config:
+          api_key: brave-search-api-key
+      - config:
+          api_key: ${env.TAVILY_SEARCH_API_KEY:=}
+          max_results: 3
+        provider_id: tavily-search
+        provider_type: remote::tavily-search
+    metadata_store:
+      type: sqlite
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
+    inference_store:
+      type: sqlite
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/inference_store.db
+    shields: []
+    vector_dbs: []
+    datasets: []
+    scoring_fns: []
+    benchmarks: []
+    tool_groups:
+    - provider_id: tavily-search
+      toolgroup_id: builtin::websearch
+    - toolgroup_id: builtin::rag
+      provider_id: rag-runtime
+    - toolgroup_id: mcp::weather
+      provider_id: model-context-protocol
+      mcp_endpoint:
+        uri: http://mcp-weather.agent-demo.svc.cluster.local:80/sse
+    - toolgroup_id: mcp::openshift
+      provider_id: model-context-protocol
+      mcp_endpoint:
+        uri: http://ocp-mcp-server.agent-demo.svc.cluster.local:8000/sse
+    - toolgroup_id: mcp::fast-mcp-tools
+      provider_id: model-context-protocol
+      mcp_endpoint:
+        uri: http://fast-mcp-tools.agent-demo.svc.cluster.local:8000/sse
+    server:
+      port: 8321

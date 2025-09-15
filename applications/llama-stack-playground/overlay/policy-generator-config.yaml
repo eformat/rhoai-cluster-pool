@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: llama-stack-playground
+placementBindingDefaults:
+  name: llama-stack-playground
+policyDefaults:
+  placement:
+    placementName: placement-spokes-openshift
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+                      "avp.kubernetes.io/path": "kv/data/ocp/sno/openshift-gitops/llama-stack-playground"}
+policies:
+  - name: llama-stack-playground-sno
+    manifests:
+      - path: sno/

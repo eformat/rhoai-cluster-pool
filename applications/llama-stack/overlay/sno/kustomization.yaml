@@ -1,0 +1,6 @@
+---
+namespace: llama-stack
+
+resources:
+  - ../../base
+  - namespace.yaml
