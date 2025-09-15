@@ -2,3 +2,4 @@
 resources:
   - policy-operators.yaml
   - policy-argocd.yaml
+  - policy-vault.yaml
