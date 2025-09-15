@@ -14,7 +14,7 @@ spec:
     path: applications/policy-collection/overlays
     targetRevision: main
     plugin:
-      name: argocd-novault-plugin-kustomize
+      name: argocd-vault-plugin-kustomize
   syncPolicy:
     automated:
       prune: true
