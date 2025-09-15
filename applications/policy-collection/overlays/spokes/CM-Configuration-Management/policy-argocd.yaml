@@ -446,7 +446,6 @@ spec:
                 roleRef:
                   kind: Role
                   name: permissions
-                  namespace: openshift-gitops
                   apiGroup: rbac.authorization.k8s.io
             - complianceType: musthave
               objectDefinition:
