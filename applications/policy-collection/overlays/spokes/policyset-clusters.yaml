@@ -10,6 +10,7 @@ spec:
     - oauth-htpasswd
     - operators-spokes
     - argocd-spokes
+    - vault-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
