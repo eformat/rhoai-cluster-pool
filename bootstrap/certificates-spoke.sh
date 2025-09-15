@@ -288,6 +288,9 @@ check_done() {
       echo "🌴 api-cert ran OK"
     fi
 
+    patch_api_server
+    patch_ingress
+
     return 0
 }
 
