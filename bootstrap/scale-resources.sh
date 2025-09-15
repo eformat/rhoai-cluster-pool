@@ -8,12 +8,14 @@ readonly RUN_DIR=$(pwd)
 
 # scale the RHOAI operator down
 #oc -n redhat-ods-operator scale deployment/rhods-operator --replicas=0
+#oc -n redhat-ods-monitoring scale deploy rhods-prometheus-operator --replicas=0
 
 # reduce deployment count
 oc -n redhat-ods-applications scale deployment rhods-dashboard --replicas=1
 oc -n redhat-ods-applications scale deployment odh-model-controller --replicas=1
 oc -n redhat-ods-applications scale deployment modelmesh-controller --replicas=1
 oc -n redhat-ods-applications scale deployment codeflare-operator-manager --replicas=1
+oc -n redhat-ods-monitoring scale sts prometheus-rhods-model-monitoring --replicas=1
 
 # scale istio replicas
 oc -n istio-system scale $(oc -n istio-system get deployment -o name) --replicas=1
