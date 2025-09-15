@@ -6,6 +6,6 @@
     "kind": "ConfigMap",
     "metadata": {
         "name": "cert-init",
-        "namespace": "openshift-config",
+        "namespace": "openshift-config"
     }
 }

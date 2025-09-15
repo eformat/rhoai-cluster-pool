@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: vault
 policyDefaults:
   placement:
-    placementName: placement-all-openshift
+    placementName: all-clusters
   categories:
     - CM Configuration Management
   complianceType: "musthave"
