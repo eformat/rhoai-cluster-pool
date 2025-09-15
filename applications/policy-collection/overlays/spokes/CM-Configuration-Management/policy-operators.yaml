@@ -78,6 +78,36 @@ spec:
                   name: openshift-gitops-operator
                   source: redhat-operators
                   sourceNamespace: openshift-marketplace
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  labels:
+                    openshift.io/cluster-monitoring: "true"
+                  name: openshift-cluster-csi-drivers
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: operators.coreos.com/v1
+                kind: OperatorGroup
+                metadata:
+                  name: aws-efs-csi-driver-operator-og
+                  namespace: openshift-cluster-csi-drivers
+                spec:
+                  upgradeStrategy: Default
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: operators.coreos.com/v1alpha1
+                kind: Subscription
+                metadata:
+                  name: aws-efs-csi-driver-operator
+                  namespace: openshift-cluster-csi-drivers
+                spec:
+                  channel: stable
+                  installPlanApproval: Automatic
+                  name: aws-efs-csi-driver-operator
+                  source: redhat-operators
+                  sourceNamespace: openshift-marketplace
           remediationAction: inform
           severity: low
   remediationAction: enforce
