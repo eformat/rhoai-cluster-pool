@@ -3,7 +3,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   annotations:
-    avp.kubernetes.io/path: kv/data/ocp/hub/openshift-gitops/policies
+    avp.kubernetes.io/path: kv/data/ocp/sno/openshift-gitops/policies
     policy.open-cluster-management.io/categories: AC Access Control
     policy.open-cluster-management.io/controls: AC-3 Access Enforcement
     policy.open-cluster-management.io/standards: NIST SP 800-53

@@ -20,6 +20,7 @@ if [ -z "${ENVIRONMENT}" ]; then
     exit 1
 fi
 
+export CLUSTER_NAME=${CLUSTER_NAME:-sno}
 export CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
 export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 
@@ -169,7 +170,7 @@ export PROJECT_NAME=openshift-gitops
 vault auth enable -path=$CLUSTER_DOMAIN-${PROJECT_NAME} kubernetes
 
 vault policy write $CLUSTER_DOMAIN-$PROJECT_NAME-kv-read -<< EOF
-path "kv/data/ocp/*" {
+path "kv/data/ocp/${CLUSTER_NAME}/*" {
 capabilities=["read","list"]
 }
 EOF
@@ -182,7 +183,7 @@ bound_service_account_namespaces=$PROJECT_NAME \
 policies=$CLUSTER_DOMAIN-$PROJECT_NAME-kv-read \
 period=120s
 
-CA_CRT=$(openssl s_client -showcerts -connect api.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
+CA_CRT=$(echo "Q" | openssl s_client -showcerts -connect api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
 
 vault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config \
 kubernetes_host="$(oc whoami --show-server)" \
