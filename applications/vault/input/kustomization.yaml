@@ -1,6 +1,6 @@
 ---
 resources:
-  - charts/vault-init/vault-setup-configmap.json
+  - charts/vault-init/vault-setup-configmap.yaml
 
 helmCharts:
   - name: vault
