@@ -1,0 +1,8 @@
+---
+resources:
+  - 99-crio-disable-wipe-master.yaml
+  - 99-kubens-worker.yaml
+  - 99-kubens-master.yaml
+  - enable-crun-master.yaml
+  - enable-crun-worker.yaml
+  - set-max-pods.yaml
