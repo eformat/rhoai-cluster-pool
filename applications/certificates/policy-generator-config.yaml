@@ -13,6 +13,7 @@ policyDefaults:
   complianceType: "musthave"
   controls:
     - CM-2 Baseline Configuration
+  configurationPolicyAnnotations: {"policy.open-cluster-management.io/disable-templates": "true"}
   consolidateManifests: false
   copyPolicyMetadata: false
   disabled: false
@@ -22,8 +23,7 @@ policyDefaults:
   severity: medium
   standards:
     - NIST SP 800-53
-  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous",
-                      "policy.open-cluster-management.io/disable-templates": "true"}
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: certificates
     manifests:
