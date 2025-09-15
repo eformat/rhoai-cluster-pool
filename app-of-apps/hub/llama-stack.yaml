@@ -26,7 +26,7 @@ spec:
         server: "{{.server}}"
         namespace: redhat-ods-operator
       source:
-        repoURL: https://github.com/eformat/rhoai-policy-collection.git
+        repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/llama-stack/overlay
         plugin:
           name: argocd-novault-plugin-kustomize
