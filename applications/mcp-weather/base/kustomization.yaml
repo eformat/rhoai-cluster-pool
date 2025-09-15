@@ -1,0 +1,9 @@
+---
+helmGlobals:
+  chartHome: ../chart/
+
+helmCharts:
+  - name: mcp-weather
+    includeCRDs: true
+    releaseName: mcp-weather
+    valuesFile: values.yaml

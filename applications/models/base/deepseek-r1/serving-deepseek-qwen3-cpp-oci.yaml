@@ -1,0 +1,106 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  annotations:
+    opendatahub.io/accelerator-name: migrated-gpu
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/template-display-name: LLamaCPP
+    opendatahub.io/template-name: llama-cpp
+    openshift.io/display-name: sno-deepseek-qwen3-cpp
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-deepseek-qwen3-cpp
+  namespace: llama-serving
+spec:
+  containers:
+  - env:
+    - name: LLAMA_ARG_MODEL
+      value: /mnt/models/DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf
+    - name: LLAMA_ARG_N_GPU_LAYERS
+      value: "99999"
+    - name: LLAMA_ARG_CTX_SIZE
+      value: "20000" # "71680"
+    - name: LLAMA_ARG_N_PARALLEL
+      value: "3"
+    - name: LLAMA_ARG_ENDPOINT_METRICS
+      value: "1"
+    - name: LLAMA_ARG_PORT
+      value: "8080"
+#    - name: LLAMA_ARG_CHAT_TEMPLATE
+#      value: qwen3
+    image: quay.io/eformat/llama-cpp:latest
+    name: kserve-container
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500Mi
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: shm
+  multiModel: false
+  supportedModelFormats:
+  - autoSelect: true
+    name: gguf
+  volumes:
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 2Gi
+    name: shm
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: sno-deepseek-qwen3-cpp
+    serving.knative.openshift.io/enablePassthrough: "true"
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-deepseek-qwen3-cpp
+  namespace: llama-serving
+spec:
+  predictor:
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: gguf
+      name: ""
+      resources:
+        limits:
+          nvidia.com/gpu: "1"
+        requests:
+          nvidia.com/gpu: "1"
+      runtime: sno-deepseek-qwen3-cpp
+      storageUri: oci://quay.io/eformat/deepseek-r1-0528-qwen3-8b-q4_k_m.gguf:latest-ubi
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: deepseek-r1-0528-qwen3-8b-q4-k-m
+  namespace: llama-serving
+  labels:
+    opendatahub.io/dashboard: 'true'
+  annotations:
+    opendatahub.io/connection-type-ref: uri-v1
+    openshift.io/description: deepseek-r1-0528-qwen3-8b-q4_k_m
+    openshift.io/display-name: deepseek-r1-0528-qwen3-8b-q4_k_m
+    argocd.argoproj.io/sync-wave: "2"
+stringData:
+  URI: oci://quay.io/eformat/deepseek-r1-0528-qwen3-8b-q4_k_m.gguf:latest-ubi
+type: Opaque

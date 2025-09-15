@@ -1,0 +1,92 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  annotations:
+    opendatahub.io/accelerator-name: migrated-gpu
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/template-display-name: LLamaCPP
+    opendatahub.io/template-name: llama-cpp
+    openshift.io/display-name: sno-qwen31-cpp
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-qwen31-cpp
+  namespace: llama-serving
+spec:
+  containers:
+  - env:
+    - name: LLAMA_ARG_MODEL
+      value: /mnt/models/Qwen3-1.7B-Q8_0.gguf
+    - name: LLAMA_ARG_N_GPU_LAYERS
+      value: "99999"
+    - name: LLAMA_ARG_CTX_SIZE
+      value: "30000" # "71680"
+    - name: LLAMA_ARG_N_PARALLEL
+      value: "3"
+    - name: LLAMA_ARG_ENDPOINT_METRICS
+      value: "1"
+    - name: LLAMA_ARG_PORT
+      value: "8080"
+#    - name: LLAMA_ARG_CHAT_TEMPLATE
+#      value: qwen3
+    image: quay.io/eformat/llama-cpp:latest
+    name: kserve-container
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500Mi
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: shm
+  multiModel: false
+  supportedModelFormats:
+  - autoSelect: true
+    name: gguf
+  volumes:
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 2Gi
+    name: shm
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: sno-qwen31-cpp
+    serving.knative.openshift.io/enablePassthrough: "true"
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-qwen31-cpp
+  namespace: llama-serving
+spec:
+  predictor:
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: gguf
+      name: ""
+      resources:
+        limits:
+          nvidia.com/gpu: "1"
+        requests:
+          nvidia.com/gpu: "1"
+      runtime: sno-qwen31-cpp
+      storage:
+        key: connection-minio
+        path: Qwen3-1.7B-Q8_0.gguf
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists

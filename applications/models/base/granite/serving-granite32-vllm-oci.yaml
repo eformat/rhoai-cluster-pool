@@ -1,0 +1,99 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  annotations:
+    enable-route: 'true'
+    opendatahub.io/accelerator-name: nvidia-gpu
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/template-display-name: vLLM ServingRuntime for KServe
+    opendatahub.io/template-name: vllm-runtime
+    openshift.io/display-name: sno-granite32-vllm
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-granite32-vllm
+  namespace: llama-serving
+spec:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8080"
+  containers:
+    - command:
+        - python
+        - -m
+        - vllm.entrypoints.openai.api_server
+        - --port=8080
+        - --model=/mnt/models
+        - --served-model-name=granite-3.2-2b-instruct
+        - --max-model-len=90000
+        - --enforce-eager
+        - --gpu_memory_utilization=0.65
+        - --enable-auto-tool-choice
+        - --tool-call-parser=granite
+        - --chat-template=/app/data/template/tool_chat_template_granite.jinja
+      env:
+        - name: HF_HOME
+          value: /tmp/hf_home
+      image: quay.io/eformat/vllm:latest  # quay.io/modh/vllm:rhoai-2.21-cuda
+      name: kserve-container
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+  multiModel: false
+  supportedModelFormats:
+    - autoSelect: true
+      name: vLLM
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: sno-granite32-vllm
+    serving.knative.openshift.io/enablePassthrough: "true"
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    serving.kserve.io/deploymentMode: Serverless
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: sno-granite32-vllm
+  namespace: llama-serving
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: vLLM
+      name: ''
+      resources:
+        limits:
+          nvidia.com/gpu: "1"
+        requests:
+          nvidia.com/gpu: "1"
+      runtime: sno-granite32-vllm
+      storageUri: oci://quay.io/eformat/granite-3.2-2b-instruct:latest-ubi
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: granite-3.2-2b-instruct
+  namespace: llama-serving
+  labels:
+    opendatahub.io/dashboard: 'true'
+  annotations:
+    opendatahub.io/connection-type-ref: uri-v1
+    openshift.io/description: granite-3.2-2b-instruct
+    openshift.io/display-name: granite-3.2-2b-instruct
+    argocd.argoproj.io/sync-wave: "2"
+stringData:
+  URI: oci://quay.io/eformat/granite-3.2-2b-instruct:latest-ubi
+type: Opaque

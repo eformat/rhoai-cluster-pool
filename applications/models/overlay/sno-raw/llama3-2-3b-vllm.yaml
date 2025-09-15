@@ -1,0 +1,41 @@
+object-templates-raw: |
+  {{- if not (lookup "v1" "ConfigMap" "llama-serving" "undeploy-llama3-2-3b") }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: serving.kserve.io/v1beta1
+      kind: InferenceService
+      metadata:
+        annotations:
+          openshift.io/display-name: llama3.2-3b
+          serving.knative.openshift.io/enablePassthrough: "true"
+          serving.kserve.io/deploymentMode: RawDeployment
+          sidecar.istio.io/inject: "false"
+          sidecar.istio.io/rewriteAppHTTPProbers: "true"
+        labels:
+          app.kubernetes.io/component: llm-inference
+          app.kubernetes.io/instance: llama3-2-3b
+          app.kubernetes.io/name: llama3-2-3b
+          opendatahub.io/dashboard: "true"
+        name: llama3-2-3b
+        namespace: llama-serving
+      spec:
+        predictor:
+          automountServiceAccountToken: false
+          maxReplicas: 1
+          minReplicas: 1
+          model:
+            modelFormat:
+              name: vLLM
+            name: ""
+            resources:
+              limits:
+                nvidia.com/gpu: "1"
+              requests:
+                nvidia.com/gpu: "1"
+            runtime: llama3-2-3b
+            storageUri: oci://quay.io/redhat-ai-services/modelcar-catalog:llama-3.2-3b-instruct
+          tolerations:
+          - effect: NoSchedule
+            key: nvidia.com/gpu
+            operator: Exists
+  {{- end }}

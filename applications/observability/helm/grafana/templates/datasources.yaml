@@ -1,0 +1,66 @@
+{{- if .Values.datasources.prometheus.enabled }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: prometheus
+  namespace: {{ .Values.grafana.namespace }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  datasource:
+    name: prometheus
+    type: prometheus
+    access: proxy
+    editable: true
+    url: {{ .Values.datasources.prometheus.url | quote }}
+    isDefault: {{ .Values.datasources.prometheus.isDefault }}
+    secureJsonData:
+      httpHeaderValue1: "Bearer ${token}"
+    jsonData:
+      httpHeaderName1: "Authorization"
+      timeInterval: "5s"
+      tlsSkipVerify: true
+  valuesFrom:
+    - targetPath: secureJsonData.httpHeaderValue1
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.serviceAccount.tokenSecretName }}
+          key: token
+{{- end }}
+{{- if .Values.datasources.tempo.enabled }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: tempo
+  namespace: {{ .Values.grafana.namespace }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  datasource:
+    name: tempo
+    type: tempo
+    access: proxy
+    editable: true
+    url: {{ .Values.datasources.tempo.url | quote }}
+    isDefault: {{ .Values.datasources.tempo.isDefault }}
+    secureJsonData:
+      httpHeaderValue1: "Bearer ${token}"
+    jsonData:
+      httpHeaderName1: "Authorization"
+      timeInterval: "5s"
+      tlsSkipVerify: true
+  valuesFrom:
+    - targetPath: secureJsonData.httpHeaderValue1
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.serviceAccount.tokenSecretName }}
+          key: token
+{{- end }}

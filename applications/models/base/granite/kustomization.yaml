@@ -1,0 +1,7 @@
+---
+resources:
+  # - serving-granite-8b-lab-v2-vllm-oci.yaml
+  # - serving-granite-vision32-vllm.yaml
+  # - serving-granite32-8b-vllm-oci.yaml
+  # - serving-granite32-vllm-oci.yaml
+  # - serving-granite32-vllm.yaml

@@ -1,0 +1,4 @@
+---
+resources:
+  # - serving-qwen25-cpp.yaml
+  # - serving-qwen31-cpp.yaml

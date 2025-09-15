@@ -1,0 +1,6 @@
+---
+resources:
+#  - serving-deepseek-qwen3-cpp-oci.yaml
+#  - serving-deepseek-qwen3-cpp.yaml
+  - serving-deepseek-qwen3-vllm-oci-2.yaml
+#  - serving-deepseek-qwen3-vllm-oci.yaml

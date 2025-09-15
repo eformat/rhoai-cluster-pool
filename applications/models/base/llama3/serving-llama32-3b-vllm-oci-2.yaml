@@ -1,0 +1,124 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  annotations:
+    opendatahub.io/accelerator-name: migrated-gpu
+    opendatahub.io/apiProtocol: REST
+  labels:
+    app.kubernetes.io/component: llm-inference
+    app.kubernetes.io/instance: llama3-2-3b
+    app.kubernetes.io/name: llama3-2-3b
+    app.kubernetes.io/version: 3.2-3b
+  name: llama3-2-3b
+  namespace: llama-serving
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nvidia.com/gpu.present
+            operator: In
+            values:
+            - "true"
+  builtInAdapter:
+    memBufferBytes: 134217728
+    modelLoadingTimeoutMillis: 90000
+    runtimeManagementPort: 8080
+    serverType: vllm
+  containers:
+  - args:
+    - --model=/mnt/models
+    - --port=8080
+    - --max-model-len=20000
+    - --gpu_memory_utilization=0.50
+    - --enforce-eager
+    - --served-model-name=llama3-2-3b
+    - --chat-template=/app/data/template/tool_chat_template_llama3.2_json.jinja
+    - --enable-auto-tool-choice
+    - --tool-call-parser
+    - llama3_json
+    - --otlp-traces-endpoint
+    - grpc://otel-collector-collector.observability-hub.svc.cluster.local:4317
+    - --collect-detailed-traces
+    - all
+    env:
+    - name: HF_HOME
+      value: /tmp/hf_home
+    - name: OTEL_SERVICE_NAME
+      value: vllm-llama32b
+    - name: OTEL_EXPORTER_OTLP_TRACES_INSECURE
+      value: "true"
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: TRANSFORMERS_CACHE
+      value: /root/.cache/huggingface
+    image: quay.io/modh/vllm@sha256:0d55419f3d168fd80868a36ac89815dded9e063937a8409b7edf3529771383f3
+    name: kserve-container
+    ports:
+    - containerPort: 8080
+      name: h2c
+      protocol: TCP
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+      requests:
+        nvidia.com/gpu: 1
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: shm
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+  supportedModelFormats:
+  - autoSelect: true
+    name: vLLM
+    version: "1"
+  - autoSelect: true
+    name: huggingface
+    version: "1"
+  tolerations:
+  - effect: NoSchedule
+    key: nvidia.com/gpu
+    operator: Exists
+  volumes:
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 1Gi
+    name: shm
+# ---
+# apiVersion: serving.kserve.io/v1beta1
+# kind: InferenceService
+# metadata:
+#   annotations:
+#     openshift.io/display-name: llama3.2-3b
+#     serving.knative.openshift.io/enablePassthrough: "true"
+#     serving.kserve.io/deploymentMode: RawDeployment
+#     sidecar.istio.io/inject: "false"
+#     sidecar.istio.io/rewriteAppHTTPProbers: "true"
+#   labels:
+#     app.kubernetes.io/component: llm-inference
+#     app.kubernetes.io/instance: llama3-2-3b
+#     app.kubernetes.io/name: llama3-2-3b
+#     opendatahub.io/dashboard: "true"
+#   name: llama3-2-3b
+#   namespace: llama-serving
+# spec:
+#   predictor:
+#     automountServiceAccountToken: false
+#     maxReplicas: 1
+#     minReplicas: 1
+#     model:
+#       modelFormat:
+#         name: vLLM
+#       name: ""
+#       resources:
+#         limits:
+#           nvidia.com/gpu: "1"
+#         requests:
+#           nvidia.com/gpu: "1"
+#       runtime: llama3-2-3b
+#       storageUri: oci://quay.io/redhat-ai-services/modelcar-catalog:llama-3.2-3b-instruct
+#     tolerations:
+#     - effect: NoSchedule
+#       key: nvidia.com/gpu
+#       operator: Exists
