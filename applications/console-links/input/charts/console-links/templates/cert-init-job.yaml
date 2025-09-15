@@ -25,11 +25,11 @@ spec:
         command:
         - /bin/sh
         - '-x'
-        - /tmp/console-links.sh
+        - /tmp/console-links/console-links.sh
         resources: {}
         volumeMounts:
-        - name: cert-config
-          mountPath: /tmp/cert-config
+        - name: console-links
+          mountPath: /tmp/console-links
         - mountPath: /tmp
           name: cert-tmp
         terminationMessagePath: /dev/termination-log
@@ -40,7 +40,7 @@ spec:
       securityContext: {}
       restartPolicy: OnFailure
       volumes:
-      - name: cert-config
+      - name: console-links
         configMap:
           items:
           - key: console-links.sh
