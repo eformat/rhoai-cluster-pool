@@ -1,0 +1,12 @@
+---
+resources:
+  - charts/console-links/console-links-configmap.yaml
+
+helmCharts:
+  - name: console-links
+    namespace: openshift-config
+    includeCRDs: false
+    valuesFile: charts/console-links/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder

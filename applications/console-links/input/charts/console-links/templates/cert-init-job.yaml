@@ -1,0 +1,77 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: console-links
+  name: console-links
+  namespace: openshift-config
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: console-links
+  namespace: openshift-config
+spec:
+  backoffLimit: 5
+  activeDeadlineSeconds: 1200
+  template:
+    metadata:
+      name: console-links
+    spec:
+      containers:
+      - name: console-links
+        image: 'quay.io/eformat/toolbox:latest'
+        command:
+        - /bin/sh
+        - '-x'
+        - /tmp/console-links.sh
+        resources: {}
+        volumeMounts:
+        - name: cert-config
+          mountPath: /tmp/cert-config
+        - mountPath: /tmp
+          name: cert-tmp
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: Always
+      serviceAccount: console-links
+      serviceAccountName: console-links
+      securityContext: {}
+      restartPolicy: OnFailure
+      volumes:
+      - name: cert-config
+        configMap:
+          items:
+          - key: console-links.sh
+            mode: 509
+            path: console-links.sh
+          name: console-links
+      - emptyDir: {}
+        name: cert-tmp
+      dnsPolicy: ClusterFirst
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: console-links
+rules:
+  - apiGroups: ["config.openshift.io"]
+    resources: ["ingresses", "dnses", "apiservers", "ingresses"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["console.openshift.io"]
+    resources: ["consolelinks"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: console-links
+subjects:
+  - kind: ServiceAccount
+    name: console-links
+    namespace: openshift-config
+roleRef:
+  kind: ClusterRole
+  name: console-links
+  apiGroup: rbac.authorization.k8s.io
