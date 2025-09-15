@@ -105,7 +105,7 @@ spec:
   controllerConfig:
     overrideArgs:
       - '--dns01-recursive-nameservers-only'
-      - '--dns01-recursive-nameservers=1.1.1.1:53' 
+      - '--dns01-recursive-nameservers=1.1.1.1:53'
 EOF
 
     if [ "$?" != 0 ]; then
@@ -192,7 +192,7 @@ spec:
   commonName: "${LE_API}"
   secretName: tls-api
   dnsNames:
-  - "${LE_API}" 
+  - "${LE_API}"
   issuerRef:
     name: letsencrypt-api
     kind: Issuer
