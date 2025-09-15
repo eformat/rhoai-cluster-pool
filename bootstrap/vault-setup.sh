@@ -183,10 +183,10 @@ bound_service_account_namespaces=$PROJECT_NAME \
 policies=$CLUSTER_DOMAIN-$PROJECT_NAME-kv-read \
 period=120s
 
-CA_CRT=$(echo "Q" | openssl s_client -showcerts -connect api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
+CA_CRT=$(echo "Q" | openssl s_client -showcerts -connect api.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}')
 
 vault write auth/$CLUSTER_DOMAIN-${PROJECT_NAME}/config \
-kubernetes_host="$(oc whoami --show-server)" \
+kubernetes_host="https://api.${BASE_DOMAIN}:6443" \
 kubernetes_ca_cert="$CA_CRT"
 
 wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/secrets/vault-${ENVIRONMENT}
