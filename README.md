@@ -1,5 +1,7 @@
 # rhoai-cluster-pool
 
+Uses Hive ClusterPool's from a HUB cluster to provision roadshow SPOKE clusters.
+
 ## Bootstrap Hub
 
 Installs ArgoCD and ACM
