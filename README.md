@@ -4,6 +4,25 @@ Uses Hive ClusterPool's from a HUB cluster to provision roadshow SPOKE clusters.
 
 ## Bootstrap Hub
 
+HUB SNO install
+
+```bash
+export AWS_PROFILE=sno-test
+export AWS_DEFAULT_REGION=us-east-2
+export AWS_DEFAULT_ZONES=["us-east-2b"]
+export CLUSTER_NAME=sno
+export BASE_DOMAIN=sandbox.opentlc.com
+export PULL_SECRET=$(cat ~/tmp/pull-secret-rhpds)
+export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
+export INSTANCE_TYPE=m6i.8xlarge
+export ROOT_VOLUME_SIZE=300
+export OPENSHIFT_VERSION=4.19.10
+export SKIP_SPOT=true
+
+mkdir -p ~/tmp/sno-${AWS_PROFILE} && cd ~/tmp/sno-${AWS_PROFILE}
+curl -Ls https://raw.githubusercontent.com/eformat/sno-for-100/main/sno-for-100.sh | bash -s -- -d
+```
+
 Installs ArgoCD and ACM
 
 ```bash
