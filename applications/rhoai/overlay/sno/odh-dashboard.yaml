@@ -24,6 +24,7 @@ spec:
     disableHardwareProfiles: false
     disableISVBadges: false
     disableInfo: false
+    disableKueue: false
     disableKServe: false
     disableKServeAuth: false
     disableKServeMetrics: false
