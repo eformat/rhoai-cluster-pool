@@ -1,6 +1,6 @@
 ---
 resources:
-  - dsci-cr.yaml
+#  - dsci-cr.yaml
   - dsc-cr.yaml
   - odh-dashboard.yaml
   - accelerator-profile.yaml
