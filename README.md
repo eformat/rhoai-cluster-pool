@@ -34,6 +34,10 @@ Apps
 oc apply -f app-of-apps/hub-app-of-apps.yaml
 ```
 
+Setup Hive
+
+- [HIVE_SETUP](HIVE_SETUP.md)
+
 Console Links
 
 ```bash
