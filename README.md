@@ -68,4 +68,3 @@ oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=0
 # scale to one to get standby cluster
 oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=1
 ```
-
