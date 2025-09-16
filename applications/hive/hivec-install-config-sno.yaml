@@ -11,7 +11,7 @@ controlPlane:
   hyperthreading: Enabled
   platform:
     aws:
-      type: g6.4xlarge
+      type: g6.8xlarge
       rootVolume:
         size: 400
         type: gp3
