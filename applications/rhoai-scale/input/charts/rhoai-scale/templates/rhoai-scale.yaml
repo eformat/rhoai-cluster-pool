@@ -57,7 +57,7 @@ metadata:
   name: rhoai-scale
 rules:
   - apiGroups: ["apps"]
-    resources: ["deployments"]
+    resources: ["deployments", "deployments/scale"]
     verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
 ---
 kind: ClusterRoleBinding
