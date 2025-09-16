@@ -1,0 +1,12 @@
+---
+resources:
+  - charts/rhoai-scale/rhoai-scale-configmap.yaml
+
+helmCharts:
+  - name: rhoai-scale
+    namespace: openshift-config
+    includeCRDs: false
+    valuesFile: charts/rhoai-scale/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder
