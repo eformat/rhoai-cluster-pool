@@ -56,7 +56,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: rhoai-scale
 rules:
-  - apiGroups: [""]
+  - apiGroups: ["apps"]
     resources: ["deployments"]
     verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
 ---
