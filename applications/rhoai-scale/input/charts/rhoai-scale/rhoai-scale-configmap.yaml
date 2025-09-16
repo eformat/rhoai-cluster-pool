@@ -4,13 +4,13 @@ data:
     #!/bin/bash
 
     scale() {
-        local component = "$1"
+        local component="$1"
         echo "💥 Scale RHOAI ${component}..."
         local i=0
         oc -n redhat-ods-applications scale deployment ${component} --replicas=1
         until [ "$?" == 0 ]
         do
-            echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
+            echo -e "Waiting for 0 rc from oc commands."
             ((i=i+1))
             if [ $i -gt 30 ]; then
                 echo -e "🕱Failed - to scale ${component} ?"
