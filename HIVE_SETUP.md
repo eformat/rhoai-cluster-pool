@@ -57,3 +57,31 @@ Create an install-config template secret for our cluster deployments
 oc -n cluster-pools delete secret my-install-config-template
 oc -n cluster-pools create secret generic my-install-config-template --from-file=install-config.yaml=applications/hive/hivec-install-config-sno.yaml
 ```
+
+Create ClusterPool(s)
+
+- https://github.com/openshift/hive/blob/master/docs/clusterpools.md
+
+```bash
+cat <<EOF | oc apply -f-
+apiVersion: hive.openshift.io/v1
+kind: ClusterPool
+metadata:
+  name: openshift-roadshow
+  namespace: cluster-pools
+spec:
+  baseDomain: sandbox.opentlc.com
+  imageSetRef:
+    name: img4.19.10-x86-64-appsub
+  installConfigSecretTemplateRef: 
+    name: my-install-config-template
+  skipMachinePools: true
+  runningCount: 1 # keep one cluster running rather than hibernate it
+  platform:
+    aws:
+      credentialsSecretRef:
+        name: aws-creds
+      region: us-east-2
+  size: 1
+EOF
+```
