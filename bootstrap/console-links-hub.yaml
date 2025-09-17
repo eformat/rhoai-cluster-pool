@@ -7,7 +7,7 @@ spec:
   applicationMenu:
     section: SRE
     imageURL: https://argo-cd.readthedocs.io/en/stable/assets/logo.png
-  href: https://global-policy-server-openshift-gitops.apps.$CLUSTER_NAME.$BASE_DOMAIN
+  href: https://global-policy-server-openshift-gitops.apps.$BASE_DOMAIN
   location: ApplicationMenu
   text: argocd
 ---
@@ -19,6 +19,6 @@ spec:
   applicationMenu:
     section: SRE
     imageURL: https://www.datocms-assets.com/2885/1620155128-brandhcvaultverticalcolor.svg
-  href: https://vault-vault.apps.$CLUSTER_NAME.$BASE_DOMAIN
+  href: https://vault-vault.apps.$BASE_DOMAIN
   location: ApplicationMenu
   text: vault
