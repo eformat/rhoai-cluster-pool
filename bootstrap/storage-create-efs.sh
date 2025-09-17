@@ -14,6 +14,7 @@ echo "🌴 Create EFS storage..."
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_ACCESS_KEY_ID" ] && echo "🕱 Error: AWS_ACCESS_KEY_ID not set in env" && exit 1
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "🕱 Error: AWS_SECRET_ACCESS_KEY not set in env" && exit 1
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit
+IS_SNO=${IS_SNO:-}
 
 # create efs per vpc
 create_efs() {
@@ -63,9 +64,9 @@ create_efs() {
         # we have to iterate over them
         echo "🌴 Found EFS file system - checking."
         found=
-        for fs_id in $(aws efs describe-file-systems --query 'FileSystems[*].FileSystemId' --output text); do
-            if [ $(aws efs describe-tags --file-system-id $fs_id | grep ${instanceId} | wc -l) -gt 0 ]; then
-                echo "Filesystem $fs_id exists for $instanceId, skipping ..."
+        for fsid in $(aws efs describe-file-systems --query 'FileSystems[*].FileSystemId' --output text); do
+            if [ $(aws efs describe-tags --file-system-id $fsid | grep ${instanceId} | wc -l) -gt 0 ]; then
+                echo "Filesystem $fsid exists for $instanceId, skipping ..."
                 found="true"
                 export EFSID=${fsid}
             fi
@@ -141,15 +142,61 @@ create_mount_target() {
     fi
 }
 
-# get all instances
-export INSTANCE_IDS=$(aws ec2 describe-instances \
-    --query "Reservations[].Instances[].InstanceId" \
-    --filters "Name=tag-value,Values=*-master-0" \
-    --output text)
+configure_sc() {
+    if [ -z $IS_SNO ]; then
+       echo "🌴 IS_SNO not true, skipping configure_sc..."
+       return
+    fi
+
+    oc get sc/efs-sc
+    if [ "$?" == 0 ]; then
+        echo "🌴 Found EFS storage class OK - Done."
+        exit 0
+    fi
+
+    echo "🌴 Running configure_sc..."
+
+cat << EOF > /tmp/storage-class-efs.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: efs-sc
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap 
+  fileSystemId: $EFSID
+  directoryPerms: "700" 
+  gidRangeStart: "1000" 
+  gidRangeEnd: "2000" 
+  basePath: "/dynamic_provisioning" 
+EOF
+
+    oc apply -f /tmp/storage-class-efs.yaml -n openshift-config
+    if [ "$?" != 0 ]; then
+      echo -e "🚨${RED}Failed - to create storage class, configure_sc ?${NC}"
+      exit 1
+    fi
+    rm -f /tmp/storage-class-efs.yaml 2>&1>/dev/null
+    echo "🌴 configure_sc ran OK"
+}
+
+INSTANCE_IDS=
+
+# get single sno
+if [ ! -z $IS_SNO ]; then
+    export INSTANCE_IDS=$(oc -n openshift-machine-api get $(oc get machines.machine.openshift.io -o name -A) -o json | jq -r '.status.providerStatus.instanceId')
+else
+    # get all instances
+    export INSTANCE_IDS=$(aws ec2 describe-instances \
+        --query "Reservations[].Instances[].InstanceId" \
+        --filters "Name=tag-value,Values=*-master-0" \
+        --output text)
+fi
 
 # check if EFS exists for each SNO instance else create
 for cluster in ${INSTANCE_IDS}; do
     create_efs $cluster
+    configure_sc
 done
 
 echo "🌴 Create EFS storage Done."
