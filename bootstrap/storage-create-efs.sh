@@ -9,12 +9,22 @@ readonly RUN_DIR=$(pwd)
 
 echo "🌴 Create EFS storage..."
 
+# script works for sno or for all instances
+IS_SNO=${IS_SNO:-}
+
+if [ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ]; then
+    export AWS_DEFAULT_REGION=$(oc -n openshift-machine-api get $(oc get machines.machine.openshift.io -o name -A) -o json | jq -r '.spec.providerSpec.value.placement.region')
+    if [ -z "$AWS_DEFAULT_REGION" ]; then
+        echo -e "🚨${RED}Failed - to find AWS_DEFAULT_REGION ? ${NC}"
+        exit 1
+    fi
+fi
+
 # Check for EnvVars
 [ ! -z "$AWS_PROFILE" ] && echo "🌴 Using AWS_PROFILE: $AWS_PROFILE"
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_ACCESS_KEY_ID" ] && echo "🕱 Error: AWS_ACCESS_KEY_ID not set in env" && exit 1
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "🕱 Error: AWS_SECRET_ACCESS_KEY not set in env" && exit 1
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit
-IS_SNO=${IS_SNO:-}
 
 # create efs per vpc
 create_efs() {

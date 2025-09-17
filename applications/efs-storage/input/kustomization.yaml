@@ -1,0 +1,12 @@
+---
+resources:
+  - charts/efs-storage/efs-storage-configmap.yaml
+
+helmCharts:
+  - name: efs-storage
+    namespace: openshift-config
+    includeCRDs: false
+    valuesFile: charts/efs-storage/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder

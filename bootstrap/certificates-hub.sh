@@ -58,25 +58,14 @@ EOF
 
 create_aws_secrets() {
     echo "🌴 Running create_aws_secrets..."
-    oc -n openshift-config create secret generic aws-secret --from-literal=awsSecretAccessKey=${AWS_SECRET_ACCESS_KEY} 2>&1 | tee /tmp/oc-error-file
+
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-config/' | oc -n openshift-config apply -f-
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-ingress/' | oc -n openshift-ingress apply -f-
+    export AWS_ACCESS_KEY_ID=$(oc get secret aws-creds -n kube-system -o template='{{index .data "aws_access_key_id"}}' | base64 -d)
     if [ "$?" != 0 ]; then
-        if grep -q "already exists" /tmp/oc-error-file; then
-            echo -e "${GREEN}Ignoring - secret already exists${NC}"
-        else
-            echo -e "🚨${RED}Failed - to run create_aws_secrets ?${NC}"
-            exit 1
-        fi
+        echo -e "🚨${RED}Failed - to find aws_access_key_id ?${NC}"
     fi
 
-    oc -n openshift-ingress create secret generic aws-secret --from-literal=awsSecretAccessKey=${AWS_SECRET_ACCESS_KEY} 2>&1 | tee /tmp/oc-error-file
-    if [ "$?" != 0 ]; then
-        if grep -q "already exists" /tmp/oc-error-file; then
-            echo -e "${GREEN}Ignoring - secret already exists${NC}"
-        else
-            echo -e "🚨${RED}Failed - to run create_aws_secrets ?${NC}"
-            exit 1
-        fi
-    fi
     echo "🌴 create_aws_secrets ran OK"
 }
 
@@ -138,8 +127,8 @@ spec:
           hostedZoneID: $(echo ${HOSTED_ZONE} | sed 's/\/hostedzone\///g')
           region: ${AWS_DEFAULT_REGION}
           secretAccessKeySecretRef:
-            name: "aws-secret"
-            key: "awsSecretAccessKey"
+            name: "aws-creds"
+            key: "aws_secret_access_key"
 EOF
 
     if [ "$?" != 0 ]; then
@@ -166,8 +155,8 @@ spec:
           hostedZoneID: $(echo ${HOSTED_ZONE} | sed 's/\/hostedzone\///g')
           region: ${AWS_DEFAULT_REGION}
           secretAccessKeySecretRef:
-            name: "aws-secret"
-            key: "awsSecretAccessKey"
+            name: "aws-creds"
+            key: "aws_secret_access_key"
 EOF
 
     if [ "$?" != 0 ]; then
@@ -377,8 +366,6 @@ EOF
 # Check for EnvVars
 [ -z "$EMAIL" ] && echo "🕱 Error: must supply EMAIL in env or cli" && exit 1
 [ -z "$BASE_DOMAIN" ] && echo "🕱 Error: must supply BASE_DOMAIN in env or cli" && exit 1
-[ -z "$AWS_ACCESS_KEY_ID" ] && echo "🕱 Error: AWS_ACCESS_KEY_ID not set in env" && exit 1
-[ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "🕱 Error: AWS_SECRET_ACCESS_KEY not set in env" && exit 1
 [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit
 
 # set these

@@ -1,0 +1,93 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: efs-storage
+  name: efs-storage
+  namespace: openshift-config
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: efs-storage
+  namespace: openshift-config
+spec:
+  backoffLimit: 5
+  activeDeadlineSeconds: 1200
+  template:
+    metadata:
+      name: efs-storage
+    spec:
+      containers:
+      - name: efs-storage
+        image: 'quay.io/eformat/toolbox:latest'
+        env:
+          - name: IS_SNO
+            value: "true"
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_access_key_id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_secret_access_key
+        command:
+        - /bin/sh
+        - '-x'
+        - /tmp/efs-storage/efs-storage.sh
+        resources: {}
+        volumeMounts:
+        - name: efs-storage
+          mountPath: /tmp/efs-storage
+        - mountPath: /tmp
+          name: cert-tmp
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: Always
+      serviceAccount: efs-storage
+      serviceAccountName: efs-storage
+      securityContext: {}
+      restartPolicy: OnFailure
+      volumes:
+      - name: efs-storage
+        configMap:
+          items:
+          - key: efs-storage.sh
+            mode: 509
+            path: efs-storage.sh
+          name: efs-storage
+      - emptyDir: {}
+        name: cert-tmp
+      dnsPolicy: ClusterFirst
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: efs-storage
+rules:
+  - apiGroups: ["config.openshift.io"]
+    resources: ["ingresses", "dnses", "apiservers", "ingresses"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["machine.openshift.io"]
+    resources: ["machines"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch", "patch", "update", "create"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: efs-storage
+subjects:
+  - kind: ServiceAccount
+    name: efs-storage
+    namespace: openshift-config
+roleRef:
+  kind: ClusterRole
+  name: efs-storage
+  apiGroup: rbac.authorization.k8s.io
