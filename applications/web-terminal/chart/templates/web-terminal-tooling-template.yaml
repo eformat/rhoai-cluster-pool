@@ -9,6 +9,8 @@ metadata:
   labels:
     console.openshift.io/terminal: 'true'
 spec:
+  attributes:
+    controller.devfile.io/storage-type: per-workspace
   components:
     - container:
         args:
