@@ -105,6 +105,31 @@ check_gpus_allocatable() {
     echo "🌴 check_gpus_allocatable $GPUS ran OK"
 }
 
+check_istio_pods() {
+    echo "🌴 Running check_istio_pods..."
+    local i=0
+    PODS=$(oc get pods -n istio-system | wc -l)
+    until [ "$PODS" > 0 ]
+    do
+        echo -e "${GREEN}Waiting for istio-system $PODS.${NC}"
+        ((i=i+1))
+        if [ $i -gt 200 ]; then
+            echo -e "🕱${RED}Failed - istio-system pods never ready - $PODS?.${NC}"
+            exit 1
+        fi
+        sleep 10
+        # RHOAI operator seems to get stuck sometimes here
+        # no kserve because istio has no pods
+        if [ "$PODS" -eq 0 ]  && [ "$i" > 100 ]; then
+            oc -n istio-system delete servicemeshcontrolplane data-science-smcp
+            oc delete pods --all -n redhat-ods-operator
+            sleep 120
+        fi
+        PODS=$(oc get pods -n istio-system | wc -l)
+    done
+    echo "🌴 check_istio_pods $PODS ran OK"
+}
+
 check_llm_pods() {
     echo "🌴 Running check_llm_pods..."
     local i=0
@@ -152,6 +177,7 @@ wait_cluster_settle
 force_argocd_sync
 check_pods_allocatable
 check_gpus_allocatable
+check_istio_pods
 check_llm_pods
 check_llama_stack
 
