@@ -137,9 +137,9 @@ check_llm_pods() {
 
 check_llama_stack() {
     echo "🌴 Running check_llama_stack..."
-    PODS=$(oc -n llama-stack get pod -l app.kubernetes.io/instance=llama-stack | grep Running)
+    PODS=$(oc -n llama-stack get pod -l app.kubernetes.io/instance=llamastack-with-config | grep Running)
     if [ -z $PODS ]; then
-        oc -n llama-stack delete $(oc -n llama-stack get pod -l app.kubernetes.io/instance=llama-stack -o name)
+        oc -n llama-stack delete $(oc -n llama-stack get pod -l app.kubernetes.io/instance=llamastack-with-config -o name)
     fi
 }
 
