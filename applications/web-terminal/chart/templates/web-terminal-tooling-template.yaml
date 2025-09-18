@@ -29,4 +29,3 @@ spec:
     - name: home-storage
       volume:
         ephemeral: false
-        size: 2Gi
