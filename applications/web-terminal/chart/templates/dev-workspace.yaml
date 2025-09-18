@@ -1,0 +1,61 @@
+######################################################################################
+# Notes:
+#
+# this resource cannot be a kustomize app - https://github.com/kubernetes-sigs/kustomize/issues/641 due to generateName
+# so use a helmChart with hooks - this deploys OK from ArgoCD
+#
+# https://github.com/devfile/devworkspace-operator/blob/main/docs/additional-configuration.adoc
+#
+# The OpenShift console will recognize any DevWorkspace CR with
+#
+#   labels:
+#     console.openshift.io/terminal: 'true'
+#   annotations:
+#     controller.devfile.io/restricted-access: 'true'
+#
+# However the controller.devfile.io/creator: "" is a UUID that gets set when ArgoCD creates the resource
+# and hence you cannot pre-create these resources (and have them work with the UI)
+# instead, you can either
+#
+# a) create the DevWorkspace as a logged in user
+# b) update the defaults to use custom image and settings (we do this instead)
+#
+# !! Have left this resource commented out here in case someone figures out a better way !!
+######################################################################################
+
+
+# ---
+# apiVersion: workspace.devfile.io/v1alpha2
+# kind: DevWorkspace
+# metadata:
+#   annotations:
+#     controller.devfile.io/devworkspace-source: web-terminal
+#     controller.devfile.io/restricted-access: 'true'
+#     argocd.argoproj.io/sync-options: Replace=true,SkipDryRunOnMissingResource=true
+#     argocd.argoproj.io/sync-wave: "3"
+#     argocd.argoproj.io/hook: Sync
+#     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+#   labels:
+#     console.openshift.io/terminal: 'true'
+#     controller.devfile.io/creator: ""
+#   generateName: terminal-
+#   namespace: openshift-terminal
+# spec:
+#   routingClass: web-terminal
+#   started: true
+#   template:
+#     components:
+#       - name: web-terminal-tooling
+#         plugin:
+#           kubernetes:
+#             name: web-terminal-tooling
+#             namespace: openshift-operators
+#           components:
+#           - container:
+#               image: quay.io/eformat/web-terminal:latest-x86_64
+#             name: web-terminal-tooling
+#       - name: web-terminal-exec
+#         plugin:
+#           kubernetes:
+#             name: web-terminal-exec
+#             namespace: openshift-operators

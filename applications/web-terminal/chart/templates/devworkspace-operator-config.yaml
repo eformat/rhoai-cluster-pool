@@ -1,0 +1,10 @@
+---
+apiVersion: controller.devfile.io/v1alpha1
+kind: DevWorkspaceOperatorConfig
+config:
+  workspace:
+    idleTimeout: 8h
+    imagePullPolicy: Always
+metadata:
+  name: devworkspace-operator-config
+  namespace: openshift-operators
