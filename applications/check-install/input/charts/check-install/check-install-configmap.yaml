@@ -11,7 +11,7 @@ data:
 
     wait_for_openshift_api() {
         local i=0
-        HOST=https://api.${CLUSTER_NAME}.${BASE_DOMAIN}:6443/healthz
+        HOST=https://api.${CLUSTER_DOMAIN}:6443/healthz
         until [ $(curl --connect-timeout 3 -k -s -o /dev/null -w %{http_code} ${HOST}) = "200" ]
         do
             echo -e "${GREEN}Waiting for 200 response from openshift api ${HOST}.${NC}"
@@ -146,11 +146,9 @@ data:
         fi
     }
 
-    [ -z "$BASE_DOMAIN" ] && echo "🕱 Error: must supply BASE_DOMAIN in env" && exit 1
-    [ -z "$CLUSTER_NAME" ] && echo "🕱 Error: must supply CLUSTER_NAME in env" && exit 1
-
-    echo "🌴 BASE_DOMAIN set to $BASE_DOMAIN"
-    echo "🌴 CLUSTER_NAME set to $CLUSTER_NAME"
+    export CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
+    [ -z "$CLUSTER_DOMAIN" ] && echo "🕱 Error: must supply CLUSTER_DOMAIN in env" && exit 1
+    echo "🌴 CLUSTER_DOMAIN set to $CLUSTER_DOMAIN"
 
     wait_for_openshift_api
     wait_cluster_settle
