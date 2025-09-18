@@ -13,8 +13,8 @@ metadata:
   name: check-install
   namespace: openshift-config
 spec:
-  backoffLimit: 20
-  activeDeadlineSeconds: 1200
+  backoffLimit: 50
+  activeDeadlineSeconds: 3600
   template:
     metadata:
       name: check-install
