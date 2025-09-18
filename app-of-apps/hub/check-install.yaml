@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: check-install
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: placement-hub-openshift
+        requeueAfterSeconds: 180
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  template:
+    metadata:
+      name: check-install-{{.name}}
+      annotations:
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+    spec:
+      project: default
+      destination:
+        server: "{{.server}}"
+        namespace: check-install
+      source:
+        repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+        path: applications/check-install
+        plugin:
+          name: argocd-novault-plugin-kustomize
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
