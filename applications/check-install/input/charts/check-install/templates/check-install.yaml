@@ -62,7 +62,7 @@ rules:
   - apiGroups: ["config.openshift.io"]
     resources: ["clusteroperators"]
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["applications.argoproj.io"]
+  - apiGroups: ["argoproj.io"]
     resources: ["applications", "applicationsets"]
     verbs: ["get", "list", "watch", "patch", "create", "delete"]
   - apiGroups: ["machineconfiguration.openshift.io"]
@@ -71,6 +71,9 @@ rules:
   - apiGroups: [""]
     resources: ["jobs", "daemonsets", "pods", "nodes"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["serving.kserve.io"]
+    resources: ["inferenceservices"]
+    verbs: ["get", "list", "watch", "patch", "create", "delete"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
