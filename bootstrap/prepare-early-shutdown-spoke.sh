@@ -2,6 +2,10 @@
 
 #set -x
 
+# Run this on spoke SNO clusters
+# See: https://github.com/crc-org/snc/pull/1084/files
+#      https://www.redhat.com/en/blog/enabling-openshift-4-clusters-to-stop-and-resume-cluster-vms
+
 readonly RUN_DIR=$(pwd)
 export OC=${OC:-oc}
 export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
