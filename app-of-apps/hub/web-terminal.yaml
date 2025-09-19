@@ -11,7 +11,7 @@ spec:
         configMapRef: acm-placement
         labelSelector:
           matchLabels:
-            cluster.open-cluster-management.io/placement: placement-hub-openshift
+            cluster.open-cluster-management.io/placement: all-clusters
         requeueAfterSeconds: 180
   syncPolicy:
     preserveResourcesOnDeletion: false
@@ -48,7 +48,7 @@ spec:
         configMapRef: acm-placement
         labelSelector:
           matchLabels:
-            cluster.open-cluster-management.io/placement: placement-hub-openshift
+            cluster.open-cluster-management.io/placement: all-clusters
         requeueAfterSeconds: 180
   syncPolicy:
     preserveResourcesOnDeletion: false
