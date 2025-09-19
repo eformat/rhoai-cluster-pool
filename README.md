@@ -16,7 +16,7 @@ export PULL_SECRET=$(cat ~/tmp/pull-secret-rhpds)
 export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
 export INSTANCE_TYPE=m6i.8xlarge
 export ROOT_VOLUME_SIZE=300
-export OPENSHIFT_VERSION=4.19.10
+export OPENSHIFT_VERSION=4.19.11
 export SKIP_SPOT=true
 
 mkdir -p ~/tmp/sno-${AWS_PROFILE} && cd ~/tmp/sno-${AWS_PROFILE}
