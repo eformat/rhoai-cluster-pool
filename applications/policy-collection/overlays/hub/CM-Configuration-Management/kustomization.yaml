@@ -1,2 +1,3 @@
 ---
 resources:
+  - policy-hive.yaml

@@ -1,0 +1,45 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    requires-rolling-restart: none
+  name: hive-hub
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: hive-hub
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:  # CA: C=US, O=Let's Encrypt, CN=R13, Not After : Mar 12 23:59:59 2027 GMT
+                apiVersion: v1
+                data:
+                  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZCVENDQXUyZ0F3SUJBZ0lRV2dEeUV0alV0SUR6a2tGWDZpbURCVEFOQmdrcWhraUc5dzBCQVFzRkFEQlAKTVFzd0NRWURWUVFHRXdKVlV6RXBNQ2NHQTFVRUNoTWdTVzUwWlhKdVpYUWdVMlZqZFhKcGRIa2dVbVZ6WldGeQpZMmdnUjNKdmRYQXhGVEFUQmdOVkJBTVRERWxUVWtjZ1VtOXZkQ0JZTVRBZUZ3MHlOREF6TVRNd01EQXdNREJhCkZ3MHlOekF6TVRJeU16VTVOVGxhTURNeEN6QUpCZ05WQkFZVEFsVlRNUll3RkFZRFZRUUtFdzFNWlhRbmN5QkYKYm1OeWVYQjBNUXd3Q2dZRFZRUURFd05TTVRNd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFSwpBb0lCQVFDbFozQ04wRmFCWkJVWFljMjVCdFN0R1pDTUpsQTNtQlpqa2xUYjJjeUVCWlBzMCt3SUc2QmdVVU5JCmZTdkhTSmFldEMzYW5jZ25PMWVobjZ2dzFnN1VEakRLYjV1eDBkYWtuVEkrV0U0MWIwVllhSEVYL0Q3WVhZS2cKTDdKUmJMQWFYYmhaempWbHlJdWhyeEEzLytPY1hjSkpGelQvakN1TGpmQzhjU3lUREIwRnhMckh6YXJKWG56Ugp5UUgzbkFQMi9BcGQ5TnA3NXR0MlFuRHI5RTBpMmdCM2I5YkpYeGY5Mm5VdXBWY005dXBjdHVCenBXalBvWFRpCmRZSitFSi9COWFMckFlazRzUXBFek5QQ2lmVkpOWUlLTkxNYzZZakNSMDZDRGdvMjhFZFBpdkVwQkhYYXplR2EKWFA5ZW5aaVZ1cHBEMEVxaUZ3VUJCRERUTXJPUEFnTUJBQUdqZ2Znd2dmVXdEZ1lEVlIwUEFRSC9CQVFEQWdHRwpNQjBHQTFVZEpRUVdNQlFHQ0NzR0FRVUZCd01DQmdnckJnRUZCUWNEQVRBU0JnTlZIUk1CQWY4RUNEQUdBUUgvCkFnRUFNQjBHQTFVZERnUVdCQlRucTU4UExET2dVOU5lVDNqSXNvUU9POWFTTXpBZkJnTlZIU01FR0RBV2dCUjUKdEZubWU3Ymw1QUZ6Z0FpSXlCcFk5dW1iYmpBeUJnZ3JCZ0VGQlFjQkFRUW1NQ1F3SWdZSUt3WUJCUVVITUFLRwpGbWgwZEhBNkx5OTRNUzVwTG14bGJtTnlMbTl5Wnk4d0V3WURWUjBnQkF3d0NqQUlCZ1puZ1F3QkFnRXdKd1lEClZSMGZCQ0F3SGpBY29CcWdHSVlXYUhSMGNEb3ZMM2d4TG1NdWJHVnVZM0l1YjNKbkx6QU5CZ2txaGtpRzl3MEIKQVFzRkFBT0NBZ0VBVVRkWVVxRWltelc3VGJyT3lwTHFDZkw3Vk93WWYvUTc5T0g1Y0hMQ1plZ2dmUWhEY29ubAprN0tnaDhiMHZpKy9YdVd1N0NOOG4vVVBlZzF2bzNHK3RhWGlycnl0dGhRaW5BSEd3Yy9VZGJPeWdKYTl6dUJjClZ5cW9IM0NYVFhESW5UKzhhK2MzYUVWTUoyU3QrcFNuNGVkK1drRHA4aWpzaWp2RXlGd0U0N2h1bFcwTHR6amcKOWZPVjVQbXJnL3p4V2JSdUwrazBEQkRIRUplbm5Dc0FlbjdjMzVQbXg3anBtSi9IdGdSaGNuejB5alNCdnlJdwo2TDFRSXVwa0N2MlNCT0RUL3hERDNnZlFReUt2NnJvVjRHMkVoZkV5QXNXcG1vanhqQ1VDR2l5Zzk3RnZEdG0vCk5LMkxTYzlseWJLeEI3M0kyK1AyRzNDYVdwdnZwQWlIQ1Z1MzBqVzhHQ3hLZGZoc1h0bkl5Mmltc2tRcVZaMm0KMFBteG9iYjI4VHVjcjd4Qks3Q3R3dlByYjc5b3M3dTJYUDNPNWY5Yi9INjZHTnlScmdsUlhscllqSTFvR1lMLwpmNEkxbi9TZ3VzZGE2V3ZBNkMxOTBreGpVMTVZMTJtSFU0K0J4eVI5Y3gyaGhHUzlmQWpNWktKc3MyOHF4dno2CkF4dTRDYURtUk5acEsvcFFyWEYxN3lYQ1hrbUVXZ3ZTT0VaeTZaOXBjYkxJVkVHY2tWL2lWZXEwQU9vMnBrZzkKcDRRUkl5MHRLMmRpUkVOTFNGMkt5c0Z3Ylk2QjI2QkZlRnMzdjFzWVZSaEZXOW5Ma09yUVZwb3JDUzBLeVptZgp3VkQ4OXFTVGxuY3RMY1puSWF2aktzS1V1MW5BMWlVMHlZTWRZZXBLUjdsV2Jud2hkeDNld29rPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+                kind: Secret
+                metadata:
+                  name: additional-ca
+                  namespace: hive
+                type: Opaque
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: hive.openshift.io/v1
+                kind: HiveConfig
+                metadata:
+                  labels:
+                    backplaneconfig.name: multiclusterengine
+                  name: hive
+                spec:
+                  additionalCertificateAuthoritiesSecretRef:
+                  - name: additional-ca
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce

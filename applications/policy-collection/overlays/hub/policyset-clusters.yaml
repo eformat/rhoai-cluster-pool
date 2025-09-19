@@ -7,6 +7,7 @@ spec:
   description: "Policies for cluster configuration"
   policies:
     - cluster-admin-hub
+    - hive-hub
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
