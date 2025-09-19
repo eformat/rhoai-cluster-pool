@@ -16,7 +16,7 @@ oc patch hiveconfig hive --type='json' -p='[{"op": "add", "path": "/spec/globalP
 Check/Create ClusterImageSet objects for every version of OCP you want to install
 
 ```bash
-oc get ClusterImageSet img4.19.10-x86-64-appsub
+oc get ClusterImageSet img4.19.11-x86-64-appsub
 ```
 
 Create a namespace to hold your ClusterPool objects:
@@ -72,7 +72,7 @@ metadata:
 spec:
   baseDomain: sandbox.opentlc.com
   imageSetRef:
-    name: img4.19.10-x86-64-appsub
+    name: img4.19.11-x86-64-appsub
   installConfigSecretTemplateRef: 
     name: my-install-config-template
   skipMachinePools: true
