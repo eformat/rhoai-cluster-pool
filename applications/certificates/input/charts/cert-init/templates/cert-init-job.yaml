@@ -24,13 +24,15 @@ spec:
         image: 'quay.io/eformat/toolbox:latest'
         env:
         - name: EMAIL
-          value: mhepburn@redhat.com
+          value: {{ .Values.email }}
         - name: HOSTED_ZONE
-          value: Z05892971MAAXA28FMYD7
+          value: {{ .Values.hosted_zone }}
         - name: AWS_DEFAULT_REGION
-          value: us-east-2
-        # - name: ACME_STAGING
-        #   value: "True"
+          value: {{ .Values.aws_default_region }}
+        {{- if .Values.acme_staging }}
+        - name: ACME_STAGING
+          value: "True"
+        {{- end }}
         command:
         - /bin/sh
         - '-x'
