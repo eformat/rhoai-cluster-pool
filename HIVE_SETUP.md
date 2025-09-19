@@ -3,7 +3,6 @@
 Create global pull secret
 
 ```bash
--- create pull secret
 oc create secret generic global-pull-secret --from-file=.dockerconfigjson=$HOME/tmp/pull-secret-rhpds --type=kubernetes.io/dockerconfigjson --namespace hive
 ```
 
