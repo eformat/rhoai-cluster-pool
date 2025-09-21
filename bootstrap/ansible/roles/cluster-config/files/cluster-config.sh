@@ -80,4 +80,4 @@ wait
 # configure
 echo "💥 Configure" | tee -a output.log
 ./bootstrap/users.sh 2>&1 | tee -a output.log
-./bootstrap/certificates.sh 2>&1 | tee -a output.log
+./bootstrap/certificates-hub.sh 2>&1 | tee -a output.log
