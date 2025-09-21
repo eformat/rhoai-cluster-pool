@@ -1,0 +1,10 @@
+---
+apiVersion: hive.openshift.io/v1
+kind: HiveConfig
+metadata:
+  name: hive
+spec:
+  additionalCertificateAuthoritiesSecretRef:
+  - name: additional-ca
+  globalPullSecretRef:
+    name: global-pull-secret

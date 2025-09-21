@@ -53,8 +53,8 @@ EOF
 Create an install-config template secret for our cluster deployments
 
 ```bash
-oc -n cluster-pools delete secret my-install-config-template
-oc -n cluster-pools create secret generic my-install-config-template --from-file=install-config.yaml=applications/hive/hivec-install-config-sno.yaml
+oc -n cluster-pools delete secret roadshow-install-config-template
+oc -n cluster-pools create secret generic roadshow-install-config-template --from-file=install-config.yaml=applications/hive/roadshow-install-config.yaml
 ```
 
 Create ClusterPool(s)
@@ -73,7 +73,7 @@ spec:
   imageSetRef:
     name: img4.19.11-x86-64-appsub
   installConfigSecretTemplateRef: 
-    name: my-install-config-template
+    name: roadshow-install-config-template
   skipMachinePools: true
   runningCount: 1 # keep one cluster running rather than hibernate it
   platform:

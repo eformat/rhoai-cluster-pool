@@ -8,5 +8,5 @@ helmCharts:
     includeCRDs: false
     valuesFile: charts/console-links/values.yaml
     version: 0.0.1
-    releaseName: vault
+    releaseName: console
     repo:  # we expand chart in folder

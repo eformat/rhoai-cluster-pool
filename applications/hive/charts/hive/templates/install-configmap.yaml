@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+data:
+  install-config.yaml: {{ .Values.installConfig | toYaml | b64enc }}
+kind: Secret
+metadata:
+  name: roadshow-install-config-template
+  namespace: cluster-pools
+type: Opaque

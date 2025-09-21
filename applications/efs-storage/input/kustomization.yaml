@@ -8,5 +8,5 @@ helmCharts:
     includeCRDs: false
     valuesFile: charts/efs-storage/values.yaml
     version: 0.0.1
-    releaseName: vault
+    releaseName: efs
     repo:  # we expand chart in folder

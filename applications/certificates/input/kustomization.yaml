@@ -8,5 +8,5 @@ helmCharts:
     includeCRDs: false
     valuesFile: charts/cert-init/values.yaml
     version: 0.0.1
-    releaseName: vault
+    releaseName: certs
     repo:  # we expand chart in folder
