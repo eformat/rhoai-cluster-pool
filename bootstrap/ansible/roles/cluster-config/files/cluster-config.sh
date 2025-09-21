@@ -12,7 +12,7 @@ fi
 export ACME_STAGING=${ACME_STAGING:-}
 
 cd ${WORK_DIR} && git clone https://github.com/eformat/rhoai-cluster-pool.git
-cd ${WORK_DIR}/rhoai-policy-collection
+cd ${WORK_DIR}/rhoai-cluster-pool
 
 echo "💥 Working directory is: $(pwd)" | tee -a output.log
 

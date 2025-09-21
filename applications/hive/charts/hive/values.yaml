@@ -7,6 +7,4 @@ baseDomain: sandbox5289.opentlc.com  # base domain
 installConfigSecretTemplateRef: roadshow-install-config-template  # ConfigMap for install-config
 globalPullSecret:
 installConfig:
-awsAccessKeyId:
-awsSecretAccessKey:
 sshKey:

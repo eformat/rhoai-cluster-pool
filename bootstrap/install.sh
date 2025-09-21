@@ -51,6 +51,23 @@ wait_cluster_settle() {
     echo "🌴 wait_cluster_settle ran OK"
 }
 
+create_aws_secrets() {
+    echo "🌴 Running create_aws_secrets..."
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n openshift-config apply -f-
+    echo "🌴 create_aws_secrets ran OK"
+}
+
+configure_hive() {
+    echo "🌴 Running configure_hive..."
+
+    helm template hive applications/hive/charts/hive/ \
+    --set-json globalPullSecret="${PULL_SECRET}" \
+    --set installConfig="$(cat applications/hive/roadshow-install-config.yaml)" \
+    --set sshKey="$(cat ~/.ssh/id_rsa)"
+
+    echo "🌴 configure_hive ran OK"
+}
+
 app_of_apps() {
     if [ -z "$DRYRUN" ]; then
         echo -e "${GREEN}Ignoring - app_of_apps - dry run set${NC}"
@@ -72,12 +89,14 @@ all() {
     wait_for_openshift_api
     wait_cluster_settle
     app_of_apps
-    wait_for_project agent-demo
+    wait_for_project hive
+    create_aws_secrets
+    configure_hive
 }
 
 usage() {
   cat <<EOF 2>&1
-usage: $0 [ -d ] [ -b <base_domain> ] [ -e <environment> ] [ -k <kubeconfig> ]
+usage: $0 [ -d ] [ -b <base_domain> ] [ -e <environment> ] [ -k <kubeconfig> ] [ -p <pull_secret> ]
 
 Install the apps
 EOF
@@ -98,6 +117,9 @@ while getopts db:e:k: opts; do
     k)
       KUBECONFIG=$OPTARG
       ;;
+    p)
+      PULL_SECRET=$OPTARG
+      ;;
     *)
       usage
       ;;
@@ -110,6 +132,7 @@ shift `expr $OPTIND - 1`
 [ -z "$BASE_DOMAIN" ] && echo "🕱 Error: must supply BASE_DOMAIN in env or cli" && exit 1
 [ -z "$ENVIRONMENT" ] && echo "🕱 Error: must supply ENVIRONMENT in env or cli" && exit 1
 [ -z "$KUBECONFIG" ] && echo "🕱 Error: KUBECONFIG not set in env or cli" && exit 1
+[ -z "$PULL_SECRET" ] && echo "🕱 Error: PULL_SECRET not set in env or cli" && exit 1
 
 all
 
