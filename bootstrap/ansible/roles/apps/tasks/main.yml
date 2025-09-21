@@ -2,7 +2,7 @@
 - debug:
     msg:
       - "Follow the install progress"
-      - "tail -f {{ tempfile_1.path }}/rhoai-policy-collection/output.log"
+      - "tail -f {{ tempfile_1.path }}/rhoai-cluster-pool/output.log"
 
 - name: Configure Cluster
   script: deploy-apps.sh
