@@ -12,6 +12,30 @@ Patch HiveConfig
 oc patch hiveconfig hive --type='json' -p='[{"op": "add", "path": "/spec/globalPullSecretRef", "value": {"name": "global-pull-secret"}}]'
 ```
 
+For Lets Encypt CA
+
+```bash
+# save ca to ca.crt
+echo "Q" | openssl s_client -showcerts -connect api.cluster.com:6443
+
+export CA=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' ca.crt)
+
+oc create secret generic additional-ca \
+  --from-literal=ca.crt="$CA" \
+  --namespace hive
+
+oc patch hiveconfig hive --type=merge -p '
+{
+  "spec": {
+    "additionalCertificateAuthoritiesSecretRef": [
+      {
+        "name": "additional-ca"
+      }
+    ]
+  }
+}'
+```
+
 Check/Create ClusterImageSet objects for every version of OCP you want to install
 
 ```bash
