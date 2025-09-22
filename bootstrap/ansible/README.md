@@ -160,8 +160,4 @@ Keep a copy of your `/tmp/ansible.xxx` folder for future OpenShift cluster unins
 mv /tmp/ansible.xxx ~/sno-test
 ```
 
-You will also find a print out of the Hashi Vault unseal + root tokens in the log files (keep these safe).
-
-```bash
-grep -C5 Unseal /tmp/ansible.xxx/rhoai-cluster-pool/output.log
-```
+The Hashi Vault unseal + root tokens are stored as secrets in the `vault` namespace.
