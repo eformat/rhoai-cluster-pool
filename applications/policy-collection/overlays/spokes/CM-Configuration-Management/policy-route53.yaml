@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    avp.kubernetes.io/path: kv/data/ocp/sno/openshift-gitops/policies
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    requires-rolling-restart: none
+  name: route53-spokes
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: route53-spokes
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Secret
+                metadata:
+                  name: route53-hostedzone
+                  namespace: openshift-config
+                type: Opaque
+                data:
+                  hostedzone: '{{hub fromSecret "" "route53-hostedzone" "hostedzone" hub}}'
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce

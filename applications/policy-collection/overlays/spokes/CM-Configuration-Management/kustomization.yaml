@@ -4,3 +4,4 @@ resources:
   - policy-argocd.yaml
   - policy-vault.yaml
   - policy-gpu-node-label.yaml
+  - policy-route53.yaml
