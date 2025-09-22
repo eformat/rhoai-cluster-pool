@@ -10,6 +10,9 @@ cd ${WORK_DIR}/rhoai-cluster-pool
 
 echo "💥 Working directory is: $(pwd)" | tee -a output.log
 
+# hack for quoting
+export PULL_SECRET=$(cat ${PULL_SECRET})
+
 # use roadshow app-of-apps
 export ENVIRONMENT=roadshow
 
