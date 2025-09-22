@@ -48,17 +48,17 @@ Create a namespace to hold your ClusterPool objects:
 oc create namespace cluster-pools
 ```
 
+Copy AWS Creds
+
+```bash
+oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n hive apply -f-
+oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: cluster-pools/' | oc -n cluster-pools apply -f-
+```
+
+Create SSH Private Key
+
 ```bash
 cat <<EOF | kubectl apply -f -
-apiVersion: v1
-data:
-  aws_access_key_id: $(echo -n ${AWS_ACCESS_KEY_ID} | base64)
-  aws_secret_access_key: $(echo -n ${AWS_SECRET_ACCESS_KEY} | base64)
-kind: Secret
-metadata:
-  name: aws-creds
-  namespace: cluster-pools
-type: Opaque
 ---
 apiVersion: v1
 kind: Secret
