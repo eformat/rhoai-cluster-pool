@@ -10,7 +10,7 @@ Login to the cluster
 oc login -u admin -p ${ADMIN_PASSWORD} --server=https://api.${BASE_DOMAIN}:6443
 ```
 
-You will need to reboot all cluster nodes when running the script, it will prompt you.
+You will need to reboot all cluster nodes when running the script (use aws console), it will prompt you.
 
 Run the script.
 
