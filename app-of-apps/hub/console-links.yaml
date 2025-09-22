@@ -24,7 +24,7 @@ spec:
       project: default
       destination:
         server: "{{.server}}"
-        namespace: console-links
+        namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/console-links

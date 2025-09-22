@@ -24,7 +24,7 @@ spec:
       project: default
       destination:
         server: "{{.server}}"
-        namespace: check-install
+        namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/check-install

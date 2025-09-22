@@ -24,7 +24,7 @@ spec:
       project: default
       destination:
         server: "{{.server}}"
-        namespace: redhat-ods-operator
+        namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/web-terminal/operator/overlays/fast
@@ -61,7 +61,7 @@ spec:
       project: default
       destination:
         server: "{{.server}}"
-        namespace: redhat-ods-operator
+        namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/web-terminal/chart

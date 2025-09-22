@@ -24,7 +24,7 @@ spec:
       project: default
       destination:
         server: "{{.server}}"
-        namespace: perf-enhancements
+        namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
         path: applications/perf-enhancements
