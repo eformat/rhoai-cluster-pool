@@ -10,6 +10,7 @@ readonly RUN_DIR=$(pwd)
 ENVIRONMENT=${ENVIRONMENT:-hub}
 DRYRUN=${DRYRUN:-}
 export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+export SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-$(cat ~/.ssh/id_rsa.pub)}
 
 wait_for_openshift_api() {
     local i=0
@@ -157,6 +158,7 @@ shift `expr $OPTIND - 1`
 [ -z "$ENVIRONMENT" ] && echo "🕱 Error: must supply ENVIRONMENT in env or cli" && exit 1
 [ -z "$KUBECONFIG" ] && echo "🕱 Error: KUBECONFIG not set in env or cli" && exit 1
 [ -z "$PULL_SECRET" ] && echo "🕱 Error: PULL_SECRET not set in env or cli" && exit 1
+[ -z "$SSH_PUBLIC_KEY" ] && echo "🕱 Error: SSH_PUBLIC_KEY not set in env or cli" && exit 1
 
 all
 
