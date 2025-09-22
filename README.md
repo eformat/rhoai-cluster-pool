@@ -4,9 +4,12 @@ Uses Hive ClusterPool's from a HUB cluster to provision roadshow SPOKE clusters.
 
 ```mermaid
 graph LR
-    Hub[Hub Cluster] --> Spoke1[Spoke Cluster 1]
-    Hub --> Spoke2[Spoke Cluster 2]
-    Hub --> Spoke3[Spoke Cluster 3]
+    Hub[Hub Cluster] --> ClusterPool
+    subgraph ClusterPool
+        Spoke1[Spoke Cluster 1]
+        Spoke2[Spoke Cluster 2]
+        Spoke3[Spoke Cluster 3]
+    end
 ```
 
 SPOKE clusters auto-provision from the HUB. All you should need to do is scale the ClusterPool and wait for install + setup.
