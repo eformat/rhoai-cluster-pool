@@ -9,6 +9,8 @@ graph LR
     Hub --> Spoke3[Spoke Cluster 3]
 ```
 
+SPOKE clusters auto-provision from the HUB. All you should need to do is scale the ClusterPool and wait.
+
 ## Bootstrap a Hub Cluster
 
 - [Ansible Installer](ansible/README.md)
