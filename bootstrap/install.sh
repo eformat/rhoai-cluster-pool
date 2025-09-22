@@ -13,7 +13,7 @@ export SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-$(cat ~/.ssh/id_rsa.pub)}
 
 wait_for_openshift_api() {
     local i=0
-    HOST=https://api.${BASE_DOMAIN}:6443/healthz
+    HOST=https://api.sno.${BASE_DOMAIN}:6443/healthz
     until [ $(curl -k -s -o /dev/null -w %{http_code} ${HOST}) = "200" ]
     do
         echo -e "${GREEN}Waiting for 200 response from openshift api ${HOST}.${NC}"
