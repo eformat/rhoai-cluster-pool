@@ -76,7 +76,7 @@ app_of_apps() {
 
     echo "🌴 Running app_of_apps..."
 
-    oc apply -f gitops/app-of-apps/${ENVIRONMENT}-app-of-apps.yaml
+    oc apply -f app-of-apps/${ENVIRONMENT}-app-of-apps.yaml
 
     echo "🌴 app_of_apps ran OK"
 }
