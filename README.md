@@ -62,3 +62,16 @@ AWS Quota (needed for deploying spokes)
 Troubleshooting
 
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
+
+To destroy your HUB cluster:
+
+```bash
+cd /tmp/ansible.xxx
+openshift-install destroy cluster --dir=cluster
+```
+
+Keep a copy of your `/tmp/ansible.xxx` folder for future OpenShift cluster uninstalls e.g.
+
+```bash
+mv /tmp/ansible.xxx ~/sno-roadshow
+```
