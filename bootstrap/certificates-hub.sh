@@ -18,6 +18,7 @@ get_hosted_zone() {
     query='HostedZones[?Name==`'${BASE_DOMAIN}.'`]|[].Id'
     export HOSTED_ZONE=$(aws route53 list-hosted-zones --query $query | jq .[])
     # policy copies this to spoke
+    oc delete secret generic route53-hostedzone -n openshift-config 2>&1>/dev/null
     oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-config
     if [ "$?" != 0 ]; then
         echo -e "🕱${RED}Failed - to create route53-hostedzone secret ${NC}"
