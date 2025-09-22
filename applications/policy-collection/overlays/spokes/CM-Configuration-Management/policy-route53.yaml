@@ -29,7 +29,7 @@ spec:
                   namespace: openshift-config
                 type: Opaque
                 data:
-                  hostedzone: '{{hub fromSecret "" "route53-hostedzone" "hostedzone" hub}}'
+                  hostedzone: '{{hub fromSecret "openshift-config" "route53-hostedzone" "hostedzone" hub}}'
           remediationAction: inform
           severity: low
   remediationAction: enforce
