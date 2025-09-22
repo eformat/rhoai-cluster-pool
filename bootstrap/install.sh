@@ -54,6 +54,12 @@ wait_cluster_settle() {
 create_aws_secrets() {
     echo "🌴 Running create_aws_secrets..."
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n hive apply -f-
+
+    if [ "${PIPESTATUS[2]}" != 0 ]; then
+        echo -e "🚨${RED}Failed - to create_aws_secrets ?${NC}"
+        exit 1
+    fi
+
     echo "🌴 create_aws_secrets ran OK"
 }
 
@@ -65,6 +71,11 @@ configure_hive() {
     --set-json globalPullSecret="${PULL_SECRET}" \
     --set installConfig="$(cat applications/hive/roadshow-install-config.yaml)" \
     --set sshKey="$(cat ~/.ssh/id_rsa)" | oc apply -f-
+
+    if [ "${PIPESTATUS[1]}" != 0 ]; then
+        echo -e "🚨${RED}Failed - to configure_hive ?${NC}"
+        exit 1
+    fi
 
     echo "🌴 configure_hive ran OK"
 }
