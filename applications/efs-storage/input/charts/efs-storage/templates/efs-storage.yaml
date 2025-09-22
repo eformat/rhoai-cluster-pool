@@ -45,6 +45,8 @@ spec:
           mountPath: /tmp/efs-storage
         - mountPath: /tmp
           name: cert-tmp
+        - name: aws-creds
+          mountPath: /tmp/secrets
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         imagePullPolicy: Always
@@ -53,6 +55,10 @@ spec:
       securityContext: {}
       restartPolicy: OnFailure
       volumes:
+      - name: aws-creds
+        secret:
+          secretName: aws-creds
+          defaultMode: 420
       - name: efs-storage
         configMap:
           items:
