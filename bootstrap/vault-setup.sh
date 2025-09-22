@@ -8,7 +8,9 @@ readonly NC='\033[0m' # No Color
 
 export HOME=/tmp
 
-ANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)
+if [ -z "${ANSIBLE_VAULT_SECRET}" ]
+    ANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)
+fi
 if [ -z "${ANSIBLE_VAULT_SECRET}" ]; then
     echo -e "🕱${RED}Failed - to get secret ANSIBLE_VAULT_SECRET ?${NC}"
     exit 1
