@@ -17,8 +17,8 @@ fi
 create_route53_secret() {
     local i=0
     # policy copies this to spoke
-    oc delete secret route53-hostedzone -n openshift-config 2>&1>/dev/null
-    oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-config
+    oc delete secret route53-hostedzone -n openshift-gitops 2>&1>/dev/null
+    oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-gitops
     until [ "$?" == 0 ]
     do
         echo -e "Wait for create_route53_secret to be ready."
@@ -28,7 +28,7 @@ create_route53_secret() {
             exit 1
         fi
         sleep 10
-        oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-config
+        oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-gitops
     done
 }
 
