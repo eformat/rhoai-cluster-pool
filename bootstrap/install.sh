@@ -81,7 +81,7 @@ configure_hive() {
     helm template hive applications/hive/charts/hive/ \
     --namespace=hive \
     --set-json globalPullSecret="${PULL_SECRET}" \
-    --set installConfig="$(cat applications/hive/roadshow-install-config.yaml)" \
+    --set installConfig="$(cat applications/hive/roadshow-install-config.yaml | envsubst)" \
     --set sshKey="$(cat ~/.ssh/id_rsa)" | oc apply -f-
 
     if [ "${PIPESTATUS[1]}" != 0 ]; then

@@ -3,7 +3,7 @@ imageSetRef: img4.19.11-x86-64-appsub  # openshift spoke cluster version
 region: us-east-2  # region
 runningCount: 0  # keep one cluster running rather than hibernate it
 size: 0  # number of spoke clusters
-baseDomain: sandbox5289.opentlc.com  # base domain
+baseDomain:
 installConfigSecretTemplateRef: roadshow-install-config-template  # ConfigMap for install-config
 globalPullSecret:
 installConfig:
