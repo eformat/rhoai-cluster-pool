@@ -1,8 +1,8 @@
 # ansible roles
 
-💊 Install the `rhoai-roadshow` using ansible. 💊
+💊 Install the `rhoai-roadshow` Hub using ansible. 💊
 
-This takes approx ~70-120 minutes to complete.
+This takes approx ~70-90 minutes to complete.
 
 ## Prerequsites
 
@@ -41,13 +41,13 @@ This takes approx ~70-120 minutes to complete.
 4. Clone the Codebase
 
     ```bash
-    git clone https://github.com/odh-labs/rhoai-roadshow-v2
+    git clone https://github.com/eformat/rhoai-cluster-pool.git
     ```
 
     and cd into it.
 
     ```bash
-    cd rhoai-roadshow-v2/src/ansible
+    cd rhoai-cluster-pool/bootstrap/ansible
     ```
 
 ## Install all in one go
@@ -72,29 +72,6 @@ output=json
 
 If using podman copy your ~/.ssh/id_rsa.pub and ~/tmp/pull-secret files into your container.
 
-### Scripted Environment Configuration Method:
-Use the `setup-env.sh` script to create the environment configuration file (`env.txt`).
-
-```bash
-./setup-env.sh
-```
-
-Review the environment variables iand AWS config are correct:
-
-```bash
-cat env.txt
-
-cat ~/.aws/credentials
-
-cat ~/.aws/config
-```
-
-Define the environment variables:
-
-```bash
-source env.txt
-```
-
 ### Manual Environment Configuration Method
 Export in your environment.
 
@@ -105,12 +82,14 @@ export AWS_DEFAULT_ZONES=["us-east-2a"]      # change this to suit
 export AWS_ACCESS_KEY_ID=...      # change this (available from the lab instructions page in demo redhat com)
 export AWS_SECRET_ACCESS_KEY=...  # change this (available from the lab instructions page in demo redhat com)
 export CLUSTER_NAME=sno           # can be anything, but leave as sno unless you need to change it
-export BASE_DOMAIN=sandbox3000.opentlc.com    # (available from the lab instructions page in demo redhat com)
-export PULL_SECRET=~/tmp/pull-secret          # NOTE THIS IS A FILE - download your pull secret here https://console.redhat.com/openshift/downloads#tool-pull-secret
-export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)       # NOTE THIS IS A FILE
-export INSTANCE_TYPE=g6.8xlarge   # 24GB L4 Nvidia, 32 vCPUs, 128 GiB of memory and 25 Gibps of bandwidth ~$2 per hour
-export ROOT_VOLUME_SIZE=400       # can be anything, but leave as is unless you need to change it
+export BASE_DOMAIN=sandbox3000.opentlc.com     # (available from the lab instructions page in demo redhat com)
+export PULL_SECRET=~/tmp/pull-secret           # NOTE THIS IS A FILE - download your pull secret here https://console.redhat.com/openshift/downloads#tool-pull-secret
+export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)        # NOTE THIS IS A FILE
+export SSH_PUBLIC_KEY=$(cat ~/.ssh/id_rsa.pub) # NOTE THIS IS A FILE
+export INSTANCE_TYPE=m6i.8xlarge  # hub instance - 32 vCPUs, 128 GiB of memory - can use smaller for less spokes m6i.4xlarge
+export ROOT_VOLUME_SIZE=300       # can be anything, but leave as is unless you need to change it
 export OPENSHIFT_VERSION=4.19.11  # change this we will keep this working with the latest GA version
+export SKIP_SPOT=true             # don't use spot aws instance, use on-demand
 export ADMIN_PASSWORD=password    # change this for your admin user
 export EMAIL=your@email.com       # change this for lets encrypt certs admin email
 export ANSIBLE_VAULT_SECRET=..    # change this to the ansible secret for vault-sno (available from the lab instructions page in demo redhat com)
