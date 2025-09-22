@@ -1,6 +1,6 @@
 # rhoai-cluster-pool
 
-Uses Hive ClusterPool's from a HUB cluster to provision roadshow SPOKE clusters.
+Uses Hive ClusterPool's from a HUB cluster to provision [Roadshow](https://odh-labs.github.io/rhoai-roadshow-v2/#/) SPOKE clusters.
 
 ```mermaid
 graph LR
