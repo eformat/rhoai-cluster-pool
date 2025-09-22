@@ -2,68 +2,20 @@
 
 Uses Hive ClusterPool's from a HUB cluster to provision roadshow SPOKE clusters.
 
-## Bootstrap Hub
-
-HUB SNO install
-
-```bash
-export AWS_PROFILE=sno-test
-export AWS_DEFAULT_REGION=us-east-2
-export AWS_DEFAULT_ZONES=["us-east-2b"]
-export CLUSTER_NAME=sno
-export BASE_DOMAIN=sandbox.opentlc.com
-export PULL_SECRET=$(cat ~/tmp/pull-secret-rhpds)
-export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
-export INSTANCE_TYPE=m6i.8xlarge
-export ROOT_VOLUME_SIZE=300
-export OPENSHIFT_VERSION=4.19.11
-export SKIP_SPOT=true
-
-mkdir -p ~/tmp/sno-${AWS_PROFILE} && cd ~/tmp/sno-${AWS_PROFILE}
-curl -Ls https://raw.githubusercontent.com/eformat/sno-for-100/main/sno-for-100.sh | bash -s -- -d
+```mermaid
+graph LR
+    Hub[Hub Cluster] --> Spoke1[Spoke Cluster 1]
+    Hub --> Spoke2[Spoke Cluster 2]
+    Hub --> Spoke3[Spoke Cluster 3]
 ```
 
-Installs ArgoCD and ACM
+## Bootstrap a Hub Cluster
+
+- [Ansible Installer](ansible/README.md)
 
 ```bash
-kustomize build --enable-helm bootstrap | oc apply -f-
-```
-
-Create CR's
-
-```bash
-oc apply -f bootstrap/setup-cr.yaml
-```
-
-We keep Auth, PKI, Storage separate for now as these are Infra specific.
-
-Create htpasswd admin user
-
-```bash
-./bootstrap/users.sh
-```
-
-Install LE Certs
-
-```bash
-./bootstrap/certificates-hub.sh
-```
-
-Apps
-
-```bash
-oc apply -f app-of-apps/hub-app-of-apps.yaml
-```
-
-Setup Hive
-
-- [HIVE_SETUP](HIVE_SETUP.md)
-
-Console Links
-
-```bash
-export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
-cat bootstrap/console-links-hub.yaml | envsubst | oc apply -f-
+cd bootstrap/ansible
+ansible-playbook -i hosts rhoai-roadshow.yaml
 ```
 
 Claim a spoke cluster
@@ -93,3 +45,11 @@ oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=0
 # scale to one to get standby cluster
 oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=1
 ```
+
+Setup Hive (manual)
+
+- [Hive Setup](HIVE_SETUP.md)
+
+AWS Quota (needed for deploying spokes)
+
+- [AWS Quota](AWS_QUOTAS.md)
