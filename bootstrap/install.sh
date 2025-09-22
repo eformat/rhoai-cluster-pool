@@ -114,7 +114,7 @@ all() {
     wait_cluster_settle
     app_of_apps
     wait_for_project hive
-    create_aws_secrets
+    create_aws_secrets_hive
     configure_hive
     wait_for_project cluster-pools
     create_aws_secrets_cluster_pools
