@@ -24,7 +24,7 @@ cd bootstrap/ansible
 ansible-playbook -i hosts rhoai-roadshow.yaml
 ```
 
-Claim a spoke cluster
+Claim a spoke cluster (also a button in ACM UI > ClusterPools for this)
 
 ```bash
 cat <<EOF | oc apply -f -
@@ -42,7 +42,7 @@ spec:
 EOF
 ```
 
-Scale the ClusterPool
+Scale the ClusterPool (also a selector in ACM UI > ClusterPools for this)
 
 ```bash
 # now scale pool to zero - else we get another standby spinning up
@@ -52,11 +52,11 @@ oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=0
 oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=1
 ```
 
-Setup Hive (manual)
+Setup Hive (manual steps for info only)
 
 - [Hive Setup](HIVE_SETUP.md)
 
-AWS Quota (needed for deploying spokes)
+AWS Quota (needed for deploying spoke clusters)
 
 - [AWS Quota](AWS_QUOTAS.md)
 
