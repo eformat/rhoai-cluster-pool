@@ -9,7 +9,7 @@ graph LR
     Hub --> Spoke3[Spoke Cluster 3]
 ```
 
-SPOKE clusters auto-provision from the HUB. All you should need to do is scale the ClusterPool and wait.
+SPOKE clusters auto-provision from the HUB. All you should need to do is scale the ClusterPool and wait for install + setup.
 
 ## Bootstrap a Hub Cluster
 
