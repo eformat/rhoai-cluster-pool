@@ -55,24 +55,12 @@ wait_cluster_settle() {
 create_aws_secrets_hive() {
     echo "🌴 Running create_aws_secrets..."
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n hive apply -f-
-
-    if [ "${PIPESTATUS[2]}" != 0 ]; then
-        echo -e "🚨${RED}Failed - to create_aws_secrets ?${NC}"
-        exit 1
-    fi
-
     echo "🌴 create_aws_secrets ran OK"
 }
 
 create_aws_secrets_cluster_pools() {
     echo "🌴 Running create_aws_secrets..."
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: cluster-pools/' | oc -n cluster-pools apply -f-
-
-    if [ "${PIPESTATUS[2]}" != 0 ]; then
-        echo -e "🚨${RED}Failed - to create_aws_secrets ?${NC}"
-        exit 1
-    fi
-
     echo "🌴 create_aws_secrets ran OK"
 }
 
