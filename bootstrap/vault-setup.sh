@@ -8,7 +8,7 @@ readonly NC='\033[0m' # No Color
 
 export HOME=/tmp
 
-if [ -z "${ANSIBLE_VAULT_SECRET}" ]
+if [ -z "${ANSIBLE_VAULT_SECRET}" ]; then
     ANSIBLE_VAULT_SECRET=$(cat /tmp/secrets/ANSIBLE_VAULT_SECRET)
 fi
 if [ -z "${ANSIBLE_VAULT_SECRET}" ]; then
