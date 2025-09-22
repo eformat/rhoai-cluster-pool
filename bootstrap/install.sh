@@ -81,6 +81,7 @@ configure_hive() {
 
     helm template hive applications/hive/charts/hive/ \
     --namespace=hive \
+    --set baseDomain="${BASE_DOMAIN}" \
     --set-json globalPullSecret="${PULL_SECRET}" \
     --set installConfig="$(cat applications/hive/roadshow-install-config.yaml | envsubst)" \
     --set sshKey="$(cat ~/.ssh/id_rsa)" | oc apply -f-
