@@ -9,7 +9,6 @@ readonly RUN_DIR=$(pwd)
 
 ENVIRONMENT=${ENVIRONMENT:-hub}
 DRYRUN=${DRYRUN:-}
-export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 export SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-$(cat ~/.ssh/id_rsa.pub)}
 
 wait_for_openshift_api() {
