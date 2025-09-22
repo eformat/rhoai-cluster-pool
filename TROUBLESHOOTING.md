@@ -25,7 +25,7 @@ The SPOKE cluster joins the HUB (is managed) once you `Claim` it from the ACM UI
 
 Once Claimed, Configuration Policy is pulled and applied on each SPOKE.
 
-There are several jobs that should run to Completion on each SPOKE Cluster - they all run in the `openshift-config` namespace. Check these FIRST for any complete failures (they are configured with large `backOffLimit`s and are expected to be eventually complete and consistent).
+There are several jobs that should run to Completion on each SPOKE Cluster - they all run in the `openshift-config` namespace. Check these FIRST for any complete failures (they are configured with large `backOffLimit`s and are expected to be eventually complete and become consistent).
 
 ```bash
 $ oc get jobs -n openshift-config
