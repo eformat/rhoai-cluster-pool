@@ -13,7 +13,7 @@ SPOKE clusters auto-provision from the HUB. All you should need to do is scale t
 
 ## Bootstrap a Hub Cluster
 
-- [Ansible Installer](ansible/README.md)
+- [Ansible Installer](bootstrap/ansible/README.md)
 
 ```bash
 cd bootstrap/ansible
