@@ -64,7 +64,7 @@ configure_hive() {
     --namespace=hive \
     --set-json globalPullSecret="${PULL_SECRET}" \
     --set installConfig="$(cat applications/hive/roadshow-install-config.yaml)" \
-    --set sshKey="$(cat ~/.ssh/id_rsa)"
+    --set sshKey="$(cat ~/.ssh/id_rsa)" | oc apply -f-
 
     echo "🌴 configure_hive ran OK"
 }
