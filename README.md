@@ -58,3 +58,7 @@ Setup Hive (manual)
 AWS Quota (needed for deploying spokes)
 
 - [AWS Quota](AWS_QUOTAS.md)
+
+Troubleshooting
+
+- [Troubleshooting Guide](TROUBLESHOOTING.md)
