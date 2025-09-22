@@ -8,7 +8,13 @@ readonly RUN_DIR=$(pwd)
 
 ACME_STAGING=${ACME_STAGING:-}
 ACME_SERVER=https://acme-v02.api.letsencrypt.org/directory
-HOSTED_ZONE=${HOSTED_ZONE:-}
+
+HOSTED_ZONE=$(cat /tmp/secrets/hostedzone)
+if [ -z "${HOSTED_ZONE}" ]; then
+    echo -e "🕱${RED}Failed - to get secret HOSTED_ZONE ?${NC}"
+    exit 1
+fi
+
 AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
 
 if [ ! -z "${ACME_STAGING}" ]; then
