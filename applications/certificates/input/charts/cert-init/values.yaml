@@ -1,4 +1,3 @@
-hosted_zone: Z2BBY0O4PIUKAT
 aws_default_region: us-east-2
 email: mhepburn@redhat.com
 acme_staging: # set this to true to use acme-staging-v02.api.letsencrypt.org

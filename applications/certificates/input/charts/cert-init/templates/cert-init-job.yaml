@@ -26,7 +26,10 @@ spec:
         - name: EMAIL
           value: {{ .Values.email }}
         - name: HOSTED_ZONE
-          value: {{ .Values.hosted_zone }}
+          valueFrom:
+            secretKeyRef:
+              name: route53-hostedzone
+              key: hostedzone
         - name: AWS_DEFAULT_REGION
           value: {{ .Values.aws_default_region }}
         {{- if .Values.acme_staging }}
