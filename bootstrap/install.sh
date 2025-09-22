@@ -51,9 +51,21 @@ wait_cluster_settle() {
     echo "🌴 wait_cluster_settle ran OK"
 }
 
-create_aws_secrets() {
+create_aws_secrets_hive() {
     echo "🌴 Running create_aws_secrets..."
     oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n hive apply -f-
+
+    if [ "${PIPESTATUS[2]}" != 0 ]; then
+        echo -e "🚨${RED}Failed - to create_aws_secrets ?${NC}"
+        exit 1
+    fi
+
+    echo "🌴 create_aws_secrets ran OK"
+}
+
+create_aws_secrets_cluster_pools() {
+    echo "🌴 Running create_aws_secrets..."
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: cluster-pools/' | oc -n cluster-pools apply -f-
 
     if [ "${PIPESTATUS[2]}" != 0 ]; then
         echo -e "🚨${RED}Failed - to create_aws_secrets ?${NC}"
@@ -87,9 +99,7 @@ app_of_apps() {
     fi
 
     echo "🌴 Running app_of_apps..."
-
     oc apply -f app-of-apps/${ENVIRONMENT}-app-of-apps.yaml
-
     echo "🌴 app_of_apps ran OK"
 }
 
@@ -104,6 +114,8 @@ all() {
     wait_for_project hive
     create_aws_secrets
     configure_hive
+    wait_for_project cluster-pools
+    create_aws_secrets_cluster_pools
 }
 
 usage() {
