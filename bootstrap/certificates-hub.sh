@@ -14,16 +14,28 @@ if [ ! -z "${ACME_STAGING}" ]; then
     ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
 fi
 
-get_hosted_zone() {
-    query='HostedZones[?Name==`'${BASE_DOMAIN}.'`]|[].Id'
-    export HOSTED_ZONE=$(aws route53 list-hosted-zones --query $query | jq .[])
+create_route53_secret() {
+    local i=0
     # policy copies this to spoke
     oc delete secret route53-hostedzone -n openshift-config 2>&1>/dev/null
     oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-config
-    if [ "$?" != 0 ]; then
-        echo -e "🕱${RED}Failed - to create route53-hostedzone secret ${NC}"
-        exit 1
-    fi
+    until [ "$?" == 0 ]
+    do
+        echo -e "Wait for create_route53_secret to be ready."
+        ((i=i+1))
+        if [ $i -gt 100 ]; then
+            echo -e "🚨 Failed - create_route53_secret never ready?."
+            exit 1
+        fi
+        sleep 10
+        oc create secret generic route53-hostedzone --from-literal=hostedzone=${HOSTED_ZONE} -n openshift-config
+    done
+}
+
+get_hosted_zone() {
+    query='HostedZones[?Name==`'${BASE_DOMAIN}.'`]|[].Id'
+    export HOSTED_ZONE=$(aws route53 list-hosted-zones --query $query | jq .[])
+    [ -z "$HOSTED_ZONE" ] && echo "🕱 Error: HOSTED_ZONE not set" && exit 1
     echo -e "${GREEN} Hosted Zone ${BASE_DOMAIN}. set to ${HOSTED_ZONE}${NC}"
 }
 
@@ -346,6 +358,7 @@ all() {
 
     create_aws_secrets
     get_hosted_zone
+    create_route53_secret
     create_caa_route53
 
     update_cert_manager
