@@ -53,7 +53,7 @@ wait_cluster_settle() {
 
 create_aws_secrets() {
     echo "🌴 Running create_aws_secrets..."
-    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n openshift-config apply -f-
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: hive/' | oc -n hive apply -f-
     echo "🌴 create_aws_secrets ran OK"
 }
 
