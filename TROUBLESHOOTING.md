@@ -1,5 +1,13 @@
 # troubleshooting
 
+## HUB
+
+Single node Vault is initialized using a Job in the vault namespace `vault-init`. Vault unseal and root token are stored in secrets in the `vault` namespace.
+
+If any of the two configuration ansible roles fail - they are re-runnable - check the [bootstrap/ansible/README.md](bootstrap/ansible/README.md) for details
+
+## SPOKE
+
 All SPOKE clusters are installed using GitOps / ArgoCD / Policy as Code from the HUB Cluster.
 
 You can check the Hive Controller as first point of call for any invalid SPOKE config (i.e. not spoke clusters spin up once you scale the ClusterPool)
