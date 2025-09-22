@@ -14,7 +14,7 @@ metadata:
   namespace: openshift-config
 spec:
   backoffLimit: 20
-  activeDeadlineSeconds: 1200
+  activeDeadlineSeconds: 1800
   template:
     metadata:
       name: cert-init
