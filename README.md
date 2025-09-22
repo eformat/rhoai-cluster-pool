@@ -64,6 +64,10 @@ Troubleshooting
 
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 
+OpenShift 4 needs some extra steps if you intend to shutdown the cluster prior to the 24hr cert rotation (post install)
+
+- [Early Shutdown](EARLY_SHUTDOWN.md)
+
 To destroy your HUB cluster:
 
 ```bash
