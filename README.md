@@ -42,6 +42,8 @@ spec:
 EOF
 ```
 
+Once Claimed - a spoke cluster will take approx ~20-30 min to join the HUB and configure itself for the Roadshow.
+
 Scale the ClusterPool (also a selector in ACM UI > ClusterPools for this)
 
 ```bash
