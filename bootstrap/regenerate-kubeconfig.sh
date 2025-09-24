@@ -43,12 +43,12 @@ oc config set-context system:admin --cluster=$(oc config view -o jsonpath='{.clu
 --namespace=default --user=system:admin --kubeconfig=${tmp_file}
 
 echo "extract certificate authority"
-oc -n openshift-authentication rsh `oc get pods -n openshift-authentication -o name | head -1` \
-cat /run/secrets/kubernetes.io/serviceaccount/ca.crt > ingress-ca.crt
+BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+echo "Q" | openssl s_client -showcerts -connect api.${BASE_DOMAIN}:6443 2>&1 | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}' > api-ca.crt
 
 echo "set certificate authority data"
 oc config set-cluster $(oc config view -o jsonpath='{.clusters[0].name}') \
---server=$(oc config view -o jsonpath='{.clusters[0].cluster.server}') --certificate-authority=ingress-ca.crt --kubeconfig=${tmp_file} --embed-certs
+--server=$(oc config view -o jsonpath='{.clusters[0].cluster.server}') --certificate-authority=api-ca.crt --kubeconfig=${tmp_file} --embed-certs
 
 echo "set current context to system:admin"
 oc config use-context system:admin --kubeconfig=${tmp_file}
