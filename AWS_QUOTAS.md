@@ -13,4 +13,5 @@ Per Roadshow Spoke Cluster (n)
 ```bash
 EC2: EC2-VPC Elastic IPs => (default: 5) need x3 per cluster           = n x 3
 VPC: VPCs per Region     => (default: 5) each cluster has its own vpc  = n
+VPC: NAT Gateways per AZ => (default: 5) need x3 per cluster           = n x 3
 ```
