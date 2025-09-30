@@ -49,8 +49,10 @@ spec:
             ports:
               - containerPort: 19530
                 protocol: TCP
+                name: grpc
               - containerPort: 9091
                 protocol: TCP
+                name: http
           volumeMounts:
             - name: milvus-data
               mountPath: /var/lib/milvus
