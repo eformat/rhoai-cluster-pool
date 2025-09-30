@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: milvus-standalone
+  name: milvus-standalone
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: milvus-standalone
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: milvus-standalone
+    spec:
+      containers:
+        - name: milvus-standalone
+          args: ["milvus", "run", "standalone"]
+          env:
+            - name: DEPLOY_MODE # Absolutely necessary 
+              value: standalone
+            - name: ETCD_ENDPOINTS # Points to our etcd service
+              value: etcd-service:2379
+            - name: MINIO_ADDRESS # Possible to use minio but having issues
+              value: ""
+            - name: COMMON_STORAGETYPE # For PVC
+              value: local
+            - name: MILVUS_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: milvus-secret
+                  key: root-password
+          image: milvusdb/milvus:v2.6.0
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:9091/healthz
+            failureThreshold: 5
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 20
+            name: milvus-standalone
+            ports:
+              - containerPort: 19530
+                protocol: TCP
+              - containerPort: 9091
+                protocol: TCP
+          volumeMounts:
+            - name: milvus-data
+              mountPath: /var/lib/milvus
+      restartPolicy: Always
+      volumes:
+        - name: milvus-data
+          persistentVolumeClaim:
+            claimName: milvus-pvc

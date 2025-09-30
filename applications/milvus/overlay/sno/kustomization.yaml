@@ -1,5 +1,5 @@
 resources:
-  - ../../base
+  - ../../base-embed
   - namespace.yaml
 
 namespace: milvus
