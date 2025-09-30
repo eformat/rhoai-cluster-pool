@@ -34,7 +34,7 @@ spec:
                 secretKeyRef:
                   name: milvus-secret
                   key: root-password
-          image: milvusdb/milvus:v2.6.0
+          image: docker.io/milvusdb/milvus:v2.6.0
           livenessProbe:
             exec:
               command:
