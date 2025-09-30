@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: milvus
-          image: docker.io/milvusdb/milvus:v2.6.0
+          image: docker.io/milvusdb/milvus:v2.5.12
           command: ["milvus"]
           args: ["run", "standalone"]
           ports:
