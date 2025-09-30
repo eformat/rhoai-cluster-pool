@@ -39,20 +39,13 @@ spec:
             exec:
               command:
                 - curl
-                - -f
-                - http://localhost:9091/healthz
-            failureThreshold: 5
+                - '-f'
+                - 'http://localhost:9091/healthz'
             initialDelaySeconds: 90
-            periodSeconds: 30
             timeoutSeconds: 20
-            name: milvus-standalone
-            ports:
-              - containerPort: 19530
-                protocol: TCP
-                name: grpc
-              - containerPort: 9091
-                protocol: TCP
-                name: http
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
           volumeMounts:
             - name: milvus-data
               mountPath: /var/lib/milvus
