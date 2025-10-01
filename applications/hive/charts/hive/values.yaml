@@ -1,5 +1,5 @@
 clusterPoolName: roadshow  # name of this cluster pool
-imageSetRef: img4.19.11-x86-64-appsub  # openshift spoke cluster version
+imageSetRef: img4.19.12-x86-64-appsub  # openshift spoke cluster version
 region: us-east-2  # region
 runningCount: 0  # keep one cluster running rather than hibernate it
 size: 0  # number of spoke clusters
