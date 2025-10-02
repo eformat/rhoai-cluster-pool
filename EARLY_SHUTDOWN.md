@@ -15,5 +15,6 @@ You will need to reboot all cluster nodes when running the script (use aws conso
 Run the script.
 
 ```bash
-./bootstrap/prepare-early-shutdown-spoke.sh
+cd bootstrap
+./prepare-early-shutdown-spoke.sh
 ```
