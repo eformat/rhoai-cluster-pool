@@ -1,10 +1,31 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubelet-bootstrap-cred-manager
+  namespace: openshift-machine-config-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubelet-bootstrap-cred-manager
+  namespace: openshift-machine-config-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:openshift:scc:restricted
+subjects:
+- kind: ServiceAccount
+  name: kubelet-bootstrap-cred-manager
+  namespace: openshift-machine-config-operator
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kubelet-bootstrap-cred-manager
   namespace: openshift-machine-config-operator
   labels:
-    k8s-app: kubelet-bootrap-cred-manager
+    k8s-app: kubelet-bootstrap-cred-manager
 spec:
   replicas: 1
   selector:
@@ -15,6 +36,8 @@ spec:
       labels:
         k8s-app: kubelet-bootstrap-cred-manager
     spec:
+      serviceAccount: kubelet-bootstrap-cred-manager
+      serviceAccountName: kubelet-bootstrap-cred-manager
       containers:
       - name: kubelet-bootstrap-cred-manager
         image: quay.io/openshift/origin-cli:latest
@@ -78,8 +101,10 @@ spec:
               sleep 60
             done
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
           runAsUser: 0
+          runAsGroup: 0
         volumeMounts:
           - mountPath: /etc/kubernetes/
             name: kubelet-dir
@@ -88,7 +113,7 @@ spec:
       priorityClassName: "system-cluster-critical"
       restartPolicy: Always
       securityContext:
-        runAsUser: 0
+        fsGroup: 0
       tolerations:
       - key: "node-role.kubernetes.io/master"
         operator: "Exists"
