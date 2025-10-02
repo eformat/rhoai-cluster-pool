@@ -62,7 +62,7 @@ function renew_certificates() {
 }
 
 
-retry ${OC} apply -f kubelet-bootstrap-cred-manager-ds.yaml
+#retry ${OC} apply -f kubelet-bootstrap-cred-manager-ds.yaml # permissions issues
 retry ${OC} delete secrets/csr-signer-signer secrets/csr-signer -n openshift-kube-controller-manager-operator
 retry ${OC} adm wait-for-stable-cluster --minimum-stable-period=2m0s
 renew_certificates
