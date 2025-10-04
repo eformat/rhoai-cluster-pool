@@ -82,7 +82,7 @@ spec:
             - {key: name, operator: NotIn, values: ["local-cluster"]}
         celSelector:
           celExpressions:
-            - managedCluster.metadata.name.matches('^openshift-roadshow-*$')
+            - managedCluster.metadata.name.matches('openshift-roadshow-*')
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
