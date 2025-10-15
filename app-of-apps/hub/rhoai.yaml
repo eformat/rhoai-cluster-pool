@@ -30,7 +30,7 @@ spec:
         path: applications/rhoai/overlay
         plugin:
           name: argocd-novault-plugin-kustomize
-        targetRevision: main
+        targetRevision: rhoai-3.0
       syncPolicy:
         automated:
           prune: false
