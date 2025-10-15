@@ -6,7 +6,7 @@ operators:
       name: redhat-ods-operator
       create: true
       global: true
-    channels: [fast] # v0,1
+    channels: fast-3.0 # [fast] # v0,1
     version: "2.19.0" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
