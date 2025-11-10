@@ -78,6 +78,6 @@ spec:
           exporters:
             - debug
             - otlphttp/dev
-      telemetry:
-        metrics:
-          address: 0.0.0.0:8888
+#      telemetry:
+#        metrics:
+#          address: 0.0.0.0:8888
