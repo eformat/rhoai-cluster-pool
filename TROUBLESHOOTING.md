@@ -47,3 +47,17 @@ rhoai-scale     Complete   1/1           10m        13m
 ```
 
 Then check GitOps / ArgoCD / Policy as Code from the HUB Cluster for any obvious errors.
+
+## Secrets
+
+The API secrets are hydrated into Vault from the encrypted file `secrets/vault-roadshow`.
+
+The API Tokens in that file have all been rotated and are likely not valid anymore. You can update the values in the Vault UI, hard-sync the apps in ArgoCD to refresh them, restart LLS pods.
+
+Vault UI `kv/data`
+
+```yaml
+ocp/sno/openshift-gitops/llama-stack
+ocp/sno/openshift-gitops/llama-stack-playground
+ocp/sno/openshift-gitops/models
+```
