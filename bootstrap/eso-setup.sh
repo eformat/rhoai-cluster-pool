@@ -29,6 +29,7 @@ patch_proxy() {
 
     oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=/tmp/vault-ca.crt
     oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"custom-ca"}}}'
+    rm -f /tmp/vault-ca.crt
     echo "🌴 Patch Proxy Done"
 }
 patch_proxy
@@ -97,6 +98,7 @@ init () {
         sleep 10
         cat /tmp/external-secrets-community.yaml | envsubst | oc apply -f-
     done
+    rm -f /tmp/external-secrets-community.yaml
     echo "🌴 Init ESO Done"
 }
 init
@@ -124,6 +126,7 @@ apply_cr() {
         sleep 10
         cat /tmp/external-secrets-cr.yaml | envsubst | oc apply -f-
     done
+    rm -f /tmp/external-secrets-cr.yaml
     echo "🌴 Apply ESO CR Done"
 }
 apply_cr
