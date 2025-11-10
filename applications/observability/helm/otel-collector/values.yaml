@@ -160,7 +160,12 @@ collector:
             - otlphttp/dev
       telemetry:
         metrics:
-          address: 0.0.0.0:8888
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
 
 # Tempo configuration for exporters
 tempo:
@@ -227,9 +232,14 @@ sidecars:
               - otlphttp
             receivers:
               - otlp
-        telemetry:
-          metrics:
-            address: '0.0.0.0:8888'
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
     
     # Target allocator configuration
     targetAllocator:
@@ -295,9 +305,14 @@ sidecars:
             receivers:
               - prometheus
               - otlp
-        telemetry:
-          metrics:
-            address: '0.0.0.0:8888'
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
     
     # Target allocator configuration
     targetAllocator:
