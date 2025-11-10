@@ -20,7 +20,14 @@ export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 
 patch_proxy() {
     echo "🌴 Patch Proxy..."
-    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=vault-ca.crt
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/ca-bundle.crt
+    if [ ! -f "/tmp/ca-bundle.crt" ]; then
+        echo -e "🕱${RED}Failed - to get ca-bundle.crt file ?${NC}" 
+        exit 1
+    fi
+
+    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=/tmp/ca-bundle.crt
     oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"custom-ca"}}}'
     echo "🌴 Patch Proxy Done"
 }
