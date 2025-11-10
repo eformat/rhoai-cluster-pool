@@ -54,6 +54,9 @@ fi
 apply_helm() {
     echo "🌴 Apply ESO Helm..."
 
+    helm repo add external-secrets https://charts.external-secrets.io
+    helm repo update external-secrets
+
     wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-values.yaml
     if [ ! -f "/tmp/external-secrets-values.yaml" ]; then
         echo -e "🕱${RED}Failed - to get external-secrets-values file ?${NC}"
