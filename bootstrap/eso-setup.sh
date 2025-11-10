@@ -64,8 +64,15 @@ fi
 init () {
     echo "🌴 Init ESO..."
     local i=0
-    oc apply -f external-secrets-community.yaml 2>&1 | tee /tmp/eso-init-${ENVIRONMENT}
-    until [ "${PIPESTATUS[0]}" == 0 ]
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-community.yaml
+    if [ ! -f "/tmp/external-secrets-community.yaml" ]; then
+        echo -e "🕱${RED}Failed - to get external-secrets-community file ?${NC}"
+        exit 1
+    fi
+
+    cat /tmp/external-secrets-community.yaml | envsubst | oc apply -f-
+    until [ "${PIPESTATUS[2]}" == 0 ]
     do
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
         ((i=i+1))
@@ -74,7 +81,7 @@ init () {
             exit 1
         fi
         sleep 10
-        oc apply -f external-secrets-community.yaml 2>&1 | tee /tmp/eso-init-${ENVIRONMENT}
+        cat /tmp/external-secrets-community.yaml | envsubst | oc apply -f-
     done
     echo "🌴 Init ESO Done"
 }
@@ -84,8 +91,15 @@ wait_for_project external-secrets
 
 apply_cr() {
     echo "🌴 Apply ESO CR..."
-    oc apply -f external-secrets-cr.yaml 2>&1 | tee /tmp/eso-cr-${ENVIRONMENT}
-    until [ "${PIPESTATUS[0]}" == 0 ]
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-cr.yaml
+    if [ ! -f "/tmp/external-secrets-cr.yaml" ]; then
+        echo -e "🕱${RED}Failed - to get external-secrets-cr file ?${NC}"
+        exit 1
+    fi
+
+    cat /tmp/external-secrets-cr.yaml | envsubst | oc apply -f-
+    until [ "${PIPESTATUS[2]}" == 0 ]
     do
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
         ((i=i+1))
@@ -94,7 +108,7 @@ apply_cr() {
             exit 1
         fi
         sleep 10
-        oc apply -f external-secrets-cr.yaml 2>&1 | tee /tmp/eso-cr-${ENVIRONMENT}
+        cat /tmp/external-secrets-cr.yaml | envsubst | oc apply -f-
     done
     echo "🌴 Apply ESO CR Done"
 }
