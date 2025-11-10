@@ -34,24 +34,6 @@ patch_proxy() {
 }
 patch_proxy
 
-wait_for_project() {
-    local i=0
-    local project="$1"
-    STATUS=$(oc get project $project -o=go-template --template='{{ .status.phase }}')
-    until [ "$STATUS" == "Active" ]
-    do
-        echo -e "${GREEN}Waiting for project $project.${NC}"
-        sleep 5
-        ((i=i+1))
-        if [ $i -gt 300 ]; then
-            echo -e "🚨${RED}Failed waiting for project $project never Succeeded?.${NC}"
-            exit 1
-        fi
-        STATUS=$(oc get project $project -o=go-template --template='{{ .status.phase }}')
-    done
-    echo "🌴 wait_for_project $project ran OK"
-}
-
 check_done() {
     echo "🌴 Running check_done..."
     STATUS=$(oc -n external-secrets get $(oc get pods -n external-secrets -l app.kubernetes.io/name=external-secrets -o name) -o=jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
@@ -69,67 +51,28 @@ if check_done; then
     exit 0;
 fi
 
-init () {
-    echo "🌴 Init ESO..."
-    local i=0
+apply_helm() {
+    echo "🌴 Apply ESO Helm..."
 
-    oc apply -f "https://raw.githubusercontent.com/external-secrets/external-secrets/v1.0.0/deploy/crds/bundle.yaml" --server-side
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-values.yaml
+    if [ ! -f "/tmp/external-secrets-values.yaml" ]; then
+        echo -e "🕱${RED}Failed - to get external-secrets-values file ?${NC}"
+        exit 1
+    fi
+
+    helm upgrade --install \
+        external-secrets \
+        external-secrets/external-secrets \
+        -f /tmp/external-secrets-values.yaml \
+        -n external-secrets \
+        --set installCRDs=true
     if [ "$?" != 0 ]; then
-        echo -e "🕱${RED}Failed - to create external-secrets crds ${NC}"
+        echo -e "🕱${RED}Failed - to apply external-secrets helm chart ${NC}"
         exit 1
     fi
-    echo "🌴 Create external-secrets crds Done"
-
-    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-community.yaml
-    if [ ! -f "/tmp/external-secrets-community.yaml" ]; then
-        echo -e "🕱${RED}Failed - to get external-secrets-community file ?${NC}"
-        exit 1
-    fi
-
-    cat /tmp/external-secrets-community.yaml | envsubst | oc apply -f-
-    until [ "${PIPESTATUS[2]}" == 0 ]
-    do
-        echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
-        ((i=i+1))
-        if [ $i -gt 100 ]; then
-            echo -e "🕱${RED}Failed - eso init never ready?.${NC}"
-            exit 1
-        fi
-        sleep 10
-        cat /tmp/external-secrets-community.yaml | envsubst | oc apply -f-
-    done
-    rm -f /tmp/external-secrets-community.yaml
-    echo "🌴 Init ESO Done"
+    echo "🌴 Apply ESO Helm Done"
 }
-init
-
-wait_for_project external-secrets
-
-apply_cr() {
-    echo "🌴 Apply ESO CR..."
-
-    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-cr.yaml
-    if [ ! -f "/tmp/external-secrets-cr.yaml" ]; then
-        echo -e "🕱${RED}Failed - to get external-secrets-cr file ?${NC}"
-        exit 1
-    fi
-
-    cat /tmp/external-secrets-cr.yaml | envsubst | oc apply -f-
-    until [ "${PIPESTATUS[2]}" == 0 ]
-    do
-        echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}"
-        ((i=i+1))
-        if [ $i -gt 10 ]; then
-            echo -e "🕱${RED}Failed - eso cr never ready?.${NC}"
-            exit 1
-        fi
-        sleep 10
-        cat /tmp/external-secrets-cr.yaml | envsubst | oc apply -f-
-    done
-    rm -f /tmp/external-secrets-cr.yaml
-    echo "🌴 Apply ESO CR Done"
-}
-apply_cr
+apply_helm
 
 if check_done; then
     echo -e "\n🌻${GREEN}ESO setup OK.${NC}🌻\n"
