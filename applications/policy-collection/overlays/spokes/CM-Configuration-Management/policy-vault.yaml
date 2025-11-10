@@ -24,7 +24,6 @@ spec:
           policy.open-cluster-management.io/standards: NIST SP 800-53
         labels:
           requires-rolling-restart: none
-        name: vault-spokes
       templateFrom:
       - literal: |
           disabled: false
