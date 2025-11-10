@@ -72,6 +72,12 @@ vault_secret() {
     echo "💥 Install vault secret Done" | tee -a output.log
 }
 
+eso_setup() {
+    echo "💥 Install eso setup" | tee -a output.log
+    ./bootstrap/eso-setup.sh -e ${ENVIRONMENT} -d 2>&1 | tee -a output.log
+    echo "💥 Install eso setup Done" | tee -a output.log
+}
+
 # install apps
 echo "💥 Install apps" | tee -a output.log
 ./bootstrap/install.sh -e ${ENVIRONMENT} -d 2>&1 | tee -a output.log
@@ -81,3 +87,6 @@ console_links
 
 # vault secret hub
 vault_secret
+
+# eso setup
+eso_setup
