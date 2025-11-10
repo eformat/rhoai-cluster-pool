@@ -18,6 +18,14 @@ export CLUSTER_NAME=${CLUSTER_NAME:-sno}
 export CLUSTER_DOMAIN=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
 export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 
+patch_proxy() {
+    echo "🌴 Patch Proxy..."
+    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=vault-ca.crt
+    oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"custom-ca"}}}'
+    echo "🌴 Patch Proxy Done"
+}
+patch_proxy
+
 wait_for_project() {
     local i=0
     local project="$1"
@@ -54,7 +62,7 @@ if check_done; then
 fi
 
 init () {
-    echo "💥 Init ESO..."
+    echo "🌴 Init ESO..."
     local i=0
     oc apply -f external-secrets-community.yaml 2>&1 | tee /tmp/eso-init-${ENVIRONMENT}
     until [ "${PIPESTATUS[0]}" == 0 ]
@@ -68,14 +76,14 @@ init () {
         sleep 10
         oc apply -f external-secrets-community.yaml 2>&1 | tee /tmp/eso-init-${ENVIRONMENT}
     done
-    echo "💥 Init ESO Done"
+    echo "🌴 Init ESO Done"
 }
 init
 
 wait_for_project external-secrets
 
 apply_cr() {
-    echo "💥 Apply ESO CR..."
+    echo "🌴 Apply ESO CR..."
     oc apply -f external-secrets-cr.yaml 2>&1 | tee /tmp/eso-cr-${ENVIRONMENT}
     until [ "${PIPESTATUS[0]}" == 0 ]
     do
@@ -88,7 +96,9 @@ apply_cr() {
         sleep 10
         oc apply -f external-secrets-cr.yaml 2>&1 | tee /tmp/eso-cr-${ENVIRONMENT}
     done
+    echo "🌴 Apply ESO CR Done"
 }
+apply_cr
 
 if check_done; then
     echo -e "\n🌻${GREEN}ESO setup OK.${NC}🌻\n"
