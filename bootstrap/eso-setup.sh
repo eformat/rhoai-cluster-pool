@@ -21,13 +21,13 @@ export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 patch_proxy() {
     echo "🌴 Patch Proxy..."
 
-    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/ca-bundle.crt
-    if [ ! -f "/tmp/ca-bundle.crt" ]; then
-        echo -e "🕱${RED}Failed - to get ca-bundle.crt file ?${NC}" 
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/vault-ca.crt
+    if [ ! -f "/tmp/vault-ca.crt" ]; then
+        echo -e "🕱${RED}Failed - to get vault-ca.crt file ?${NC}" 
         exit 1
     fi
 
-    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=/tmp/ca-bundle.crt
+    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=/tmp/vault-ca.crt
     oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"custom-ca"}}}'
     echo "🌴 Patch Proxy Done"
 }
