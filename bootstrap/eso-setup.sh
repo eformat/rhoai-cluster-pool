@@ -72,6 +72,13 @@ init () {
     echo "🌴 Init ESO..."
     local i=0
 
+    oc apply -f "https://raw.githubusercontent.com/external-secrets/external-secrets/v1.0.0/deploy/crds/bundle.yaml" --server-side
+    if [ "$?" != 0 ]; then
+        echo -e "🕱${RED}Failed - to create external-secrets crds ${NC}"
+        exit 1
+    fi
+    echo "🌴 Create external-secrets crds Done"
+
     wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/external-secrets-community.yaml
     if [ ! -f "/tmp/external-secrets-community.yaml" ]; then
         echo -e "🕱${RED}Failed - to get external-secrets-community file ?${NC}"
