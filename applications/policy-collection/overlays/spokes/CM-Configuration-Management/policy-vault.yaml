@@ -1,43 +1,65 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: Policy
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
 metadata:
-  annotations:
-    avp.kubernetes.io/path: kv/data/ocp/sno/openshift-gitops/policies
-    policy.open-cluster-management.io/categories: AC Access Control
-    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
-    policy.open-cluster-management.io/standards: NIST SP 800-53
-  labels:
-    requires-rolling-restart: none
   name: vault-spokes
+  namespace: openshift-gitops
 spec:
-  disabled: false
-  policy-templates:
-    - objectDefinition:
-        apiVersion: policy.open-cluster-management.io/v1
-        kind: ConfigurationPolicy
-        metadata:
-          name: vault-spokes
-        spec:
-          object-templates:
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  labels:
-                    openshift.io/cluster-monitoring: "true"
-                  name: vault
-            - complianceType: musthave
-              objectDefinition:
-                kind: Secret
-                apiVersion: v1
-                stringData:
-                  ANSIBLE_VAULT_SECRET: <ANSIBLE_VAULT_SECRET>
-                metadata:
-                  name: vault-init
-                  namespace: vault
-                type: Opaque
-          remediationAction: inform
-          severity: low
-  remediationAction: enforce
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: vault-spokes
+    manifest:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: Policy  
+    template:
+      engineVersion: v2
+      mergePolicy: Merge
+      metadata:
+        annotations:
+          policy.open-cluster-management.io/categories: AC Access Control
+          policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+          policy.open-cluster-management.io/standards: NIST SP 800-53
+        labels:
+          requires-rolling-restart: none
+        name: vault-spokes
+      templateFrom:
+      - literal: |
+          disabled: false
+          policy-templates:
+          - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                name: vault-spokes
+              spec:
+                object-templates:
+                  - complianceType: musthave
+                    objectDefinition:
+                      apiVersion: v1
+                      kind: Namespace
+                      metadata:
+                        labels:
+                          openshift.io/cluster-monitoring: "true"
+                        name: vault
+                  - complianceType: musthave
+                    objectDefinition:
+                      kind: Secret
+                      apiVersion: v1
+                      stringData:
+                        ANSIBLE_VAULT_SECRET: "{{.ansibleVaultSecret}}"
+                      metadata:
+                        name: vault-init
+                        namespace: vault
+                      type: Opaque
+                remediationAction: inform
+                severity: low
+          remediationAction: enforce
+        target: spec
+  data:
+  - secretKey: ansibleVaultSecret
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/policies
+      property: ANSIBLE_VAULT_SECRET
