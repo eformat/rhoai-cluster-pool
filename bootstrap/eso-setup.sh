@@ -68,6 +68,7 @@ apply_helm() {
         external-secrets/external-secrets \
         -f /tmp/external-secrets-values.yaml \
         -n external-secrets \
+        --create-namespace \
         --set installCRDs=true
     if [ "$?" != 0 ]; then
         echo -e "🕱${RED}Failed - to apply external-secrets helm chart ${NC}"
