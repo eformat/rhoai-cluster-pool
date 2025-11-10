@@ -28,7 +28,7 @@ login () {
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}" 2>&1 | tee -a output.log
         ((i=i+1))
         if [ $i -gt 200 ]; then
-            echo -e "🕱${RED}Failed - oc login never ready?.${NC}" 2>&1 | tee -a output.log
+            echo -e "🚨${RED}Failed - oc login never ready?.${NC}" 2>&1 | tee -a output.log
             exit 1
         fi
         sleep 10
@@ -46,7 +46,7 @@ console_links() {
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}" 2>&1 | tee -a output.log
         ((i=i+1))
         if [ $i -gt 50 ]; then
-            echo -e "🕱${RED}Failed - console links never done ?.${NC}" 2>&1 | tee -a output.log
+            echo -e "🚨${RED}Failed - console links never done ?.${NC}" 2>&1 | tee -a output.log
             exit 1
         fi
         sleep 10
@@ -63,7 +63,7 @@ vault_secret() {
         echo -e "${GREEN}Waiting for 0 rc from oc commands.${NC}" 2>&1 | tee -a output.log
         ((i=i+1))
         if [ $i -gt 50 ]; then
-            echo -e "🕱${RED}Failed - vault secret never done ?.${NC}" 2>&1 | tee -a output.log
+            echo -e "🚨${RED}Failed - vault secret never done ?.${NC}" 2>&1 | tee -a output.log
             exit 1
         fi
         sleep 10
@@ -75,7 +75,12 @@ vault_secret() {
 eso_setup() {
     echo "💥 Install eso setup" | tee -a output.log
     ./bootstrap/eso-setup.sh -e ${ENVIRONMENT} -d 2>&1 | tee -a output.log
-    echo "💥 Install eso setup Done" | tee -a output.log
+    if [ "${PIPESTATUS[0]}" == 0 ]; then
+        echo "💥 Install eso setup Done" | tee -a output.log
+    else
+        echo -e "🚨${RED}Failed - to run eso_setup ?${NC}" | tee -a output.log
+        exit 1
+    fi
 }
 
 # install apps
