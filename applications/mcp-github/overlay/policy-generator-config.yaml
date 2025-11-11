@@ -22,9 +22,15 @@ policyDefaults:
   severity: medium
   standards:
     - NIST SP 800-53
-  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous",
-                      "avp.kubernetes.io/path": "kv/data/ocp/sno/openshift-gitops/mcp-github"}
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: mcp-github-sno
     manifests:
       - path: sno/
+  - name: mcp-github-eso
+    disabled: false
+    pruneObjectBehavior: "DeleteAll"
+    placement:
+      placementName: placement-hub-openshift
+    manifests:
+      - path: eso/

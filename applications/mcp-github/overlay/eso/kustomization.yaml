@@ -1,0 +1,5 @@
+---
+namespace: openshift-gitops
+
+resources:
+  - mcp-github-secret.yaml
