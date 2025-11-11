@@ -28,9 +28,10 @@ policies:
   - name: models-serving
     manifests:
       - path: sno/
-  # Deprecate: we now have stop/start in UI in RHOAI-2.23
-  # - name: models-inference
-  #   disabled: false
-  #   pruneObjectBehavior: "DeleteAll"
-  #   manifests:
-  #     - path: sno-raw/
+  - name: models-eso
+    disabled: false
+    pruneObjectBehavior: "DeleteAll"
+    placement:
+      placementName: placement-hub-openshift
+    manifests:
+      - path: eso/

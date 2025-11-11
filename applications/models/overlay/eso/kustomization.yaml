@@ -1,0 +1,5 @@
+---
+namespace: openshift-gitops
+
+resources:
+  - llama-3-2-3b-secret-eso.yaml
