@@ -27,3 +27,10 @@ policies:
   - name: llama-stack-playground-sno
     manifests:
       - path: sno/
+  - name: llama-stack-playground-eso
+    disabled: false
+    pruneObjectBehavior: "DeleteAll"
+    placement:
+      placementName: placement-hub-openshift
+    manifests:
+      - path: eso/
