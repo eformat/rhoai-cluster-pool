@@ -3,5 +3,6 @@ namespace: llama-stack
 
 resources:
   - llama-3-2-3b-secret.yaml
+  - llama-3-2-3b-secret-es.yaml
   - llama-4-scout-17b-16e-w4a16-secret.yaml
   - nomic-embed-text-v1-5-secret.yaml
