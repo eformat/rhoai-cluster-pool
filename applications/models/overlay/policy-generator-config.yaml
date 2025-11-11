@@ -22,8 +22,7 @@ policyDefaults:
   severity: medium
   standards:
     - NIST SP 800-53
-  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous",
-                      "avp.kubernetes.io/path": "kv/data/ocp/sno/openshift-gitops/models"}
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: models-serving
     manifests:
