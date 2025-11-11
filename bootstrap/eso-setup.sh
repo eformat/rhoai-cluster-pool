@@ -34,6 +34,13 @@ patch_proxy() {
 }
 patch_proxy
 
+create_namespace() {
+    echo "🌴 Creating namespace..."
+    oc create namespace external-secrets
+    echo "🌴 Namespace created"
+}
+create_namespace
+
 eso_configmap() {
     echo "🌴 Running eso_configmap..."
 
@@ -91,7 +98,6 @@ apply_helm() {
         external-secrets/external-secrets \
         -f /tmp/external-secrets-values.yaml \
         -n external-secrets \
-        --create-namespace \
         --set installCRDs=true
     if [ "$?" != 0 ]; then
         echo -e "🕱${RED}Failed - to apply external-secrets helm chart ${NC}"
