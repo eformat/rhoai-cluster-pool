@@ -41,6 +41,13 @@ create_namespace() {
 }
 create_namespace
 
+wait_cluster_settle() {
+    echo "🌴 Running wait_cluster_settle..."
+    oc adm wait-for-stable-cluster --minimum-stable-period=120s --timeout=20m
+    echo "🌴 wait_cluster_settle ran OK"
+}
+wait_cluster_settle
+
 eso_configmap() {
     echo "🌴 Running eso_configmap..."
 
