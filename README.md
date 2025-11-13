@@ -82,3 +82,9 @@ Keep a copy of your `/tmp/ansible.xxx` folder for future OpenShift cluster unins
 ```bash
 mv /tmp/ansible.xxx ~/sno-roadshow
 ```
+
+## Secrets Pattern
+
+We use the External Secrets operator with [custom resource sync](https://github.com/external-secrets/external-secrets/blob/main/design/012-sync-to-custom-resource.md) to hydrate secret values from Vault.
+
+![images/acm-argocd-eso-gitops.png](images/acm-argocd-eso-gitops.png)
