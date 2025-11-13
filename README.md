@@ -26,7 +26,17 @@ cd bootstrap/ansible
 ansible-playbook -i hosts rhoai-roadshow.yaml
 ```
 
-Claim a spoke cluster (also a button in ACM UI > ClusterPools for this)
+Scale the ClusterPool (also a selector in ACM UI > ClusterPools for this)
+
+```bash
+# now scale pool to zero - else we get another standby spinning up
+oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=0
+
+# scale to one to get standby cluster
+oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=1
+```
+
+Claim a spoke cluster (also a button in ACM UI > ClusterPools for this) - the spoke cluster auto-configures itself using ACM Policy.
 
 ```bash
 cat <<EOF | oc apply -f -
@@ -46,20 +56,6 @@ EOF
 
 Once Claimed - a spoke cluster will take approx ~20-30 min to join the HUB and configure itself for the Roadshow.
 
-Scale the ClusterPool (also a selector in ACM UI > ClusterPools for this)
-
-```bash
-# now scale pool to zero - else we get another standby spinning up
-oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=0
-
-# scale to one to get standby cluster
-oc scale clusterpool openshift-roadshow -n cluster-pools --replicas=1
-```
-
-Setup Hive (manual steps for info only)
-
-- [Hive Setup](HIVE_SETUP.md)
-
 AWS Quota (needed for deploying spoke clusters)
 
 - [AWS Quota](AWS_QUOTAS.md)
@@ -68,7 +64,11 @@ Troubleshooting
 
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 
-OpenShift 4 needs some extra steps if you intend to shutdown the cluster prior to the 24hr cert rotation (post install)
+Setup Hive (manual steps for information purposes only)
+
+- [Hive Setup](HIVE_SETUP.md)
+
+OpenShift 4 needs some extra steps if you intend to shutdown the cluster prior to the 24hr cert rotation period (post install)
 
 - [Early Shutdown](EARLY_SHUTDOWN.md)
 
