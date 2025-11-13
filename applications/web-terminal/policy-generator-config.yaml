@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: web-terminal
+placementBindingDefaults:
+  name: console-links
+policyDefaults:
+  placement:
+    placementName: all-clusters
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  configurationPolicyAnnotations: {"policy.open-cluster-management.io/disable-templates": "true"}
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: web-terminal-operator
+    manifests:
+      - path: operator/overlays/fast
