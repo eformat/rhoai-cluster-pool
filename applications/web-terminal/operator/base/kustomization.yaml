@@ -3,3 +3,12 @@ kind: Kustomization
 
 resources:
   - subscription.yaml
+
+helmGlobals:
+  chartHome: ../../helm
+
+helmCharts:
+  - name: web-terminal
+    includeCRDs: true
+    releaseName: web-terminal
+    valuesFile: values.yaml
