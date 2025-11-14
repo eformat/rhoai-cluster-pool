@@ -20,7 +20,7 @@ operators:
       create: true
       global: true
     channels: [stable] # v0,1
-    version: "1.2.2" # v1
+    version: "1.2.4" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
@@ -32,7 +32,7 @@ operators:
       name: openshift-operators
       create: false
     channels: [latest] # v0,1
-    version: "1.18.1" # v1
+    version: "1.20.0" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
@@ -45,7 +45,7 @@ operators:
       create: true
       global: true
     channels: [stable] # v0,1
-    version: "1.35.1" # v1
+    version: "1.36.1" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
@@ -57,7 +57,7 @@ operators:
       name: openshift-operators
       create: false
     channels: [stable] # v0,1
-    version: "2.6.7-0" # v1
+    version: "2.6.11-0" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0

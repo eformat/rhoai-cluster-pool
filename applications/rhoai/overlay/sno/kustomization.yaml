@@ -1,7 +1,7 @@
 ---
 resources:
   - ../../base
-  - distributed-workloads.yaml
+  # - distributed-workloads.yaml
   - namespace.yaml
   - llama-cpp-runtime-template.yaml
   - model-catalog-unmanaged-sources.yaml
@@ -9,6 +9,6 @@ resources:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
-#  - path: dsci-cr.yaml
+  # - path: dsci-cr.yaml
   - path: dsc-cr.yaml
   - path: odh-dashboard.yaml
