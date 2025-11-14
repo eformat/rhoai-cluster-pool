@@ -19,14 +19,6 @@ spec:
       managementState: Managed
     kserve:
       managementState: Managed
-      serving:
-        ingressGateway:
-          certificate:
-            secretName: tls-apps
-            type: Provided
-            # type: SelfSigned
-        managementState: Managed
-        name: knative-serving
     kueue:
       defaultClusterQueueName: default
       defaultLocalQueueName: default
