@@ -1,5 +1,5 @@
 ---
-apiVersion: datasciencecluster.opendatahub.io/v1
+apiVersion: datasciencecluster.opendatahub.io/v2
 kind: DataScienceCluster
 metadata:
   name: default-dsc
@@ -9,11 +9,13 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   components:
-    codeflare:
+    aipipelines:
+      argoWorkflowsControllers:
+        managementState: Managed
       managementState: Managed
     dashboard:
       managementState: Managed
-    datasciencepipelines:
+    feastoperator:
       managementState: Managed
     kserve:
       managementState: Managed
@@ -21,16 +23,19 @@ spec:
         ingressGateway:
           certificate:
             secretName: tls-apps
-            # type: Provided
-            type: SelfSigned
+            type: Provided
+            # type: SelfSigned
         managementState: Managed
         name: knative-serving
     kueue:
+      defaultClusterQueueName: default
+      defaultLocalQueueName: default
       managementState: Managed
-    modelmeshserving:
+    llamastackoperator:
       managementState: Managed
     modelregistry:
       managementState: Managed
+      registriesNamespace: rhoai-model-registries
     ray:
       managementState: Managed
     trainingoperator:
@@ -39,3 +44,5 @@ spec:
       managementState: Managed
     workbenches:
       managementState: Managed
+      workbenchNamespace: rhods-notebooks
+

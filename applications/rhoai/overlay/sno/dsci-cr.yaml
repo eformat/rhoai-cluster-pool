@@ -1,6 +1,6 @@
 ---
 kind: DSCInitialization
-apiVersion: dscinitialization.opendatahub.io/v1
+apiVersion: dscinitialization.opendatahub.io/v2
 metadata:
   name: default-dsci
 spec:
