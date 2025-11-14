@@ -11,8 +11,8 @@ spec:
   components:
     aipipelines:
       argoWorkflowsControllers:
-        managementState: Managed
-      managementState: Managed
+        managementState: Removed
+      managementState: Removed
     dashboard:
       managementState: Managed
     feastoperator:
