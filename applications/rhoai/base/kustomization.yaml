@@ -2,7 +2,7 @@
 resources:
   # - dsci-cr.yaml
   - dsc-cr.yaml
-  # - odh-dashboard.yaml
+  - odh-dashbord.yaml
   # - accelerator-profile.yaml
 
 helmGlobals:
