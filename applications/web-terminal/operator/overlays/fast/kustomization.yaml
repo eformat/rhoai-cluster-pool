@@ -4,8 +4,8 @@ kind: Kustomization
 resources:
   - ../../base
 
-patches:
-  - target:
-      kind: Subscription
-      name: web-terminal
-    path: patch-channel.yaml
+# patches:
+#   - target:
+#       kind: Subscription
+#       name: web-terminal
+#     path: patch-channel.yaml
