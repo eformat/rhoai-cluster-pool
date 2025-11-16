@@ -6,6 +6,7 @@ resources:
   - llama-cpp-runtime-template.yaml
   - model-catalog-unmanaged-sources.yaml
   - hardware-profile.yaml
+  - leader-worker-set.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
