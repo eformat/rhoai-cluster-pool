@@ -1,9 +1,10 @@
 ---
 resources:
   - nfd-cr.yaml
-  - nfd-rbac-hack.yaml  # broken in 4.19.1
+#  - nfd-rbac-hack.yaml  # broken in 4.19.1
   - configmap.yaml
   - gpu-cluster-policy.yaml
+  - nvidia-dcgm-exporter-dashboard-cm.yaml
 
 helmGlobals:
   chartHome: ../../olm
