@@ -11,6 +11,7 @@ policyDefaults:
   categories:
     - CM Configuration Management
   complianceType: "musthave"
+  configurationPolicyAnnotations: {"policy.open-cluster-management.io/disable-templates": "true"}
   controls:
     - CM-2 Baseline Configuration
   consolidateManifests: false
