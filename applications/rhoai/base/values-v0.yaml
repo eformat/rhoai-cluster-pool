@@ -63,3 +63,16 @@ operators:
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
     enabled: true
+
+  # leader worker set
+  - name: leader-worker-set
+    namespace:
+      name: openshift-lws-operator
+      create: true
+      global: true
+    channels: [stable-v1.0] # v0,1
+    version: "1.0.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
