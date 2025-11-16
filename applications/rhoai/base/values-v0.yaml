@@ -69,7 +69,7 @@ operators:
     namespace:
       name: openshift-lws-operator
       create: true
-      global: true
+      global: false
     channels: [stable-v1.0] # v0,1
     version: "1.0.0" # v1
     catalog: openshift-redhat-operators #v1
