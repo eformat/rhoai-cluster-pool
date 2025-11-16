@@ -24,11 +24,11 @@ spec:
     disableHardwareProfiles: false
     disableISVBadges: false
     disableInfo: false
-#    disableKueue: false # redhat build of kueue https://docs.redhat.com/en/documentation/red_hat_build_of_kueue/1.0/html/quotas_and_workloads/managing-workloads
+    disableKueue: false # redhat build of kueue https://docs.redhat.com/en/documentation/red_hat_build_of_kueue/1.0/html/quotas_and_workloads/managing-workloads
     disableKServe: false
     disableKServeAuth: false
     disableKServeMetrics: false
-#    disableFineTuning: false
+    disableFineTuning: false
     disableLMEval: false
     disableModelCatalog: false
     disableModelMesh: false
