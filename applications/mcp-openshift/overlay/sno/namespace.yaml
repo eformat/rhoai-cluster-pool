@@ -4,5 +4,7 @@ kind: Namespace
 metadata:
   labels:
     openshift.io/cluster-monitoring: "true"
+    opendatahub.io/dashboard: "true"
+    kueue.openshift.io/managed: "true"
   name: agent-demo
 spec: {}
