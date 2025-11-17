@@ -6,6 +6,8 @@ metadata:
     opendatahub.io/dashboard-feature-visibility: '[]'
     opendatahub.io/disabled: "false"
     opendatahub.io/display-name: small gpu
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
   name: small-gpu
   namespace: redhat-ods-applications
 spec:
