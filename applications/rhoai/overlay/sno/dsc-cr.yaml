@@ -19,6 +19,9 @@ spec:
       managementState: Managed
     kserve:
       managementState: Managed
+      nim:
+        managementState: Managed
+      rawDeploymentServiceConfig: Headless
     kueue:
       defaultClusterQueueName: default
       defaultLocalQueueName: default
@@ -33,6 +36,10 @@ spec:
     trainingoperator:
       managementState: Managed
     trustyai:
+      eval:
+        lmeval:
+          permitCodeExecution: deny
+          permitOnline: deny
       managementState: Managed
     workbenches:
       managementState: Managed
