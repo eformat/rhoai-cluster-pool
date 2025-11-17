@@ -4,3 +4,6 @@ kind: Kuadrant
 metadata:
   name: kuadrant
   namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
