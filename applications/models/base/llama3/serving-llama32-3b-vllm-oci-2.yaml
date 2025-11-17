@@ -93,6 +93,7 @@ metadata:
     openshift.io/display-name: llama3.2-3b
     serving.knative.openshift.io/enablePassthrough: "true"
     serving.kserve.io/deploymentMode: RawDeployment
+    kueue.x-k8s.io/queue-name: default
     sidecar.istio.io/inject: "false"
     sidecar.istio.io/rewriteAppHTTPProbers: "true"
   labels:

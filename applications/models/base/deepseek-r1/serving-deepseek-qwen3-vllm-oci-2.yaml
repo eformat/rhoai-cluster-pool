@@ -53,6 +53,7 @@ metadata:
     openshift.io/display-name: sno-deepseek-qwen3-vllm
     serving.knative.openshift.io/enablePassthrough: "true"
     serving.kserve.io/deploymentMode: RawDeployment
+    kueue.x-k8s.io/queue-name: default
     sidecar.istio.io/inject: "false"
     sidecar.istio.io/rewriteAppHTTPProbers: "true"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
