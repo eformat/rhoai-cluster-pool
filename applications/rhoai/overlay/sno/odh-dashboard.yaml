@@ -31,7 +31,7 @@ spec:
     disableKServeAuth: false
     disableKServeMetrics: false
     disableKServeRaw: false
-    disableLMEval: false
+    disableLMEval: true
     disableModelCatalog: false
     disableModelRegistry: false
     disableModelRegistrySecureDB: false
