@@ -36,6 +36,10 @@ spec:
     trainingoperator:
       managementState: Managed
     trustyai:
+      eval:
+        lmeval:
+          permitCodeExecution: deny
+          permitOnline: deny
       managementState: Managed
     workbenches:
       managementState: Managed
