@@ -76,3 +76,16 @@ operators:
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
     enabled: true
+
+  # rhcl - kuadrant
+  - name: rhcl-operator
+    namespace:
+      name: kuadrant-system
+      create: true
+      global: true
+    channels: [stable] # v0,1
+    version: "1.2.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
