@@ -46,6 +46,7 @@ spec:
     disableTracking: false
     disableTrustyBiasMetrics: false
     enablement: true
+    genAiStudio: true
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated
