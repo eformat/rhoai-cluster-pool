@@ -15,11 +15,13 @@ metadata:
   namespace: redhat-ods-applications
 spec:
   dashboardConfig:
+    disableAdminConnectionTypes: false
     disableAcceleratorProfiles: false
     disableBYONImageStream: false
     disableClusterManager: false
     disableCustomServingRuntimes: false
     disableDistributedWorkloads: true
+    disableFineTuning: false
     disableHome: false
     disableHardwareProfiles: false
     disableISVBadges: false
@@ -28,10 +30,9 @@ spec:
     disableKServe: false
     disableKServeAuth: false
     disableKServeMetrics: false
-    disableFineTuning: false
+    disableKServeRaw: false
     disableLMEval: false
     disableModelCatalog: false
-    disableModelMesh: false
     disableModelRegistry: false
     disableModelRegistrySecureDB: false
     disableModelServing: false
@@ -40,13 +41,16 @@ spec:
     disablePipelines: false
     disableProjectSharing: false
     disableProjects: false
+    disableProjectScoped: false
     disableServingRuntimeParams: false
     disableStorageClasses: false
     disableSupport: false
     disableTracking: false
     disableTrustyBiasMetrics: false
+    disableUserManagement: false
     enablement: true
     genAiStudio: true
+    modelAsService: true
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated
