@@ -28,7 +28,7 @@ spec:
         - --model=/mnt/models
         - --served-model-name=deepseek-r1-0528-qwen3-8b-bnb-4bit
         - --max-model-len=10000
-        - --gpu_memory_utilization=0.80
+        - --gpu_memory_utilization=0.85
         - --enforce-eager
         - --enable-auto-tool-choice
         - --tool-call-parser=hermes
