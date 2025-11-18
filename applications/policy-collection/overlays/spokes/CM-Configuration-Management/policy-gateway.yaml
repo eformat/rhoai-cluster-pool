@@ -1,0 +1,64 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    requires-rolling-restart: none
+  name: gateway-spokes
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: gateway-spokes
+        spec:
+          object-templates:
+            - complianceType: musthave
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: GatewayClass
+                metadata:
+                  name: openshift-ai-inference
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  controllerName: openshift.io/gateway-controller/v1
+            - complianceType: musthave
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: Gateway
+                metadata:
+                  labels:
+                    istio.io/rev: openshift-gateway
+                  name: openshift-ai-inference
+                  namespace: openshift-ingress
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  gatewayClassName: openshift-ai-inference
+                  listeners:
+                    - allowedRoutes:
+                        namespaces:
+                          from: Selector
+                          selector:
+                            matchLabels:
+                              opendatahub.io/dashboard: "true"
+                      hostname: inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}
+                      name: https
+                      port: 443
+                      protocol: HTTPS
+                      tls:
+                        certificateRefs:
+                          - group: ''
+                            kind: Secret
+                            name: default-gateway-tls
+                        mode: Terminate
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce

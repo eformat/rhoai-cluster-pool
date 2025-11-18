@@ -5,3 +5,4 @@ resources:
   - policy-vault.yaml
   - policy-gpu-node-label.yaml
   - policy-route53.yaml
+  - policy-gateway.yaml
