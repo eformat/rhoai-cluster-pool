@@ -75,7 +75,7 @@ rules:
     resources: ["inferenceservices"]
     verbs: ["get", "list", "watch", "patch", "create", "delete"]
   - apiGroups: ["kueue.x-k8s.io"]
-    resources: ["resourceflavors"]
+    resources: ["clusterqueues"]
     verbs: ["get", "list", "watch", "patch", "create", "delete"]
 ---
 kind: ClusterRoleBinding

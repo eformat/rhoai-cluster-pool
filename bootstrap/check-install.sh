@@ -126,7 +126,7 @@ check_istio_pods() {
 check_resource_flavor() {
     echo "🌴 Running check_resource_flavor..."
     local i=0
-    RF=$(oc get ResourceFlavor.kueue.x-k8s.io nvidia-gpu-flavor --no-headers=true | wc -l)
+    RF=$(oc get clusterqueue default -o yaml | grep nvidia-gpu-flavor | wc -l)
     until [ "$RF" > 0 ]
     do
         echo -e "${GREEN}Waiting for nvidia-gpu-flavor $RF.${NC}"
@@ -141,7 +141,7 @@ check_resource_flavor() {
             oc delete ClusterQueue default 
             sleep 15
         fi
-        RF=$(oc get ResourceFlavor.kueue.x-k8s.io nvidia-gpu-flavor --no-headers=true | wc -l)
+        RF=$(oc get clusterqueue default -o yaml | grep nvidia-gpu-flavor | wc -l)
     done
     echo "🌴 check_resource_flavor $RF ran OK"
 }
