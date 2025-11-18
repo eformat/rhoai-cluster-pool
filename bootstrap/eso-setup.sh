@@ -1,6 +1,13 @@
 #!/bin/bash
 set -o pipefail
 
+# We are using upstream chart for now:
+# https://github.com/external-secrets/external-secrets/blob/main/design/012-sync-to-custom-resource.md
+# https://github.com/external-secrets/external-secrets/pull/5470
+# https://github.com/external-secrets/external-secrets/issues/2503
+# https://issues.redhat.com/browse/RFE-8386
+# Once these merge will switch to OpenShift Operator.
+
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly ORANGE='\033[38;5;214m'
