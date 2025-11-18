@@ -74,6 +74,9 @@ rules:
   - apiGroups: ["serving.kserve.io"]
     resources: ["inferenceservices"]
     verbs: ["get", "list", "watch", "patch", "create", "delete"]
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["resourceflavors"]
+    verbs: ["get", "list", "watch", "patch", "create", "delete"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
