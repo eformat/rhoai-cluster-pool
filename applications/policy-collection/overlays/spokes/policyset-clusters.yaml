@@ -13,7 +13,7 @@ spec:
     - vault-spokes
     - gpu-node-label-spokes
     - route53-spokes
-    -gateway-spokes
+    - gateway-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
