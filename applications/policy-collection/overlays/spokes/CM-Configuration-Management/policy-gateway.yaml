@@ -10,16 +10,20 @@ metadata:
     requires-rolling-restart: none
   name: gateway-spokes
 spec:
+  remediationAction: enforce
   disabled: false
   policy-templates:
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: gateway-spokes
+          name: gateway-class-spokes
         spec:
+          remediationAction: inform  # will be overridden
+          severity: low
           object-templates:
             - complianceType: musthave
+              objectDefinition:
                 apiVersion: gateway.networking.k8s.io/v1
                 kind: GatewayClass
                 metadata:
@@ -29,7 +33,17 @@ spec:
                     argocd.argoproj.io/sync-wave: "2"
                 spec:
                   controllerName: openshift.io/gateway-controller/v1
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: gateway-spokes
+        spec:
+          remediationAction: inform
+          severity: low
+          object-templates:
             - complianceType: musthave
+              objectDefinition:
                 apiVersion: gateway.networking.k8s.io/v1
                 kind: Gateway
                 metadata:
@@ -49,7 +63,7 @@ spec:
                           selector:
                             matchLabels:
                               opendatahub.io/dashboard: "true"
-                      hostname: inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}
+                      hostname: 'inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
                       name: https
                       port: 443
                       protocol: HTTPS
@@ -59,6 +73,3 @@ spec:
                             kind: Secret
                             name: default-gateway-tls
                         mode: Terminate
-          remediationAction: inform
-          severity: low
-  remediationAction: enforce
