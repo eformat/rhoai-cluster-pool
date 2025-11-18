@@ -40,6 +40,7 @@ spec:
                 operator: In
                 values:
                   - llama-serving
+                  - agent-demo
       hostname: inference-gateway.apps.roadshow-9b2n9.sandbox5182.opentlc.com
       name: https
       port: 443
