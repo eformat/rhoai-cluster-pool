@@ -8,12 +8,12 @@ metadata:
     opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
     opendatahub.io/template-display-name: vLLM ServingRuntime for KServe
     opendatahub.io/template-name: vllm-runtime
-    openshift.io/display-name: sno-deepseek-qwen3-vllm
+    openshift.io/display-name: deepseek-r1-0528-qwen3-8b-bnb-4bit
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "4"
   labels:
     opendatahub.io/dashboard: "true"
-  name: sno-deepseek-qwen3-vllm
+  name: deepseek-r1-0528-qwen3-8b-bnb-4bit
   namespace: llama-serving
 spec:
   annotations:
@@ -50,7 +50,7 @@ apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
   annotations:
-    openshift.io/display-name: sno-deepseek-qwen3-vllm
+    openshift.io/display-name: deepseek-r1-0528-qwen3-8b-bnb-4bit
     serving.knative.openshift.io/enablePassthrough: "true"
     serving.kserve.io/deploymentMode: RawDeployment
     sidecar.istio.io/inject: "false"
@@ -61,7 +61,7 @@ metadata:
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
     kueue.x-k8s.io/queue-name: default
-  name: sno-deepseek-qwen3-vllm
+  name: deepseek-r1-0528-qwen3-8b-bnb-4bit
   namespace: llama-serving
 spec:
   predictor:
