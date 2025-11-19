@@ -60,7 +60,7 @@ check_pods_allocatable() {
             echo -e "🕱${RED}Failed - node allocatable pods wrong - $PODS?.${NC}"
             exit 1
         fi
-        if [ $i > 100 ]; then
+        if [ $i -gt 100 ]; then
             echo -e "💀${ORANGE}Warn - check_pods_allocatable, forcing kubeletconfigs, continuing ${NC}"
             # MC bug, does not always trigger it seems - argocd will recreate this
             if oc get kubeletconfig set-image-gc -o yaml | grep "could not"; then
@@ -96,7 +96,7 @@ check_gpus_allocatable() {
         fi
         # buggy 4.19 - get scc error for nfd - Error creating: pods "nfd-worker-" is forbidden:
         NFD_STATUS=$(oc -n openshift-nfd describe ds nfd-worker | grep "Created pod: nfd-worker" | wc -l)
-        if [ "${NFD_STATUS}" -eq 0 ] && [ "$i" > 50 ]; then
+        if [ "${NFD_STATUS}" -eq 0 ] && [ "$i" -gt 50 ]; then
             oc delete pod --all -n openshift-nfd
             sleep 15
         fi
@@ -109,7 +109,7 @@ check_istio_pods() {
     echo "🌴 Running check_istio_pods..."
     local i=0
     PODS=$(oc get pods -n openshift-ingress -l app.kubernetes.io/instance=openshift-gateway-istiod --no-headers=true | wc -l)
-    until [ "$PODS" > 0 ]
+    until [ "$PODS" -gt 0 ]
     do
         echo -e "${GREEN}Waiting for istio-system $PODS.${NC}"
         ((i=i+1))
@@ -127,7 +127,7 @@ check_resource_flavor() {
     echo "🌴 Running check_resource_flavor..."
     local i=0
     RF=$(oc get clusterqueue default -o yaml | grep nvidia-gpu-flavor | wc -l)
-    until [ "$RF" > 0 ]
+    until [ "$RF" -gt 0 ]
     do
         echo -e "${GREEN}Waiting for nvidia-gpu-flavor $RF.${NC}"
         ((i=i+1))
@@ -137,7 +137,7 @@ check_resource_flavor() {
         fi
         sleep 10
         # buggy 3.0 - ordering with cluster queue and gpu operator
-        if [ "$RF" -eq 0 ] && [ "$i" > 50 ]; then
+        if [ "$RF" -eq 0 ] && [ "$i" -gt 50 ]; then
             oc delete ClusterQueue default 
             sleep 15
         fi
@@ -167,7 +167,7 @@ check_llm_pods() {
             oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="true"
         fi
         LLAMA_STATUS=$(oc -n llama-serving get $(oc get pods -n llama-serving -l app=isvc.llama3-2-3b-predictor -o name) -o=jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-        if [ "$LLAMA_STATUS" == "True" ] && [ "$i" > 50 ]; then
+        if [ "$LLAMA_STATUS" == "True" ] && [ "$i" -gt 50 ]; then
             # redeploy deepseek-qwen3
             oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="false"
         fi
