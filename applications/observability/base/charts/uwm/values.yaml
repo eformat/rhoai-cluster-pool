@@ -40,7 +40,7 @@ userWorkloadMonitoring:
 
 # VLLM LLaMA Serve Monitor Configuration
 vllmLlamaServeMonitor:
-  enabled: true
+  enabled: false
   name: vllm-llama-serve-monitor
   
   # Metrics endpoint configuration
@@ -70,7 +70,7 @@ vllmLlamaServeMonitor:
 
 # VLLM Metrics Monitor Configuration
 vllmMetricsMonitor:
-  enabled: true
+  enabled: false
   name: vllm-metrics
   
   # Metrics endpoint configuration
