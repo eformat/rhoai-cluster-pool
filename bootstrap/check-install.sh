@@ -24,7 +24,7 @@ wait_for_openshift_api() {
 
 wait_cluster_settle() {
     echo "🌴 Running wait_cluster_settle..."
-    oc adm wait-for-stable-cluster --minimum-stable-period=300s --timeout=20m
+    oc adm wait-for-stable-cluster --minimum-stable-period=120s --timeout=20m
     echo "🌴 wait_cluster_settle ran OK"
 }
 
