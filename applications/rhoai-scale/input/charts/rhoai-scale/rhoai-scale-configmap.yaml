@@ -22,7 +22,6 @@ data:
         echo "💥 Scale RHOAI ${component} Done"
     }
     scale rhods-dashboard
-    scale modelmesh-controller
 
     echo -e "\n🌻Scale RHOAI components OK.${NC}🌻\n"
     exit 0
