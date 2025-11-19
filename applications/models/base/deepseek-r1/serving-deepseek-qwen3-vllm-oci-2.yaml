@@ -59,6 +59,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
   labels:
     opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
     kueue.x-k8s.io/queue-name: default
   name: sno-deepseek-qwen3-vllm
   namespace: llama-serving
