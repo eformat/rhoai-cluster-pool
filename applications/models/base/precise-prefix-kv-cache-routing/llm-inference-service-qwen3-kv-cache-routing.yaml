@@ -12,7 +12,7 @@ metadata:
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
   annotations:
-    security.opendatahub.io/enable-auth: "true"
+    security.opendatahub.io/enable-auth: "false"
 spec:
   model:
     uri: oci://registry.redhat.io/rhelai1/modelcar-qwen3-8b-fp8-dynamic:latest
@@ -136,53 +136,3 @@ spec:
           periodSeconds: 30
           timeoutSeconds: 30
           failureThreshold: 5
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: qwen3-cache-routing
-  namespace: llama-serving
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: qwen3-cache-routing-qwen3-cache-routing
-  namespace: llama-serving
-  annotations:
-    kubernetes.io/service-account.name: "qwen3-cache-routing"
-    openshift.io/display-name: qwen3-cache-routing
-  labels:
-    opendatahub.io/dashboard: "true"
-type: kubernetes.io/service-account-token
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: qwen3-cache-routing-view-role
-  namespace: llama-serving
-rules:
-- apiGroups:
-  - serving.kserve.io
-  resourceNames:
-  - qwen3-cache-routing
-  resources:
-  - llminferenceservices
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: qwen3-cache-routing-view
-  namespace: llama-serving
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: qwen3-cache-routing-role
-subjects:
-- kind: ServiceAccount
-  name: qwen3-cache-routing
