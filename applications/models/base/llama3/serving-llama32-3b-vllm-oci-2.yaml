@@ -95,6 +95,7 @@ metadata:
     serving.kserve.io/deploymentMode: RawDeployment
     sidecar.istio.io/inject: "false"
     sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    security.opendatahub.io/enable-auth: "false"
   labels:
     app.kubernetes.io/component: llm-inference
     app.kubernetes.io/instance: llama3-2-3b

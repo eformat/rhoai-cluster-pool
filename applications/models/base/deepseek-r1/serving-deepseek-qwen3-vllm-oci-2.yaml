@@ -57,6 +57,7 @@ metadata:
     sidecar.istio.io/rewriteAppHTTPProbers: "true"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "4"
+    security.opendatahub.io/enable-auth: "false"
   labels:
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
