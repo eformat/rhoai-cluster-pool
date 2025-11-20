@@ -39,6 +39,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: qwen3-sample-sa
+  namespace: llama-serving
 ---
 apiVersion: v1
 kind: Secret
