@@ -9,6 +9,10 @@ metadata:
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
   annotations:
+    opendatahub.io/hardware-profile-name: small-gpu
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: qwen3-sample
     security.opendatahub.io/enable-auth: "true"
 spec:
   replicas: 1
