@@ -1,3 +1,4 @@
+# https://github.com/red-hat-data-services/kserve/blob/main/docs/samples/llmisvc/precise-prefix-kv-cache-routing/llm-inference-service-qwen2-7b-gpu-kv-cache-routing.yaml
 ---
 apiVersion: serving.kserve.io/v1alpha1
 kind: LLMInferenceService

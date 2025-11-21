@@ -1,3 +1,4 @@
+# https://github.com/rh-aiservices-bu/rhaoi3-llm-d/blob/main/llm-d/qwen/llm-infra.yaml
 apiVersion: serving.kserve.io/v1alpha1
 kind: LLMInferenceService
 metadata:
