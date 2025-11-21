@@ -3,7 +3,7 @@ apiVersion: serving.kserve.io/v1alpha1
 kind: LLMInferenceService
 metadata:
   name: qwen3-cache-routing
-  namespace: llama-serving
+  namespace: demo-llm
   labels:
     app.kubernetes.io/component: llm-inference
     app.kubernetes.io/name: qwen3-cache-routing
