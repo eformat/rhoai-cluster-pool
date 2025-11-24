@@ -176,6 +176,14 @@ check_llm_pods() {
     echo "🌴 check_llm_pods $PODS ran OK"
 }
 
+# default to stopping isvc pods in rhoai3 since we using playground now
+stop_llm_pods() {
+    echo "🌴 Running stop_llm_pods..."
+    oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="true"
+    oc -n llama-serving annotate --overwrite inferenceservice llama3-2-3b serving.kserve.io/stop="false"
+    echo "🌴 stop_llm_pods ran OK"
+}
+
 check_llama_stack() {
     echo "🌴 Running check_llama_stack..."
     PODS=$(oc -n llama-stack get pod -l app.kubernetes.io/instance=llamastack-with-config | grep Running)
@@ -195,8 +203,9 @@ check_pods_allocatable
 check_gpus_allocatable
 check_istio_pods
 check_resource_flavor
-check_llm_pods
-check_llama_stack
+#check_llm_pods
+stop_llm_pods
+#check_llama_stack
 
 echo -e "\n🌻${GREEN}Check Install ended OK.${NC}🌻\n"
 exit 0
