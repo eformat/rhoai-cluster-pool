@@ -17,10 +17,10 @@ spec:
           - tail
           - '-f'
           - /dev/null
-        cpuLimit: 400m
+        cpuLimit: 800m
         cpuRequest: 100m
         image: {{ .Values.image }}
-        memoryLimit: 512Mi
+        memoryLimit: 2048Mi
         memoryRequest: 128Mi
         mountSources: false
         sourceMapping: /projects

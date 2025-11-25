@@ -44,10 +44,10 @@ spec:
       - tail
       - -f
       - /dev/null
-      cpuLimit: 400m
+      cpuLimit: 1000m
       cpuRequest: 100m
       image: quay.io/eformat/web-terminal:latest
-      memoryLimit: 512Mi
+      memoryLimit: 1024Mi
       memoryRequest: 128Mi
       mountSources: false
       sourceMapping: /projects
