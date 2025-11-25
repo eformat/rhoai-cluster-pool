@@ -1,2 +1,2 @@
 # web-terminal image
-image: quay.io/redhat-ai-services/web-terminal:latest
+image: quay.io/eformat/web-terminal:latest #quay.io/redhat-ai-services/web-terminal:latest
