@@ -167,12 +167,12 @@ data:
             # and we cannot predict who will start up first
             if [ "$PODS" -eq 0 ]; then
                 # undeploy deepseek
-                oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="true"
+                oc -n llama-serving annotate --overwrite inferenceservice deepseek-r1-0528-qwen3-8b-bnb-4bit serving.kserve.io/stop="true"
             fi
             LLAMA_STATUS=$(oc -n llama-serving get $(oc get pods -n llama-serving -l app=isvc.llama3-2-3b-predictor -o name) -o=jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
             if [ "$LLAMA_STATUS" == "True" ] && [ "$i" -gt 50 ]; then
                 # redeploy deepseek-qwen3
-                oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="false"
+                oc -n llama-serving annotate --overwrite inferenceservice deepseek-r1-0528-qwen3-8b-bnb-4bit serving.kserve.io/stop="false"
             fi
             PODS=$(oc get pods -n llama-serving | grep -e Running | grep -e 2/2 | wc -l)
         done
@@ -182,7 +182,7 @@ data:
     # default to stopping isvc pods in rhoai3 since we using playground now
     stop_llm_pods() {
         echo "🌴 Running stop_llm_pods..."
-        oc -n llama-serving annotate --overwrite inferenceservice sno-deepseek-qwen3-vllm serving.kserve.io/stop="true"
+        oc -n llama-serving annotate --overwrite inferenceservice deepseek-r1-0528-qwen3-8b-bnb-4bit serving.kserve.io/stop="true"
         oc -n llama-serving annotate --overwrite inferenceservice llama3-2-3b serving.kserve.io/stop="false"
         echo "🌴 stop_llm_pods ran OK"
     }
