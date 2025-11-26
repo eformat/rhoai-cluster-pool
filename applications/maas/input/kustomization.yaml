@@ -8,7 +8,6 @@ resources:
   - tiers-to-group-config-map.yaml
   - service-monitor.yaml
   - auth-policy.yaml
-  - gateway.yaml
   - http-route.yaml
   - rate-limit-policy.yaml
   - telemetry.yaml
