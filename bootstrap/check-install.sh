@@ -180,7 +180,7 @@ check_llm_pods() {
 stop_llm_pods() {
     echo "🌴 Running stop_llm_pods..."
     oc -n llama-serving annotate --overwrite inferenceservice deepseek-r1-0528-qwen3-8b-bnb-4bit serving.kserve.io/stop="true"
-    oc -n llama-serving annotate --overwrite inferenceservice llama3-2-3b serving.kserve.io/stop="false"
+    oc -n llama-serving annotate --overwrite inferenceservice llama3-2-3b serving.kserve.io/stop="true"
     echo "🌴 stop_llm_pods ran OK"
 }
 
