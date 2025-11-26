@@ -1,0 +1,19 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+ name: gen-ai-aa-mcp-servers
+ namespace: redhat-ods-applications
+data:
+ OpenShift-MCP-Server: |
+   {
+     "url": "http://ocp-mcp-server.agent-demo.svc.cluster.local:8000/sse",
+     "transport": "sse",
+     "description": "OpenShift Cluster Admin MCP Server"
+   }
+ Weather-USA-MCP-Server: |
+   {
+     "url": "http://mcp-weather.agent-demo.svc.cluster.local:80/sse",
+     "transport": "sse",
+     "description": "USA Weather"
+   }

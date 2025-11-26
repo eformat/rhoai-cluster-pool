@@ -1,7 +1,7 @@
 ---
 resources:
   - ../../base
-  # - distributed-workloads.yaml
+  # - distributed-workloads.yaml # rhoai3 creates default queues and flavors
   - namespace.yaml
   - llama-cpp-runtime-template.yaml
   - model-catalog-unmanaged-sources.yaml
@@ -9,6 +9,7 @@ resources:
   - leader-worker-set.yaml
   - kuadrant-cr.yaml
   - authorino-cr.yaml
+  - mcp-configmap.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
