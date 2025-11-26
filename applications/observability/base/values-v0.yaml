@@ -21,7 +21,7 @@ operators:
       global: true
     channels: [v5] # v0,1
     version: "5.20.0" # v1
-    catalog: certified-operators #v1
+    catalog: community-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
     enabled: true
