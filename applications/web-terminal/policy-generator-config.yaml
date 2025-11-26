@@ -27,4 +27,4 @@ policyDefaults:
 policies:
   - name: web-terminal-operator
     manifests:
-      - path: operator/overlays/fast
+      - path: input
