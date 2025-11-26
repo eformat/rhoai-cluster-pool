@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: limitador
+    app.kubernetes.io/part-of: maas-observability
+  name: limitador-metrics
+  namespace: kuadrant-system
+spec:
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: http
+  selector:
+    matchLabels:
+      app: limitador

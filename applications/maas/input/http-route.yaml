@@ -1,0 +1,40 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/name: maas-api
+    app.kubernetes.io/part-of: model-as-a-service
+  name: maas-api-route
+  namespace: maas-api
+spec:
+  parentRefs:
+  - name: maas-default-gateway
+    namespace: openshift-ingress
+  rules:
+  - backendRefs:
+    - name: maas-api
+      port: 8080
+      weight: 100
+    matches:
+    - path:
+        type: PathPrefix
+        value: /v1/models
+  - backendRefs:
+    - name: maas-api
+      port: 8080
+      weight: 100
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replacePrefixMatch: /
+          type: ReplacePrefixMatch
+    matches:
+    - path:
+        type: PathPrefix
+        value: /maas-api

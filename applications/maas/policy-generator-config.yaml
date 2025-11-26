@@ -2,12 +2,12 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: web-terminal
+  name: maas
 placementBindingDefaults:
-  name: web-terminal
+  name: maas
 policyDefaults:
   placement:
-    placementName: all-clusters
+    placementName: placement-spokes-openshift
   categories:
     - CM Configuration Management
   complianceType: "musthave"
@@ -25,6 +25,6 @@ policyDefaults:
     - NIST SP 800-53
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
-  - name: web-terminal-operator
+  - name: maas
     manifests:
       - path: input

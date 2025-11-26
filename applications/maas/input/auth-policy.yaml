@@ -1,0 +1,91 @@
+---
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/name: maas-api
+    app.kubernetes.io/part-of: model-as-a-service
+  name: maas-api-auth-policy
+  namespace: maas-api
+spec:
+  rules:
+    authentication:
+      openshift-identities:
+        kubernetesTokenReview:
+          audiences:
+          - https://kubernetes.default.svc
+          - maas-default-gateway-sa
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: maas-api-route
+---
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+  name: gateway-auth-policy
+  namespace: openshift-ingress
+spec:
+  rules:
+    authentication:
+      service-accounts:
+        defaults:
+          userid:
+            expression: |
+              auth.identity.user.username.split(":")[3]
+        kubernetesTokenReview:
+          audiences:
+          - maas-default-gateway-sa
+    authorization:
+      tier-access:
+        kubernetesSubjectAccessReview:
+          authorizationGroups:
+            expression: auth.identity.user.groups
+          resourceAttributes:
+            group:
+              value: serving.kserve.io
+            name:
+              expression: |
+                request.path.split("/")[2]
+            namespace:
+              expression: |
+                request.path.split("/")[1]
+            resource:
+              value: llminferenceservices
+            verb:
+              value: post
+          user:
+            expression: auth.identity.user.username
+    metadata:
+      matchedTier:
+        cache:
+          key:
+            selector: auth.identity.user.username
+          ttl: 300
+        http:
+          body:
+            expression: '{ "groups": auth.identity.user.groups }'
+          contentType: application/json
+          method: POST
+          url: http://maas-api.maas-api.svc.cluster.local:8080/v1/tiers/lookup
+    response:
+      success:
+        filters:
+          identity:
+            json:
+              properties:
+                tier:
+                  expression: auth.metadata.matchedTier["tier"]
+                userid:
+                  expression: auth.identity.userid
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: maas-default-gateway

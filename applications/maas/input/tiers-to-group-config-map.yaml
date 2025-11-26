@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+data:
+  tiers: |-
+    # Free tier - default for all authenticated users
+    - name: free
+      level: 0
+      groups:
+        - tier-free-users
+        - system:authenticated  # Default for all authenticated users
+
+    # Premium tier - for premium users
+    - name: premium
+      level: 1
+      groups:
+        - tier-premium-users
+        - premium-group
+
+    # Enterprise tier - highest level
+    - name: enterprise
+      level: 2
+      groups:
+        - tier-enterprise-users
+        - enterprise-group
+        - admin
+kind: ConfigMap
+metadata:
+  labels:
+    app: maas-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/name: maas-api
+    app.kubernetes.io/part-of: model-as-a-service
+    component: tier-mapping
+  name: tier-to-group-mapping
+  namespace: maas-api
