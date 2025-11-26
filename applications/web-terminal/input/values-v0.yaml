@@ -3,9 +3,8 @@ operators:
   # web-terminal
   - name: web-terminal
     namespace:
-      name: openshift-terminal
-      create: true
-      global: true
+      name: openshift-operators
+      create: false
     channels: [fast] # v0,1
     version: "1.13.0" # v1
     catalog: openshift-redhat-operators #v1
