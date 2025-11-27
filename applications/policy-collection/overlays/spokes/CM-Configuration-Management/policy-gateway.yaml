@@ -22,17 +22,17 @@ spec:
           remediationAction: inform  # will be overridden
           severity: low
           object-templates:
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: gateway.networking.k8s.io/v1
-                kind: GatewayClass
-                metadata:
-                  name: openshift-ai-inference
-                  annotations:
-                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-                    argocd.argoproj.io/sync-wave: "2"
-                spec:
-                  controllerName: openshift.io/gateway-controller/v1
+            # - complianceType: musthave
+            #   objectDefinition:
+            #     apiVersion: gateway.networking.k8s.io/v1
+            #     kind: GatewayClass
+            #     metadata:
+            #       name: openshift-ai-inference
+            #       annotations:
+            #         argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+            #         argocd.argoproj.io/sync-wave: "2"
+            #     spec:
+            #       controllerName: openshift.io/gateway-controller/v1
             - complianceType: musthave
               objectDefinition:
                 apiVersion: gateway.networking.k8s.io/v1
