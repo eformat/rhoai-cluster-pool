@@ -16,9 +16,8 @@ operators:
   # grafana
   - name: grafana-operator
     namespace:
-      name: openshift-grafana-operator
-      create: true
-      global: true
+      name: openshift-operators
+      create: false
     channels: [v5] # v0,1
     version: "5.20.0" # v1
     catalog: community-operators #v1
