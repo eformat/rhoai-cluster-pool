@@ -33,6 +33,17 @@ spec:
                     argocd.argoproj.io/sync-wave: "2"
                 spec:
                   controllerName: openshift.io/gateway-controller/v1
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: GatewayClass
+                metadata:
+                  name: openshift-default
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  controllerName: openshift.io/gateway-controller/v1
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
