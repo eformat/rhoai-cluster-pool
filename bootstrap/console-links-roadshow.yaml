@@ -22,15 +22,15 @@ spec:
   href: https://milvus-console-milvus.apps.$BASE_DOMAIN/webui
   location: ApplicationMenu
   text: milvus
----
-apiVersion: console.openshift.io/v1
-kind: ConsoleLink
-metadata:
-  name: llama-stack-playground
-spec:
-  applicationMenu:
-    section: GenAI
-    imageURL: https://avatars.githubusercontent.com/u/153379578?s=48&v=4
-  href: https://llama-stack-playground-llama-stack.apps.$BASE_DOMAIN
-  location: ApplicationMenu
-  text: llama-stack-playground
+# ---
+# apiVersion: console.openshift.io/v1
+# kind: ConsoleLink
+# metadata:
+#   name: llama-stack-playground
+# spec:
+#   applicationMenu:
+#     section: GenAI
+#     imageURL: https://avatars.githubusercontent.com/u/153379578?s=48&v=4
+#   href: https://llama-stack-playground-llama-stack.apps.$BASE_DOMAIN
+#   location: ApplicationMenu
+#   text: llama-stack-playground
