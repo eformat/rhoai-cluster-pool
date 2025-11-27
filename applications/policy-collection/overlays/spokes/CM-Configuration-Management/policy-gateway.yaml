@@ -22,17 +22,17 @@ spec:
           remediationAction: inform  # will be overridden
           severity: low
           object-templates:
-            # - complianceType: musthave
-            #   objectDefinition:
-            #     apiVersion: gateway.networking.k8s.io/v1
-            #     kind: GatewayClass
-            #     metadata:
-            #       name: openshift-ai-inference
-            #       annotations:
-            #         argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-            #         argocd.argoproj.io/sync-wave: "2"
-            #     spec:
-            #       controllerName: openshift.io/gateway-controller/v1
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: GatewayClass
+                metadata:
+                  name: openshift-ai-inference
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  controllerName: openshift.io/gateway-controller/v1
             - complianceType: musthave
               objectDefinition:
                 apiVersion: gateway.networking.k8s.io/v1
@@ -53,37 +53,37 @@ spec:
           remediationAction: inform
           severity: low
           object-templates:
-            # - complianceType: musthave
-            #   objectDefinition:
-            #     apiVersion: gateway.networking.k8s.io/v1
-            #     kind: Gateway
-            #     metadata:
-            #       labels:
-            #         istio.io/rev: openshift-gateway
-            #       name: openshift-ai-inference
-            #       namespace: openshift-ingress
-            #       annotations:
-            #         argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-            #         argocd.argoproj.io/sync-wave: "2"
-            #     spec:
-            #       gatewayClassName: openshift-ai-inference
-            #       listeners:
-            #         - allowedRoutes:
-            #             namespaces:
-            #               from: Selector
-            #               selector:
-            #                 matchLabels:
-            #                   opendatahub.io/dashboard: "true"
-            #           hostname: 'inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
-            #           name: https
-            #           port: 443
-            #           protocol: HTTPS
-            #           tls:
-            #             certificateRefs:
-            #               - group: ''
-            #                 kind: Secret
-            #                 name: default-gateway-tls
-            #             mode: Terminate
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: Gateway
+                metadata:
+                  labels:
+                    istio.io/rev: openshift-gateway
+                  name: openshift-ai-inference
+                  namespace: openshift-ingress
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  gatewayClassName: openshift-ai-inference
+                  listeners:
+                    - allowedRoutes:
+                        namespaces:
+                          from: Selector
+                          selector:
+                            matchLabels:
+                              opendatahub.io/dashboard: "true"
+                      hostname: 'inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      name: https
+                      port: 443
+                      protocol: HTTPS
+                      tls:
+                        certificateRefs:
+                          - group: ''
+                            kind: Secret
+                            name: default-gateway-tls
+                        mode: Terminate
             - complianceType: musthave
               objectDefinition:
                 apiVersion: gateway.networking.k8s.io/v1
