@@ -13,7 +13,7 @@ operators:
     sourceNamespace: openshift-marketplace # v0
     enabled: true
 
-  # authorino
+  # authorino - managed by kuadrant
   # - name: authorino-operator
   #   namespace:
   #     name: openshift-authorino
