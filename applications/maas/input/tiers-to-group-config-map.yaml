@@ -22,7 +22,7 @@ data:
       groups:
         - tier-enterprise-users
         - enterprise-group
-        - admin
+        # - admin
 kind: ConfigMap
 metadata:
   labels:
