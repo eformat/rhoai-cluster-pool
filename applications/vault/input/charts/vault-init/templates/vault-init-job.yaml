@@ -14,7 +14,7 @@ metadata:
   namespace: vault
 spec:
   backoffLimit: 50
-  activeDeadlineSeconds: 600
+  activeDeadlineSeconds: 1200
   template:
     metadata:
       name: vault-init
