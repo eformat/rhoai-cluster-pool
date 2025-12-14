@@ -70,6 +70,10 @@ check_pods_allocatable() {
                 oc delete kubeletconfig set-max-pods
             fi
         fi
+        if [ $i -gt 200 ]; then
+            echo -e "💀${ORANGE}Warn - check_pods_allocatable, forcing kubeletconfigs, continuing ${NC}"
+            oc delete kubeletconfig set-max-pods
+        fi
         sleep 10
         PODS=$(oc get $(oc get node -o name -l node-role.kubernetes.io/master="") -o=jsonpath={.status.allocatable.pods})
     done
