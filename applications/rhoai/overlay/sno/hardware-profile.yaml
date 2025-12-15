@@ -27,6 +27,43 @@ spec:
   - defaultCount: 1
     displayName: L4
     identifier: nvidia.com/gpu
+    maxCount: 2
+    minCount: 1
+    resourceType: Accelerator
+  scheduling:
+    kueue:
+      localQueueName: default
+      priorityClass: None
+    type: Queue
+---
+apiVersion: infrastructure.opendatahub.io/v1
+kind: HardwareProfile
+metadata:
+  annotations:
+    opendatahub.io/dashboard-feature-visibility: '[]'
+    opendatahub.io/disabled: "false"
+    opendatahub.io/display-name: med gpu
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+  name: med-gpu
+  namespace: redhat-ods-applications
+spec:
+  identifiers:
+  - defaultCount: 2
+    displayName: CPU
+    identifier: cpu
+    maxCount: 8
+    minCount: 2
+    resourceType: CPU
+  - defaultCount: 8Gi
+    displayName: Memory
+    identifier: memory
+    maxCount: 16Gi
+    minCount: 8Gi
+    resourceType: Memory
+  - defaultCount: 1
+    displayName: L4
+    identifier: nvidia.com/gpu
     maxCount: 8
     minCount: 1
     resourceType: Accelerator
