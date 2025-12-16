@@ -1,0 +1,128 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: higgs-audio-predictor
+  namespace: llama-serving
+spec:
+  selector:
+    app: higgs-audio-predictor
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: higgs-audio-predictor
+  namespace: llama-serving
+  labels:
+    app: higgs-audio-predictor
+    component: predictor
+    kueue.x-k8s.io/queue-name: default
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: higgs-audio-predictor
+  template:
+    metadata:
+      name: higgs-audio-predictor
+      namespace: llama-serving
+      creationTimestamp: null
+      labels:
+        app: higgs-audio-predictor
+        component: predictor
+        kueue.x-k8s.io/managed: "true"
+        kueue.x-k8s.io/queue-name: default
+        opendatahub.io/dashboard: "true"
+        opendatahub.io/genai-asset: "true"
+      annotations:
+        prometheus.io/port: "8080"
+        openshift.io/display-name: higgs-audio
+        prometheus.io/path: /metrics
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: 500m
+              memory: 4Gi
+              nvidia.com/gpu: "1"
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: kserve-container
+          args:
+            [
+              "--served-model-name",
+              "higgs-audio-v2-generation-3B-base",
+              "--model",
+              "bosonai/higgs-audio-v2-generation-3B-base",
+              "--audio-tokenizer-type",
+              "bosonai/higgs-audio-v2-tokenizer",
+              "--limit-mm-per-prompt",
+              "audio=50",
+              "--max-model-len",
+              "8192",
+              "--port",
+              "8080",
+              "--gpu-memory-utilization",
+              "0.90",
+              "--disable-mm-preprocessor-cache",
+            ]
+          env:
+            - name: HF_HOME
+              value: /tmp/
+            - name: VLLM_CACHE_ROOT
+              value: /.cache
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-secret
+                  key: token
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: cache
+              mountPath: /.cache
+          terminationMessagePolicy: File
+          image: "docker.io/bosonai/higgs-audio-vllm:latest"
+      automountServiceAccountToken: false
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+        - name: cache
+          emptyDir: {}
+      dnsPolicy: ClusterFirst
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+status: {}
