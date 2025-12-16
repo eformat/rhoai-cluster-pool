@@ -19,7 +19,7 @@ metadata:
   name: hivec
 platform:
   aws:
-    region: ap-southeast-2
+    region: us-east-2
     userTags:
       owner: "mhepburn@redhat.com"
       team: "global-labs"
