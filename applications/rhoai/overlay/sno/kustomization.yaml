@@ -4,7 +4,7 @@ resources:
   # - distributed-workloads.yaml # rhoai3 creates default queues and flavors
   - namespace.yaml
   - llama-cpp-runtime-template.yaml
-  - model-catalog-unmanaged-sources.yaml
+  # - model-catalog-unmanaged-sources.yaml
   - hardware-profile.yaml
   - leader-worker-set.yaml
   - kuadrant-cr.yaml
