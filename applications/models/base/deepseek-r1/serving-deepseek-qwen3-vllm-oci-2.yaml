@@ -12,6 +12,10 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "4"
   labels:
+    app.kubernetes.io/component: llm-inference
+    app.kubernetes.io/instance: deepseek-r1-0528-qwen3-8b-bnb-4bit
+    app.kubernetes.io/name: deepseek-r1-0528-qwen3-8b-bnb-4bit
+    app.kubernetes.io/version: 0528-qwen3-8b-bnb-4bit
     opendatahub.io/dashboard: "true"
   name: deepseek-r1-0528-qwen3-8b-bnb-4bit
   namespace: llama-serving
@@ -59,6 +63,10 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
     security.opendatahub.io/enable-auth: "false"
   labels:
+    app.kubernetes.io/component: llm-inference
+    app.kubernetes.io/instance: deepseek-r1-0528-qwen3-8b-bnb-4bit
+    app.kubernetes.io/name: deepseek-r1-0528-qwen3-8b-bnb-4bit
+    app.kubernetes.io/version: 0528-qwen3-8b-bnb-4bit
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
     kueue.x-k8s.io/queue-name: default

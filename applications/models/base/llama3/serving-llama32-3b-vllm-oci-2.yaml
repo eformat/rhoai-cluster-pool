@@ -1,9 +1,16 @@
+---
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   annotations:
-    opendatahub.io/accelerator-name: migrated-gpu
+    opendatahub.io/accelerator-name: nvidia-gpu
     opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/template-display-name: vLLM ServingRuntime for KServe
+    opendatahub.io/template-name: vllm-runtime
+    openshift.io/display-name: llama3-2-3b
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
   labels:
     app.kubernetes.io/component: llm-inference
     app.kubernetes.io/instance: llama3-2-3b
@@ -125,3 +132,19 @@ spec:
     - effect: NoSchedule
       key: nvidia.com/gpu
       operator: Exists
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: llama3-2-3b
+  namespace: llama-serving
+  labels:
+    opendatahub.io/dashboard: 'true'
+  annotations:
+    opendatahub.io/connection-type-ref: uri-v1
+    openshift.io/description: llama3-2-3b
+    openshift.io/display-name: llama3-2-3b
+    argocd.argoproj.io/sync-wave: "2"
+stringData:
+  URI: oci://quay.io/redhat-ai-services/modelcar-catalog:llama-3.2-3b-instruct
+type: Opaque
