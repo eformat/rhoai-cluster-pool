@@ -77,7 +77,7 @@ spec:
           nvidia.com/gpu: "1"
         requests:
           nvidia.com/gpu: "1"
-      runtime: sno-deepseek-qwen3-vllm
+      runtime: deepseek-r1-0528-qwen3-8b-bnb-4bit
       storageUri: oci://quay.io/eformat/deepseek-r1-0528-qwen3-8b-bnb-4bit:latest-ubi
     tolerations:
     - effect: NoSchedule
