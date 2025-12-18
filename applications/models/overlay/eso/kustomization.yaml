@@ -1,5 +1,5 @@
 ---
-namespace: openshift-gitops
+namespace: llama-serving
 
 resources:
   - llama-3-2-3b-secret.yaml
