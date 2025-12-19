@@ -77,11 +77,11 @@ spec:
               "--limit-mm-per-prompt",
               "audio=50",
               "--max-model-len",
-              "8192",
+              "4096", # "8192",
               "--port",
               "8080",
               "--gpu-memory-utilization",
-              "0.90",
+              "0.92",
               "--disable-mm-preprocessor-cache",
             ]
           env:
