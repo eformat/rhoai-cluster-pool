@@ -1,0 +1,84 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    opendatahub.io/hardware-profile-name: small-gpu
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: whisper
+  labels:
+    kueue.x-k8s.io/queue-name: default
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: whisper
+  namespace: llama-serving
+spec:
+  model:
+    name: whisper
+    uri: oci://registry.redhat.io/rhelai1/modelcar-whisper-large-v3-turbo-quantized-w4a16:1.5
+  replicas: 1
+  router:
+    gateway: {}
+    route: {}
+  template:
+    containers:
+    - name: main
+      env:
+        - name: VLLM_ADDITIONAL_ARGS
+          value: "--gpu-memory-utilization 0.18"
+      resources:        
+        limits:
+          cpu: "2"
+          memory: 4Gi
+          nvidia.com/gpu: "1"
+        requests:
+          cpu: "2"
+          memory: 4Gi
+          nvidia.com/gpu: "1"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: whisper-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: whisper-sa-whisper-sa
+  annotations:
+    kubernetes.io/service-account.name: "whisper-sa"
+    openshift.io/display-name: whisper-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: whisper-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - whisper
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: whisper-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: whisper-view-role
+subjects:
+- kind: ServiceAccount
+  name: whisper-sa
