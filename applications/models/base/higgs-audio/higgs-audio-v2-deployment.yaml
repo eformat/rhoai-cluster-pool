@@ -17,6 +17,8 @@ apiVersion: apps/v1
 metadata:
   name: higgs-audio-predictor
   namespace: llama-serving
+  annotations:
+    monitoring.opendatahub.io/scrape: "true"
   labels:
     app: higgs-audio-predictor
     component: predictor
