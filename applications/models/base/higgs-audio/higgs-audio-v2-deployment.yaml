@@ -17,14 +17,13 @@ apiVersion: apps/v1
 metadata:
   name: higgs-audio-predictor
   namespace: llama-serving
-  annotations:
-    monitoring.opendatahub.io/scrape: "true"
   labels:
     app: higgs-audio-predictor
     component: predictor
     kueue.x-k8s.io/queue-name: default
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
+    monitoring.opendatahub.io/scrape: "true"
 spec:
   replicas: 1
   selector:
