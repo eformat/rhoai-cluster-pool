@@ -71,11 +71,14 @@ spec:
                   gatewayClassName: openshift-ai-inference
                   listeners:
                     - allowedRoutes:
-                        namespaces:
-                          from: Selector
-                          selector:
-                            matchLabels:
-                              opendatahub.io/dashboard: "true"
+                      namespaces:
+                        from: All
+                    # - allowedRoutes:
+                    #     namespaces:
+                    #       from: Selector
+                    #       selector:
+                    #         matchLabels:
+                    #           opendatahub.io/dashboard: "true"
                       hostname: 'inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
                       name: https
                       port: 443
