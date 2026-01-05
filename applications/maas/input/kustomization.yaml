@@ -7,7 +7,7 @@ resources:
   - deployment.yaml
   - tiers-to-group-config-map.yaml
   - service-monitor.yaml
-  - auth-policy.yaml
+#  - auth-policy.yaml
   - http-route.yaml
   - rate-limit-policy.yaml
   - telemetry.yaml
