@@ -71,8 +71,8 @@ spec:
                   gatewayClassName: openshift-ai-inference
                   listeners:
                     - allowedRoutes:
-                      namespaces:
-                        from: All
+                        namespaces:
+                          from: All
                     # - allowedRoutes:
                     #     namespaces:
                     #       from: Selector
