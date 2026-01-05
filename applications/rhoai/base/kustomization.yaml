@@ -1,7 +1,7 @@
 ---
 resources:
-  # - dsci-cr.yaml
-  # - dsc-cr.yaml
+  - dsci-cr.yaml
+  - dsc-cr.yaml
   - odh-dashboard.yaml
 
 helmGlobals:
