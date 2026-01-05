@@ -27,7 +27,7 @@ spec:
       env:
         - name: VLLM_ADDITIONAL_ARGS
           value: "--gpu-memory-utilization 0.18"
-      resources:        
+      resources:
         limits:
           cpu: "2"
           memory: 4Gi
