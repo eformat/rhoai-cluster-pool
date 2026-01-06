@@ -60,13 +60,12 @@ spec:
                 metadata:
                   labels:
                     istio.io/rev: openshift-gateway
-                    opendatahub.io/managed: "false"
+                    opendatahub.io/managed: "true"
                   name: openshift-ai-inference
                   namespace: openshift-ingress
                   annotations:
                     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
                     argocd.argoproj.io/sync-wave: "2"
-                    opendatahub.io/managed: "false"
                 spec:
                   gatewayClassName: openshift-ai-inference
                   listeners:
