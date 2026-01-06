@@ -46,6 +46,7 @@ spec:
       enabled: true
       certSecretRef:
         name: authorino-server-cert
+  logLevel: debug
   oidcServer:
     tls:
       enabled: false
