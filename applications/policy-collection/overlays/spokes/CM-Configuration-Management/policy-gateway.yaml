@@ -72,7 +72,17 @@ spec:
                   listeners:
                     - allowedRoutes:
                         namespaces:
-                          from: All
+                          from: Selector
+                          selector:
+                            matchExpressions:
+                              - key: kubernetes.io/metadata.name
+                                operator: In
+                                values:
+                                  - llama-serving
+                                  - agent-demo
+                    # - allowedRoutes:
+                    #     namespaces:
+                    #       from: All
                     # - allowedRoutes:
                     #     namespaces:
                     #       from: Selector
