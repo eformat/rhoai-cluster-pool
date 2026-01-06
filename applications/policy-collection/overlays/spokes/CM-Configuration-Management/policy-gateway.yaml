@@ -70,19 +70,19 @@ spec:
                 spec:
                   gatewayClassName: openshift-ai-inference
                   listeners:
-                    - allowedRoutes:
-                        namespaces:
-                          from: Selector
-                          selector:
-                            matchExpressions:
-                              - key: kubernetes.io/metadata.name
-                                operator: In
-                                values:
-                                  - llama-serving
-                                  - agent-demo
                     # - allowedRoutes:
                     #     namespaces:
-                    #       from: All
+                    #       from: Selector
+                    #       selector:
+                    #         matchExpressions:
+                    #           - key: kubernetes.io/metadata.name
+                    #             operator: In
+                    #             values:
+                    #               - llama-serving
+                    #               - agent-demo
+                    - allowedRoutes:
+                        namespaces:
+                          from: All
                     # - allowedRoutes:
                     #     namespaces:
                     #       from: Selector
@@ -99,9 +99,9 @@ spec:
                             kind: Secret
                             name: default-gateway-tls
                         mode: Terminate
-                  infrastructure:
-                    labels:
-                      serving.kserve.io/gateway: kserve-ingress-gateway
+                  # infrastructure:
+                  #   labels:
+                  #     serving.kserve.io/gateway: kserve-ingress-gateway
             # - complianceType: musthave
             #   objectDefinition:
             #     apiVersion: gateway.networking.k8s.io/v1
