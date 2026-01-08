@@ -9,6 +9,8 @@ readonly RUN_DIR=$(pwd)
 HOSTED_ZONE=
 ACME_STAGING=${ACME_STAGING:-}
 ACME_SERVER=https://acme-v02.api.letsencrypt.org/directory
+DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+export BASE_DOMAIN="$(printf '%s' "$DOMAIN" | cut -d. -f2-)"
 
 if [ ! -z "${ACME_STAGING}" ]; then
     ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
