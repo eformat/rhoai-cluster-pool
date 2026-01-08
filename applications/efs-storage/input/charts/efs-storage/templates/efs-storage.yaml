@@ -13,8 +13,8 @@ metadata:
   name: efs-storage
   namespace: openshift-config
 spec:
-  backoffLimit: 5
-  activeDeadlineSeconds: 1200
+  backoffLimit: 25
+  activeDeadlineSeconds: 1800
   template:
     metadata:
       name: efs-storage
