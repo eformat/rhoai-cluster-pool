@@ -6,20 +6,56 @@ readonly ORANGE='\033[38;5;214m'
 readonly NC='\033[0m' # No Color
 readonly RUN_DIR=$(pwd)
 
+HOSTED_ZONE=
 ACME_STAGING=${ACME_STAGING:-}
 ACME_SERVER=https://acme-v02.api.letsencrypt.org/directory
-
-HOSTED_ZONE=$(cat /tmp/secrets/hostedzone)
-if [ -z "${HOSTED_ZONE}" ]; then
-    echo -e "🕱${RED}Failed - to get secret HOSTED_ZONE ?${NC}"
-    exit 1
-fi
-
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
 
 if [ ! -z "${ACME_STAGING}" ]; then
     ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
 fi
+
+get_hosted_zone() {
+    query='HostedZones[?Name==`'${BASE_DOMAIN}.'`]|[].Id'
+    export HOSTED_ZONE=$(aws route53 list-hosted-zones --query $query | jq .[])
+    [ -z "$HOSTED_ZONE" ] && echo "🕱 Error: HOSTED_ZONE not set" && exit 1
+    echo -e "${GREEN} Hosted Zone ${BASE_DOMAIN}. set to ${HOSTED_ZONE}${NC}"
+}
+
+create_caa_route53() {
+    echo "🌴 Running create_caa_route53..."
+
+aws route53 change-resource-record-sets \
+--region ${AWS_DEFAULT_REGION} \
+--hosted-zone-id $(echo ${HOSTED_ZONE} | sed 's/\/hostedzone\///g' | tr -d '"') \
+--change-batch file://<(cat << EOF
+{
+  "Comment": "Upsert CAA",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "caa.${BASE_DOMAIN}.",
+        "Type": "CAA",
+        "TTL": 300,
+        "ResourceRecords": [
+            {
+              "Value": "0 issuewild \"letsencrypt.org;\""
+            }
+        ]
+      }
+    }
+  ]
+}
+EOF
+)
+
+    if [ "$?" != 0 ]; then
+      echo -e "🚨${RED}Failed - to run create_caa_route53 ?${NC}"
+      exit 1
+    else
+      echo "🌴 create_caa_route53 ran OK"
+    fi
+}
 
 create_aws_secrets() {
     echo "🌴 Running create_aws_secrets..."
@@ -294,16 +330,17 @@ check_done() {
       echo "🌴 api-cert ran OK"
     fi
 
-    patch_api_server
-    patch_ingress
-
     return 0
 }
 
 all() {
+    echo "🌴 BASE_DOMAIN set to $BASE_DOMAIN"
+
     if check_done; then return; fi
 
     create_aws_secrets
+    get_hosted_zone
+    create_caa_route53
 
     update_cert_manager
 
@@ -328,15 +365,20 @@ EOF
 }
 
 # Check for EnvVars
-[ -z "$EMAIL" ] && echo "🕱 Error: must supply EMAIL in env" && exit 1
-[ -z "$HOSTED_ZONE" ] && echo "🕱 Error: must supply HOSTED_ZONE in env" && exit 1
-[ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit 1
+[ -z "$EMAIL" ] && echo "🕱 Error: must supply EMAIL in env or cli" && exit 1
+[ -z "$BASE_DOMAIN" ] && echo "🕱 Error: must supply BASE_DOMAIN in env or cli" && exit 1
+
+[ ! -z "$AWS_PROFILE" ] && echo "🌴 Using AWS_PROFILE: $AWS_PROFILE"
+[ -z "$AWS_PROFILE" ] && [ -z "$AWS_ACCESS_KEY_ID" ] && echo "🕱 Error: AWS_ACCESS_KEY_ID not set in env" && exit 1
+[ -z "$AWS_PROFILE" ] && [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "🕱 Error: AWS_SECRET_ACCESS_KEY not set in env" && exit 1
+[ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit
+
 
 # set these
-LE_API=api.$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
-LE_WILDCARD=$(oc get ingress.config/cluster -o 'jsonpath={.spec.domain}')
+LE_API=$(oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././')
+LE_WILDCARD=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
 [ -z "$LE_API" ] && echo "🕱 Error: LE_API could not set" && exit 1
-[ -z "$LE_WILDCARD" ] && echo "🕱 Error: LE_WILDCARD could not set" && exit 1
+[ -z "$LE_WILDCARD" ] && echo "🕱 Error: LE_WILDCARD could not set" && exit
 
 all
 

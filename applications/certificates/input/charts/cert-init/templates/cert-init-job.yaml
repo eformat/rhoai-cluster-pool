@@ -25,11 +25,16 @@ spec:
         env:
         - name: EMAIL
           value: {{ .Values.email }}
-        - name: HOSTED_ZONE
+        - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: route53-hostedzone
-              key: hostedzone
+              name: aws-creds
+              key: aws_access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-creds
+              key: aws_secret_access_key
         - name: AWS_DEFAULT_REGION
           value: {{ .Values.aws_default_region }}
         {{- if .Values.acme_staging }}
@@ -39,7 +44,7 @@ spec:
         command:
         - /bin/sh
         - '-x'
-        - /tmp/cert-config/certificates-spoke.sh
+        - /tmp/cert-config/certificates.sh
         resources: {}
         volumeMounts:
         - name: cert-config
@@ -63,9 +68,9 @@ spec:
       - name: cert-config
         configMap:
           items:
-          - key: certificates-spoke.sh
+          - key: certificates.sh
             mode: 509
-            path: certificates-spoke.sh
+            path: certificates.sh
           name: cert-init
       - emptyDir: {}
         name: cert-tmp
