@@ -10,7 +10,8 @@ HOSTED_ZONE=
 ACME_STAGING=${ACME_STAGING:-}
 ACME_SERVER=https://acme-v02.api.letsencrypt.org/directory
 DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
-export BASE_DOMAIN="$(printf '%s' "$DOMAIN" | cut -d. -f2-)"
+export BASE_DOMAIN=${BASE_DOMAIN:-$(printf '%s' "$DOMAIN" | cut -d. -f2-)}
+export LE_API=${LE_API:-api.${DOMAIN}}
 
 if [ ! -z "${ACME_STAGING}" ]; then
     ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
@@ -375,9 +376,7 @@ EOF
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "🕱 Error: AWS_SECRET_ACCESS_KEY not set in env" && exit 1
 [ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ] && echo "🕱 Error: AWS_DEFAULT_REGION not set in env" && exit
 
-
 # set these
-LE_API=$(oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././')
 LE_WILDCARD=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
 [ -z "$LE_API" ] && echo "🕱 Error: LE_API could not set" && exit 1
 [ -z "$LE_WILDCARD" ] && echo "🕱 Error: LE_WILDCARD could not set" && exit
