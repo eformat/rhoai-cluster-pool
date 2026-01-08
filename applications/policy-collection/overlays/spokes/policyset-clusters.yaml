@@ -12,8 +12,8 @@ spec:
     - argocd-spokes
     - vault-spokes
     - gpu-node-label-spokes
-    - route53-spokes
     - gateway-spokes
+    - aws-creds-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

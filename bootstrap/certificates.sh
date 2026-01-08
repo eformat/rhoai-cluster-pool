@@ -60,19 +60,6 @@ EOF
     fi
 }
 
-create_aws_secrets() {
-    echo "🌴 Running create_aws_secrets..."
-
-    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-config/' | oc -n openshift-config apply -f-
-    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-ingress/' | oc -n openshift-ingress apply -f-
-    export AWS_ACCESS_KEY_ID=$(oc get secret aws-creds -n kube-system -o template='{{index .data "aws_access_key_id"}}' | base64 -d)
-    if [ "$?" != 0 ]; then
-        echo -e "🚨${RED}Failed - to find aws_access_key_id ?${NC}"
-    fi
-
-    echo "🌴 create_aws_secrets ran OK"
-}
-
 update_cert_manager() {
 
     echo "🌴 Running update_cert_manager..."
@@ -341,7 +328,6 @@ all() {
 
     if check_done; then return; fi
 
-    create_aws_secrets
     get_hosted_zone
     create_caa_route53
 

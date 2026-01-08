@@ -4,5 +4,5 @@ resources:
   - policy-argocd.yaml
   - policy-vault.yaml
   - policy-gpu-node-label.yaml
-  - policy-route53.yaml
   - policy-gateway.yaml
+  - policy-aws-creds.yaml

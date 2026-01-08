@@ -8,15 +8,16 @@ metadata:
     policy.open-cluster-management.io/standards: NIST SP 800-53
   labels:
     requires-rolling-restart: none
-  name: route53-spokes
+  name: aws-creds-spokes
 spec:
+  remediationAction: enforce
   disabled: false
   policy-templates:
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: route53-spokes
+          name: aws-creds-spokes
         spec:
           object-templates:
             - complianceType: musthave
@@ -24,11 +25,23 @@ spec:
                 apiVersion: v1
                 kind: Secret
                 metadata:
-                  name: route53-hostedzone
+                  name: aws-creds
                   namespace: openshift-config
                 type: Opaque
                 data:
-                  hostedzone: '{{hub fromSecret "" "route53-hostedzone" "hostedzone" hub}}'
+                  aws_access_key_id: '{{fromSecret "kube-system" "aws-creds" "aws_access_key_id"}}'
+                  aws_secret_access_key: '{{fromSecret "kube-system" "aws-creds" "aws_secret_access_key"}}'
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Secret
+                metadata:
+                  name: aws-creds
+                  namespace: openshift-ingress
+                type: Opaque
+                data:
+                  aws_access_key_id: '{{fromSecret "kube-system" "aws-creds" "aws_access_key_id"}}'
+                  aws_secret_access_key: '{{fromSecret "kube-system" "aws-creds" "aws_secret_access_key"}}'
           remediationAction: inform
           severity: low
   remediationAction: enforce
