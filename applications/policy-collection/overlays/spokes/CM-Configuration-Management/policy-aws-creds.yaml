@@ -44,4 +44,3 @@ spec:
                   aws_secret_access_key: '{{fromSecret "kube-system" "aws-creds" "aws_secret_access_key"}}'
           remediationAction: inform
           severity: low
-  remediationAction: enforce
