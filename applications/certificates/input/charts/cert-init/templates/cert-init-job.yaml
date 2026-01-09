@@ -51,8 +51,6 @@ spec:
           mountPath: /tmp/cert-config
         - mountPath: /tmp
           name: cert-tmp
-        - name: route53-hostedzone
-          mountPath: /tmp/secrets
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         imagePullPolicy: Always
