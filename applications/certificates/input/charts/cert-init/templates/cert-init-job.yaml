@@ -13,8 +13,8 @@ metadata:
   name: cert-init
   namespace: openshift-config
 spec:
-  backoffLimit: 25
-  activeDeadlineSeconds: 1800
+  backoffLimit: 50
+  activeDeadlineSeconds: 7200
   template:
     metadata:
       name: cert-init
@@ -61,10 +61,6 @@ spec:
       securityContext: {}
       restartPolicy: OnFailure
       volumes:
-      - name: route53-hostedzone
-        secret:
-          secretName: route53-hostedzone
-          defaultMode: 420
       - name: cert-config
         configMap:
           items:
