@@ -8,10 +8,10 @@ helmCharts:
   #   releaseName: otel-collector
   #   valuesFile: values.yaml
 
-  # - name: distributed-tracing-ui-plugin
-  #   includeCRDs: true
-  #   releaseName: distributed-tracing-ui-plugin
-  #   valuesFile: values.yaml
+  - name: distributed-tracing-ui-plugin
+    includeCRDs: true
+    releaseName: distributed-tracing-ui-plugin
+    valuesFile: values.yaml
 
   - name: grafana
     includeCRDs: true

@@ -14,17 +14,17 @@ operators:
     enabled: true
 
   # grafana
-  # - name: grafana-operator
-  #   namespace:
-  #     name: openshift-grafana-operator
-  #     create: true
-  #     global: true
-  #   channels: [v5] # v0,1
-  #   version: "5.20.0" # v1
-  #   catalog: community-operators #v1
-  #   source: redhat-operators # v0
-  #   sourceNamespace: openshift-marketplace # v0
-  #   enabled: true
+  - name: grafana-operator
+    namespace:
+      name: openshift-grafana-operator
+      create: true
+      global: true
+    channels: [v5] # v0,1
+    version: "5.20.0" # v1
+    catalog: community-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
 
   # otel
   - name: opentelemetry-product
