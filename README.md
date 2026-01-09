@@ -51,6 +51,7 @@ spec:
     - kind: Group
       apiGroup: rbac.authorization.k8s.io
       name: 'system:masters'
+  # lifetime: 24h
 EOF
 ```
 

@@ -49,6 +49,7 @@ spec:
     - kind: Group
       apiGroup: rbac.authorization.k8s.io
       name: 'system:masters'
+  # lifetime: 24h
 EOF
     if [ "$?" != 0 ]; then
       echo -e "🚨${RED}Failed - to claim cluster ${CLUSTER_NAME} from pool ${CLUSTER_POOL} ?${NC}"
