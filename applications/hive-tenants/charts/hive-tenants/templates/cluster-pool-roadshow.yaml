@@ -1,0 +1,20 @@
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterPool
+metadata:
+  name: {{ .Values.clusterPoolName }}-{{ .Values.guid }}
+  namespace: cluster-pools
+spec:
+  baseDomain: {{ .Values.baseDomain }}
+  imageSetRef:
+    name: {{ .Values.imageSetRef }}
+  installConfigSecretTemplateRef: 
+    name: roadshow-install-config-template-{{ .Values.guid }}
+  skipMachinePools: true
+  runningCount: {{ .Values.runningCount }}
+  platform:
+    aws:
+      credentialsSecretRef:
+        name: aws-creds-{{ .Values.guid }}
+      region: {{ .Values.region }}
+  size: {{ .Values.size }}
