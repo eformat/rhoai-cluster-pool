@@ -105,7 +105,7 @@ spec:
             - name: cache
               mountPath: /.cache
           terminationMessagePolicy: File
-          image: "docker.io/bosonai/higgs-audio-vllm:latest"
+          image: "quay.io/eformat/higgs-audio-vllm:latest"
       automountServiceAccountToken: false
       volumes:
         - name: shm
