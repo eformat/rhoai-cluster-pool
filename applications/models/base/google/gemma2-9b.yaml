@@ -1,0 +1,89 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  name: gemma-sample
+  annotations:
+    openshift.io/display-name: gemma-sample
+    opendatahub.io/hardware-profile-name: small-gpu
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    security.opendatahub.io/enable-auth: "true"
+  labels:
+    app.kubernetes.io/component: llminference
+    app.kubernetes.io/instance: gemma-sample
+    app.kubernetes.io/name: gemma-sample
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+    kueue.x-k8s.io/queue-name: default
+spec:
+  replicas: 1
+  router:
+    route: {}
+    gateway: {}
+  template:
+    containers:
+      - env:
+          - name: VLLM_ADDITIONAL_ARGS
+            value: '--enable-auto-tool-choice --tool-call-parser=pythonic --max-model-len 8192 --gpu-memory-utilization 0.7'
+        name: main
+        resources:
+          requests:
+            cpu: "1"
+            memory: 8Gi
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "1"
+            memory: 8Gi
+            nvidia.com/gpu: "1"
+  model:
+    uri: oci://registry.redhat.io/rhelai1/modelcar-gemma-2-9b-it-fp8:1.5
+    name: RedHatAI/gemma-2-9b-it-FP8
+
+# AUTH-RESOURCES-START
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gemma-sample-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gemma-sample-sa-gemma-sample-sa
+  annotations:
+    kubernetes.io/service-account.name: "gemma-sample-sa"
+    openshift.io/display-name: gemma-sample-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: gemma-sample-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - gemma-sample
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: gemma-sample-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gemma-sample-view-role
+subjects:
+- kind: ServiceAccount
+  name: gemma-sample-sa
+# AUTH-RESOURCES-END
