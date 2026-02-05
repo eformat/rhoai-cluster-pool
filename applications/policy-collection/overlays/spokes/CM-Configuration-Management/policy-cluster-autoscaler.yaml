@@ -1,0 +1,44 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration, Rolling Restart - None  # None, Control, Compute, All
+  labels:
+    requires-rolling-restart: none
+  name: cluster-autoscaler-spokes
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: cluster-autoscaler-spokes
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: autoscaling.openshift.io/v1
+                kind: ClusterAutoscaler
+                metadata:
+                  name: default
+                spec:
+                  podPriorityThreshold: -10
+                  resourceLimits:
+                    gpus:
+                      - max: 3
+                        min: 0
+                        type: nvidia.com/gpu
+                  scaleDown:
+                    delayAfterAdd: 30m
+                    delayAfterDelete: 5m
+                    delayAfterFailure: 30s
+                    enabled: true
+                    unneededTime: 15m
+                    utilizationThreshold: '0.7'
+          remediationAction: inform
+          severity: low

@@ -6,3 +6,4 @@ resources:
   - policy-gpu-node-label.yaml
   - policy-gateway.yaml
   - policy-aws-creds.yaml
+  - policy-cluster-autoscaler.yaml

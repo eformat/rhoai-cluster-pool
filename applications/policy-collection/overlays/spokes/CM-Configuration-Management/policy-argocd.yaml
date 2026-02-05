@@ -3,9 +3,9 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   annotations:
-    policy.open-cluster-management.io/categories: AC Access Control
-    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
     policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration, Rolling Restart - None  # None, Control, Compute, All
   labels:
     requires-rolling-restart: none
   name: argocd-spokes
