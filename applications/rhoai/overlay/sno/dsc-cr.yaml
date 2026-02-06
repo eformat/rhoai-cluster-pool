@@ -28,6 +28,8 @@ spec:
       managementState: Unmanaged
     llamastackoperator:
       managementState: Managed
+    mlflowoperator:
+      managementState: Managed
     modelregistry:
       managementState: Managed
       registriesNamespace: rhoai-model-registries
