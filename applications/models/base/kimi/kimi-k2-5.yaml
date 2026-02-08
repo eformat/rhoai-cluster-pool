@@ -29,6 +29,8 @@ spec:
       env:
         - name: TIKTOKEN_CACHE_DIR
           value: /tmp
+        - name: VLLM_LOGGING_LEVEL
+          value: DEBUG
       args:
         - --served-model-name={{.Name}}
         - --model=/mnt/models
@@ -49,14 +51,42 @@ spec:
         - python
         - -m
         - vllm.entrypoints.openai.api_server
+      startupProbe:
+        httpGet:
+          path: /health
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 1800
+        failureThreshold: 30
+        periodSeconds: 10
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 1800
+        timeoutSeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 60
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 1800
+        timeoutSeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 3
       resources:
         limits:
-          cpu: "16"
-          memory: 32Gi
+          cpu: "32"
+          memory: 128Gi
           nvidia.com/gpu: "8"
         requests:
-          cpu: "16"
-          memory: 32Gi
+          cpu: "32"
+          memory: 128Gi
           nvidia.com/gpu: "8"
 ---
 apiVersion: v1
