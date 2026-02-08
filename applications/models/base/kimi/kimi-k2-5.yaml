@@ -37,7 +37,7 @@ spec:
         - --ssl-keyfile=/var/run/kserve/tls/tls.key
         - --distributed-executor-backend=mp
         - --nnodes=1
-        - --tensor-parallel-size=6
+        - --tensor-parallel-size=8
         - --pipeline-parallel-size=1
         - --trust-remote-code
         - --enable-auto-tool-choice
@@ -51,13 +51,13 @@ spec:
         - vllm.entrypoints.openai.api_server
       resources:
         limits:
-          cpu: "8"
+          cpu: "16"
           memory: 32Gi
-          nvidia.com/gpu: "6"
+          nvidia.com/gpu: "8"
         requests:
-          cpu: "8"
+          cpu: "16"
           memory: 32Gi
-          nvidia.com/gpu: "6"
+          nvidia.com/gpu: "8"
 ---
 apiVersion: v1
 kind: ServiceAccount
