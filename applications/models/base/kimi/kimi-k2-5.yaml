@@ -20,7 +20,7 @@ spec:
   router:
     gateway:
       refs:
-      - name: 
+      - name: openshift-ai-inference
         namespace: openshift-ingress
     route: {}
   template:
