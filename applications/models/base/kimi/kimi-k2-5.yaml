@@ -51,12 +51,12 @@ spec:
         - vllm.entrypoints.openai.api_server
       resources:
         limits:
-          cpu: "2"
-          memory: 12Gi
+          cpu: "8"
+          memory: 32Gi
           nvidia.com/gpu: "4"
         requests:
-          cpu: "2"
-          memory: 12Gi
+          cpu: "8"
+          memory: 32Gi
           nvidia.com/gpu: "4"
 ---
 apiVersion: v1
