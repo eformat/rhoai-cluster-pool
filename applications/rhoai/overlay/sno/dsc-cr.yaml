@@ -35,6 +35,8 @@ spec:
       registriesNamespace: rhoai-model-registries
     ray:
       managementState: Managed
+    trainer:
+      managementState: Managed
     trainingoperator:
       managementState: Managed
     trustyai:

@@ -51,6 +51,7 @@ spec:
     enablement: true
     genAiStudio: true
     modelAsService: true
+    trainingJobs: true
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated
