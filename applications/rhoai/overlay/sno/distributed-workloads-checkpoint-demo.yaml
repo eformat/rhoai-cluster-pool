@@ -1,0 +1,106 @@
+# ---
+# apiVersion: kueue.x-k8s.io/v1beta1
+# kind: ResourceFlavor
+# metadata:
+#   name: nvidia-gpu-flavor
+#   annotations:
+#     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+#     argocd.argoproj.io/sync-wave: "3"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  annotations:
+    platform.opendatahub.io/instance.name: checkpointing-cq
+  labels:
+    platform.opendatahub.io/part-of: kueue
+  name: default-flavor
+spec: {}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  annotations:
+    platform.opendatahub.io/instance.name: checkpointing-cq
+  labels:
+    platform.opendatahub.io/part-of: kueue
+  name: nvidia-gpu-flavor
+spec: {}
+---
+kind: Kueue
+apiVersion: kueue.openshift.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: kueue-operator
+  name: cluster
+spec:
+  config:
+    integrations:
+      frameworks:
+        - BatchJob
+        - Deployment
+        - Pod
+        - PyTorchJob
+        - RayCluster
+        - RayJob
+        - StatefulSet
+        - TrainJob
+    preemption:
+      preemptionPolicy: Classical
+  logLevel: Normal
+  managementState: Managed
+  operatorLogLevel: Normal
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: normal-priority
+value: 1000
+description: "normal priority"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: high-priority
+value: 9999
+description: "normal priority"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: "checkpointing-cq"
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  namespaceSelector: {}  # match all.
+  preemption:
+    reclaimWithinCohort: Any
+    borrowWithinCohort:
+      policy: LowerPriority
+      maxPriorityThreshold: 100
+    withinClusterQueue: LowerPriority
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: "default-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: '32'
+      - name: "memory"
+        nominalQuota: 256Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: '1'
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: model-checkpointing-demo
+  name: checkpointing-lq
+  annotations:
+    kueue.x-k8s.io/default-queue: 'true'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  clusterQueue: checkpointing-cq
