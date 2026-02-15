@@ -7,7 +7,7 @@ spec:
   description: "Policies for cluster configuration"
   policies:
     - cluster-admin-spokes
-    # - oauth-htpasswd
+    - oauth-htpasswd
     - operators-spokes
     - argocd-spokes
     - vault-spokes
