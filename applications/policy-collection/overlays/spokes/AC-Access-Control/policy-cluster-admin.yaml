@@ -18,7 +18,8 @@ spec:
         metadata:
           name: cluster-admin-spokes
         spec:
-          object-templates:
+          object-templates-raw: |
+            {{- if not (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: rbac.authorization.k8s.io/v1
@@ -41,6 +42,30 @@ spec:
                   name: admin
                 users:
                   - admin
+            {{- else }}
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  name: admingroup-cluster-rolebinding-0
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: admingroup-cluster-rolebinding
+                subjects:
+                  - apiGroup: rbac.authorization.k8s.io
+                    kind: User
+                    name: admin
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: user.openshift.io/v1
+                kind: Group
+                metadata:
+                  name: admin
+                users:
+                  - admin
+            {{- end }}
           remediationAction: inform
           severity: low
   remediationAction: enforce
