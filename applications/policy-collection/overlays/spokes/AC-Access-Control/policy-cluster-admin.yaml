@@ -45,18 +45,15 @@ spec:
             {{- else }}
             - complianceType: mustonlyhave
               objectDefinition:
-                apiVersion: rbac.authorization.k8s.io/v1
-                kind: ClusterRoleBinding
+                apiVersion: services.platform.opendatahub.io/v1alpha1
+                kind: Auth
                 metadata:
-                  name: admingroup-cluster-rolebinding-0
-                roleRef:
-                  apiGroup: rbac.authorization.k8s.io
-                  kind: ClusterRole
-                  name: admingroup-cluster-rolebinding
-                subjects:
-                  - apiGroup: rbac.authorization.k8s.io
-                    kind: Group
-                    name: admin
+                  name: auth
+                spec:
+                  adminGroups:
+                  - admin
+                  allowedGroups:
+                  - system:authenticated
             - complianceType: musthave
               objectDefinition:
                 apiVersion: user.openshift.io/v1
