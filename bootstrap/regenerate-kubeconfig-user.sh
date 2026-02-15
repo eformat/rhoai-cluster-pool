@@ -57,4 +57,4 @@ oc config use-context $USER --kubeconfig=${tmp_file}
 echo "test client certificate authentication with $USER"
 export KUBECONFIG=${tmp_file}
 oc login -u $USER
-oc get pod -n default
+oc get pod
