@@ -1,0 +1,8 @@
+apiVersion: v2
+name: mcp-gateway-instance
+description: MCP Gateway Instance
+type: application
+version: 0.5.0
+appVersion: 0.5.0
+maintainers:
+  - name: eformat

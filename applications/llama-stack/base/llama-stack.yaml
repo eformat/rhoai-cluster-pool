@@ -3,60 +3,73 @@ apiVersion: llamastack.io/v1alpha1
 kind: LlamaStackDistribution
 metadata:
   annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"llamastack.io/v1alpha1","kind":"LlamaStackDistribution","metadata":{"annotations":{},"name":"llamastack-with-config","namespace":"default"},"spec":{"replicas":1,"server":{"containerSpec":{"port":8321},"distribution":{"name":"remote-vllm"},"userConfig":{"configMapName":"llama-stack-config"}}}}
-  name: llamastack-with-config
+    openshift.io/display-name: lsd-genai-playground
+  labels:
+    opendatahub.io/dashboard: 'true'
+  name: lsd-genai-playground
 spec:
   replicas: 1
   server:
     containerSpec:
+      command:
+      - /bin/sh
+      - -c
+      - llama stack run /etc/llama-stack/run.yaml
+      env:
+        - name: VLLM_TLS_VERIFY
+          value: 'false'
+        - name: MILVUS_DB_PATH
+          value: ~/.llama/milvus.db
+        - name: FMS_ORCHESTRATOR_URL
+          value: 'http://localhost'
+        - name: LLAMA_STACK_CONFIG_DIR
+          value: /opt/app-root/src/.llama/distributions/rh/
+        - name: TELEMETRY_SINKS
+          value: 'console, otel_trace, otel_metric'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://data-science-collector-collector.redhat-ods-monitoring.svc.cluster.local:4318
+        - name: OTEL_SERVICE_NAME
+          value: lsd-genai-playground-service
+        - name: QWEN_MODEL
+          value: /mnt/models/Qwen3-1.7B-Q8_0.gguf
+        - name: QWEN_URL
+          value: http://sno-qwen31.llama-serving.svc.cluster.local:80/v1
+        - name: DEEPSEEK_URL
+          value: http://sno-deepseek-qwen3-vllm-predictor.llama-serving.svc.cluster.local:8080/v1
+        - name: DEEPSEEK_MODEL
+          value: deepseek-r1-0528-qwen3-8b-bnb-4bit
+        - name: LLAMA3B_MODEL
+          value: llama3-2-3b
+        - name: LLAMA3B_URL
+          value: http://llama3-2-3b-predictor.llama-serving.svc.cluster.local:8080/v1
+        - name: GRANITE_MODEL
+          value: granite-3.2-2b-instruct
+        - name: GRANITE_URL
+          value: http://sno-granite32/v1
+        - name: LLAMA_4_SCOUT_17B_16E_W4A16_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: llama-4-scout-17b-16e-w4a16
+              key: apiKey
+        - name: TAVILY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tavily-search-key
+              key: tavily-search-api-key
+        - name: LLAMA_STACK_LOGGING
+          value: all=debug
       name: llama-stack
       port: 8321
-      env:
-      - name: TELEMETRY_SINKS
-        value: 'console, sqlite, otel_trace, otel_metric'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-collector-collector.observability-hub.svc.cluster.local:4318
-      - name: OTEL_SERVICE_NAME
-        value: llamastack
-      - name: QWEN_MODEL
-        value: /mnt/models/Qwen3-1.7B-Q8_0.gguf
-      - name: QWEN_URL
-        value: http://sno-qwen31.llama-serving.svc.cluster.local:80/v1
-      - name: DEEPSEEK_URL
-        value: 'http://sno-deepseek-qwen3-vllm-predictor.llama-serving.svc.cluster.local:8080/v1'
-      - name: DEEPSEEK_MODEL
-        value: deepseek-r1-0528-qwen3-8b-bnb-4bit
-      - name: LLAMA3B_MODEL
-        value: llama3-2-3b
-      - name: LLAMA3B_URL
-        value: http://llama3-2-3b-predictor.llama-serving.svc.cluster.local:8080/v1
-      - name: GRANITE_MODEL
-        value: granite-3.2-2b-instruct
-      - name: GRANITE_URL
-        value: http://sno-granite32/v1
-      - name: LLAMA_3_2_3B_API_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: llama-3-2-3b
-            key: apiKey
-      - name: LLAMA_4_SCOUT_17B_16E_W4A16_API_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: llama-4-scout-17b-16e-w4a16
-            key: apiKey
-      - name: TAVILY_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: tavily-search-key
-            key: tavily-search-api-key
-      - name: MILVUS_DB_PATH
-        value: milvus.db
-      - name: LLAMA_STACK_LOGGING
-        value: all=debug
+      resources:
+        limits:
+          cpu: "2"
+          memory: 12Gi
+        requests:
+          cpu: 250m
+          memory: 500Mi
     distribution:
       #name: remote-vllm
-      #name: rh-dev
-      image: quay.io/eformat/distribution-remote-vllm:0.2.15
+      name: rh-dev
+      #image: quay.io/eformat/distribution-remote-vllm:0.2.15
     userConfig:
       configMapName: llama-stack-config

@@ -1,0 +1,21 @@
+
+# https://github.com/Kuadrant/mcp-gateway/blob/main/config/openshift/deploy_openshift.sh
+---
+mcp-gateway:
+  controller:
+    enabled: false
+  broker:
+    create: true
+  gateway:
+    create: true
+    name: mcp-gateway
+    namespace: openshift-ingress
+    publicHost: mcp.apps.roadshow-6kr2w.sandbox1763.opentlc.com
+    internalHostPattern: "*.mcp.local"
+  httpRoute:
+    create: true
+  mcpGatewayExtension:
+    create: true
+  envoyFilter:
+    create: true
+    namespace: openshift-ingress

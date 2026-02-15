@@ -5,87 +5,72 @@ metadata:
 data:
   run.yaml: |
     # Llama Stack Configuration
-    version: '2'
-    image_name: remote-vllm
+    version: "2"
+    image_name: rh
     apis:
     - agents
     - datasetio
-    - eval
+    - files
     - inference
     - safety
     - scoring
-    - telemetry
+    # - telemetry
     - tool_runtime
     - vector_io
-    models:
-    - metadata: {}
-      model_id: ${env.LLAMA3B_MODEL:=}
-      provider_id: llama-3b
-      model_type: llm
-    - metadata: {}
-      model_id: ${env.DEEPSEEK_MODEL:=}
-      provider_id: deepseek
-      model_type: llm
-    - metadata: {}
-      model_id: llama-4-scout-17b-16e-w4a16
-      provider_id: vllm-llama-4-guard
-      provider_model_id: llama-4-scout-17b-16e-w4a16
-      model_type: llm
-    - metadata:
-        embedding_dimension: 384
-      model_id: all-MiniLM-L6-v2
-      provider_id: sentence-transformers
-      model_type: embedding
     providers:
       inference:
-      - provider_id: llama-3b
-        provider_type: remote::vllm
-        config:
-          url: ${env.LLAMA3B_URL:=}
-          max_tokens: ${env.LLAMA3B_TOKENS:=15000}
-          api_token: ${env.LLAMA3B_API_TOKEN:=fake}
-          tls_verify: ${env.LLAMA3B_TLS_VERIFY:=false}
-      - provider_id: deepseek
-        provider_type: remote::vllm
-        config:
-          url: ${env.DEEPSEEK_URL:=}
-          max_tokens: ${env.DEEPSEEK_TOKENS:=10000}
-          api_token: ${env.DEEPSEEK_API_TOKEN:=fake}
-          tls_verify: ${env.DEEPSEEK_TLS_VERIFY:=false}
       - provider_id: sentence-transformers
         provider_type: inline::sentence-transformers
         config: {}
-      - provider_id: vllm-llama-4-guard
-        provider_type: "remote::vllm"
+      - provider_id: vllm-inference-1
+        provider_type: remote::vllm
         config:
-          url: "https://llama-4-scout-17b-16e-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1"
-          max_tokens: 110000
-          api_token: ${env.LLAMA_4_SCOUT_17B_16E_W4A16_API_TOKEN}
-          tls_verify: true
-      safety:
-      - provider_id: llama-guard
-        provider_type: inline::llama-guard
+          api_token: ${env.VLLM_API_TOKEN_1:=fake}
+          max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          url: http://deepseek-r1-0528-qwen3-8b-bnb-4bit-predictor.llama-serving.svc.cluster.local/v1
+      - provider_id: vllm-inference-2
+        provider_type: remote::vllm
         config:
-          excluded_categories: []
+          api_token: ${env.VLLM_API_TOKEN_2:=fake}
+          max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          url: http://llama3-2-3b-predictor.llama-serving.svc.cluster.local/v1
+      vector_io:
+      - provider_id: milvus
+        provider_type: inline::milvus
+        config:
+          db_path: /opt/app-root/src/.llama/distributions/rh/milvus.db
+          persistence:
+            backend: kv_default
+            namespace: vector_io::milvus
       agents:
       - provider_id: meta-reference
         provider_type: inline::meta-reference
         config:
-          persistence_store:
-            type: sqlite
-            namespace: null
-            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/agents_store.db
-          responses_store:
-            type: sqlite
-            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/responses_store.db
-      eval:
-      - provider_id: meta-reference
-        provider_type: inline::meta-reference
+          persistence:
+            agent_state:
+              backend: kv_default
+              namespace: agents
+            responses:
+              backend: sql_default
+              table_name: responses
+      eval: []
+      files:
+      - provider_id: meta-reference-files
+        provider_type: inline::localfs
+        config:
+          metadata_store:
+            backend: sql_default
+            table_name: files_metadata
+          storage_dir: /opt/app-root/src/.llama/distributions/rh/files
+      datasetio:
+      - provider_id: huggingface
+        provider_type: remote::huggingface
         config:
           kvstore:
-            type: sqlite
-            namespace: null
-            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/meta_reference_eval.db
+            backend: kv_default
+            namespace: datasetio::huggingface
       scoring:
       - provider_id: basic
         provider_type: inline::basic
@@ -93,27 +78,6 @@ data:
       - provider_id: llm-as-judge
         provider_type: inline::llm-as-judge
         config: {}
-      - provider_id: braintrust
-        provider_type: inline::braintrust
-        config:
-          openai_api_key: ${env.OPENAI_API_KEY:}
-      telemetry:
-      - provider_id: meta-reference
-        provider_type: inline::meta-reference
-        config:
-          service_name: ${env.OTEL_SERVICE_NAME:=llama-stack}
-          sinks: ${env.TELEMETRY_SINKS:=console, sqlite, otel_metric, otel_trace}
-          otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
-          sqlite_db_path: ${env.SQLITE_DB_PATH:=~/.llama/distributions/remote-vllm/trace_store.db}
-      vector_io:
-      - provider_id: milvus
-        provider_type: remote::milvus
-        config:
-          uri: http://milvus-service.milvus.svc.cluster.local:19530
-          token: null
-          kvstore:
-            type: sqlite
-            db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/milvus_registry.db
       tool_runtime:
       - provider_id: rag-runtime
         provider_type: inline::rag-runtime
@@ -121,42 +85,62 @@ data:
       - provider_id: model-context-protocol
         provider_type: remote::model-context-protocol
         config: {}
-      - provider_id: brave-search
-        provider_type: remote::brave-search
-        config:
-          api_key: brave-search-api-key
-      - config:
-          api_key: ${env.TAVILY_SEARCH_API_KEY:=}
-          max_results: 3
-        provider_id: tavily-search
-        provider_type: remote::tavily-search
+      # telemetry:
+      # - provider_id: meta-reference
+      #   provider_type: inline::meta-reference
+      #   config:
+      #     service_name: "${env.OTEL_SERVICE_NAME:=}"
+      #     sinks: ${env.TELEMETRY_SINKS:=console}
+      #     sqlite_db_path: /opt/app-root/src/.llama/distributions/rh/trace_store.db
+      #     otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
     metadata_store:
       type: sqlite
-      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
-    inference_store:
-      type: sqlite
-      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/inference_store.db
-    shields: []
-    vector_dbs: []
-    datasets: []
-    scoring_fns: []
-    benchmarks: []
-    tool_groups:
-    - provider_id: tavily-search
-      toolgroup_id: builtin::websearch
-    - toolgroup_id: builtin::rag
-      provider_id: rag-runtime
-    - toolgroup_id: mcp::weather
-      provider_id: model-context-protocol
-      mcp_endpoint:
-        uri: http://mcp-weather.agent-demo.svc.cluster.local:80/sse
-    - toolgroup_id: mcp::openshift
-      provider_id: model-context-protocol
-      mcp_endpoint:
-        uri: http://ocp-mcp-server.agent-demo.svc.cluster.local:8000/sse
-    - toolgroup_id: mcp::fast-mcp-tools
-      provider_id: model-context-protocol
-      mcp_endpoint:
-        uri: http://fast-mcp-tools.agent-demo.svc.cluster.local:8000/sse
+      db_path: /opt/app-root/src/.llama/distributions/rh/inference_store.db
+    storage:
+      backends:
+        kv_default:
+          db_path: /opt/app-root/src/.llama/distributions/rh/kvstore.db
+          type: kv_sqlite
+        sql_default:
+          db_path: /opt/app-root/src/.llama/distributions/rh/sql_store.db
+          type: sql_sqlite
+      stores:
+        conversations:
+          backend: sql_default
+          table_name: openai_conversations
+        inference:
+          backend: sql_default
+          table_name: inference_store
+        metadata:
+          backend: kv_default
+          namespace: registry
+    registered_resources:
+      models:
+      - provider_id: sentence-transformers
+        model_id: sentence-transformers/ibm-granite/granite-embedding-125m-english
+        provider_model_id: ibm-granite/granite-embedding-125m-english
+        model_type: embedding
+        metadata:
+          embedding_dimension: 768
+      - provider_id: vllm-inference-1
+        model_id: deepseek-r1-0528-qwen3-8b-bnb-4bit
+        model_type: llm
+        metadata:
+          display_name: deepseek-r1-0528-qwen3-8b-bnb-4bit
+      - provider_id: vllm-inference-2
+        model_id: llama3-2-3b
+        model_type: llm
+        metadata:
+          display_name: llama3.2-3b
+      shields: []
+      vector_dbs: []
+      datasets: []
+      scoring_fns: []
+      benchmarks: []
+      tool_groups:
+      - toolgroup_id: builtin::rag
+        provider_id: rag-runtime
     server:
       port: 8321
+    telemetry:
+      enabled: true

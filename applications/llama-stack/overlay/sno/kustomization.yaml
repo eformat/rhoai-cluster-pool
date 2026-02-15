@@ -1,6 +1,6 @@
 ---
-namespace: llama-stack
+namespace: llama-serving
 
 resources:
   - ../../base
-  - namespace.yaml
+  # - namespace.yaml

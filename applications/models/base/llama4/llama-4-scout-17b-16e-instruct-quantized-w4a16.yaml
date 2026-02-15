@@ -4,18 +4,20 @@ kind: LLMInferenceService
 metadata:
   annotations:
     opendatahub.io/model-type: generative
-    openshift.io/display-name: kimi-k2-5
-    security.opendatahub.io/enable-auth: "true"
+    openshift.io/display-name: Llama-4-Scout-17B-16E-W4A16
+    security.opendatahub.io/enable-auth: "false"
   labels:
     kueue.x-k8s.io/queue-name: default
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
-  name: kimi-k2-5
+  name: llama-4-scout-17b-16e-w4a16
 spec:
   model:
-    name: kimi-k2-5
-    #uri: hf://moonshotai/Kimi-K2.5
-    uri: "pvc://task-pv-claim/kimi-k2-5"
+    name: llama-4-scout-17b-16e-w4a16
+    uri: "pvc://llama-4-scout/models"
+  parallelism:
+    tensor: 4
+    pipeline: 1
   replicas: 1
   router: {}
   template:
@@ -29,18 +31,17 @@ spec:
       args:
         - --served-model-name={{.Name}}
         - --model=/mnt/models
+        - --max-model-len=400000
         - --enable-ssl-refresh
         - --ssl-certfile=/var/run/kserve/tls/tls.crt
         - --ssl-keyfile=/var/run/kserve/tls/tls.key
         - --distributed-executor-backend=mp
-        - --nnodes=1
-        - --tensor-parallel-size=8
-        - --pipeline-parallel-size=1
         - --trust-remote-code
         - --enable-auto-tool-choice
-        - --tool-call-parser=kimi_k2
-        - --mm-encoder-tp-mode data
-        - --enable-expert-parallel
+        - --tool-call-parser
+        - llama4_pythonic
+        - --chat-template
+        - /app/data/template/tool_chat_template_llama4_pythonic.jinja
       image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
       command:
         - python
@@ -51,7 +52,7 @@ spec:
           path: /v1/models
           port: 8000
           scheme: HTTPS
-        initialDelaySeconds: 7200
+        initialDelaySeconds: 1800
         failureThreshold: 10
         periodSeconds: 20
       readinessProbe:
@@ -76,54 +77,8 @@ spec:
         limits:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "4"
         requests:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "8"
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: kimi-k2-5-sa
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kimi-k2-5-sa-kimi-k2-5-sa
-  annotations:
-    kubernetes.io/service-account.name: "kimi-k2-5-sa"
-    openshift.io/display-name: kimi-k2-5-sa
-  labels:
-    opendatahub.io/dashboard: "true"
-type: kubernetes.io/service-account-token
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: kimi-k2-5-view-role
-rules:
-- apiGroups:
-  - serving.kserve.io
-  resourceNames:
-  - kimi-k2-5
-  resources:
-  - llminferenceservices
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: kimi-k2-5-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: kimi-k2-5-view-role
-subjects:
-- kind: ServiceAccount
-  name: kimi-k2-5-sa
+          nvidia.com/gpu: "4"

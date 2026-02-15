@@ -1,0 +1,24 @@
+# https://github.com/Kuadrant/mcp-gateway/blob/main/config/openshift/deploy_openshift.sh
+---
+resources:
+  - namespace.yaml
+  - gateway-class.yaml
+
+helmCharts:
+  # Install MCP Gateway Controller (cluster-wide, no broker)
+  - name: mcp-gateway
+    namespace: mcp-system
+    includeCRDs: true
+    valuesFile: charts/mcp-gateway/values.yaml
+    version: 0.5.0
+    releaseName: mcp-gateway
+    repo: # local chart
+
+  # Install MCP Gateway Instance (broker + gateway + routes)
+  - name: mcp-gateway-instance
+    namespace: mcp-system
+    includeCRDs: false
+    valuesFile: charts/mcp-gateway-instance/values.yaml
+    version: 0.5.0
+    releaseName: mcp-gateway-instance
+    repo: # local chart

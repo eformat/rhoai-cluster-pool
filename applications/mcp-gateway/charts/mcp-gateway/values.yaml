@@ -1,0 +1,17 @@
+
+# https://github.com/Kuadrant/mcp-gateway/blob/main/config/openshift/deploy_openshift.sh
+---
+mcp-gateway:
+  controller:
+    enabled: true
+  broker:
+    create: false
+  gateway:
+    create: false
+  httpRoute:
+    create: false
+  mcpGatewayExtension:
+    create: false
+  envoyFilter:
+    create: false
+

@@ -1,0 +1,80 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: GPT-OSS-20B
+    security.opendatahub.io/enable-auth: "false"
+  labels:
+    kueue.x-k8s.io/queue-name: default
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: gpt-oss-20b
+spec:
+  model:
+    name: gpt-oss-20b
+    uri: "pvc://gpt-oss/models"
+  parallelism:
+    tensor: 1
+    pipeline: 1
+  replicas: 1
+  router: {}
+  template:
+    containers:
+    - name: main
+      env:
+        - name: HF_HOME
+          value: /tmp
+        - name: TIKTOKEN_CACHE_DIR
+          value: /tmp
+        - name: VLLM_CACHE_ROOT
+          value: /tmp
+        - name: VLLM_LOGGING_LEVEL
+          value: DEBUG
+      args:
+        - --served-model-name={{.Name}}
+        - --model=/mnt/models
+        - --enable-ssl-refresh
+        - --ssl-certfile=/var/run/kserve/tls/tls.crt
+        - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
+      command:
+        - python
+        - -m
+        - vllm.entrypoints.openai.api_server
+      startupProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 600
+        failureThreshold: 10
+        periodSeconds: 20
+      readinessProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        timeoutSeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 60
+      livenessProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        timeoutSeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 3
+      resources:
+        limits:
+          cpu: "6"
+          memory: 42Gi
+          nvidia.com/gpu: "1"
+        requests:
+          cpu: "6"
+          memory: 42Gi
+          nvidia.com/gpu: "1"
