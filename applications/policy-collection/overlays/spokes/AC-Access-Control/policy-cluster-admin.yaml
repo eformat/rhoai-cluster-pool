@@ -55,7 +55,7 @@ spec:
                   name: admingroup-cluster-rolebinding
                 subjects:
                   - apiGroup: rbac.authorization.k8s.io
-                    kind: User
+                    kind: Group
                     name: admin
             - complianceType: musthave
               objectDefinition:
