@@ -1,0 +1,89 @@
+apiVersion: v1
+data:
+  check-install.sh: |-
+    #!/bin/bash
+    set -o pipefail
+
+    readonly RED='\033[0;31m'
+    readonly GREEN='\033[0;32m'
+    readonly ORANGE='\033[38;5;214m'
+    readonly NC='\033[0m' # No Color
+
+    wait_for_openshift_api() {
+        local i=0
+        HOST=https://api.${BASE_DOMAIN}:6443/healthz
+        until [ $(curl --connect-timeout 3 -k -s -o /dev/null -w %{http_code} ${HOST}) = "200" ]
+        do
+            echo -e "${GREEN}Waiting for 200 response from openshift api ${HOST}.${NC}"
+            sleep 5
+            ((i=i+1))
+            if [ $i -gt 100 ]; then
+                echo -e "🕱${RED}Failed - OpenShift api ${HOST} never ready?.${NC}"
+                exit 1
+            fi
+        done
+        echo "🌴 wait_for_openshift_api ran OK"
+    }
+
+    wait_cluster_settle() {
+        echo "🌴 Running wait_cluster_settle..."
+        oc adm wait-for-stable-cluster --minimum-stable-period=120s --timeout=20m
+        echo "🌴 wait_cluster_settle ran OK"
+    }
+
+    check_pods_allocatable() {
+        echo "🌴 Running check_pods_allocatable..."
+        local i=0
+        PODS=$(oc get $(oc get node -o name -l node-role.kubernetes.io/master="") -o=jsonpath={.status.allocatable.pods})
+        until [ "$PODS" == 500 ]
+        do
+            echo -e "${GREEN}Waiting for pods $PODS to equal 500.${NC}"
+            ((i=i+1))
+            if [ $i -gt 200 ]; then
+                echo -e "🕱${RED}Failed - node allocatable pods wrong - $PODS?.${NC}"
+                exit 1
+            fi
+            if [ $i -gt 50 ]; then
+                # MC bug, does not always trigger it seems - argocd will recreate this
+                echo -e "💀${ORANGE}Warn - check_pods_allocatable, forcing kubeletconfigs, continuing ${NC}"
+                oc delete kubeletconfig set-max-pods
+            fi
+            sleep 10
+            PODS=$(oc get $(oc get node -o name -l node-role.kubernetes.io/master="") -o=jsonpath={.status.allocatable.pods})
+        done
+        echo "🌴 check_pods_allocatable $PODS ran OK"
+    }
+
+    check_istio_pods() {
+        echo "🌴 Running check_istio_pods..."
+        local i=0
+        PODS=$(oc get pods -n openshift-ingress -l app.kubernetes.io/instance=openshift-gateway-istiod --no-headers=true | wc -l)
+        until [ "$PODS" -gt 0 ]
+        do
+            echo -e "${GREEN}Waiting for istio-system $PODS.${NC}"
+            ((i=i+1))
+            if [ $i -gt 200 ]; then
+                echo -e "🕱${RED}Failed - istio-system pods never ready - $PODS?.${NC}"
+                exit 1
+            fi
+            sleep 10
+            PODS=$(oc get pods -n openshift-ingress -l app.kubernetes.io/instance=openshift-gateway-istiod --no-headers=true | wc -l)
+        done
+        echo "🌴 check_istio_pods $PODS ran OK"
+    }
+
+    export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+    [ -z "$BASE_DOMAIN" ] && echo "🕱 Error: must supply BASE_DOMAIN in env" && exit 1
+    echo "🌴 BASE_DOMAIN set to $BASE_DOMAIN"
+
+    wait_for_openshift_api
+    wait_cluster_settle
+    check_pods_allocatable
+    check_istio_pods
+
+    echo -e "\n🌻${GREEN}Check Install ended OK.${NC}🌻\n"
+    exit 0
+kind: ConfigMap
+metadata:
+  name: check-install
+  namespace: openshift-config

@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: gpu
 policyDefaults:
   placement:
-    placementName: placement-spokes-openshift
+    placementName: placement-openshift-roadshow
   categories:
     - CM Configuration Management
   complianceType: "musthave"

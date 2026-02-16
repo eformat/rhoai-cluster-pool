@@ -25,6 +25,13 @@ policyDefaults:
     - NIST SP 800-53
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
-  - name: check-install
+  - name: check-install-roadshow
+    placement:
+      placementName: placement-spokes-roadshow
     manifests:
-      - path: input/
+      - path: input-roadshow/
+  - name: check-install-prelude
+    placement:
+      placementName: placement-spokes-prelude
+    manifests:
+      - path: input-prelude/

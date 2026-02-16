@@ -4,6 +4,6 @@ stringData:
   install-config.yaml: {{ .Values.installConfig | toYaml | indent 2 }}
 kind: Secret
 metadata:
-  name: roadshow-install-config-template-{{ .Values.guid }}
+  name: {{ .Values.installConfigSecretTemplateRef }}-{{ .Values.guid }}
   namespace: cluster-pools
 type: Opaque

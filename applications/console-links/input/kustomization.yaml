@@ -1,6 +1,6 @@
 ---
 resources:
-  - charts/console-links/console-links-configmap.yaml
+  - charts/console-links/console-links-configmap-roadshow.yaml
 
 helmCharts:
   - name: console-links

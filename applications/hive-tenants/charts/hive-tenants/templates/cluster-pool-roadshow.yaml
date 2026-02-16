@@ -9,7 +9,7 @@ spec:
   imageSetRef:
     name: {{ .Values.imageSetRef }}
   installConfigSecretTemplateRef: 
-    name: roadshow-install-config-template-{{ .Values.guid }}
+    name: {{ .Values.installConfigSecretTemplateRef }}-{{ .Values.guid }}
   skipMachinePools: true
   runningCount: {{ .Values.runningCount }}
   platform:
