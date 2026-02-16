@@ -1,0 +1,124 @@
+---
+apiVersion: opendatahub.io/v1alpha
+kind: OdhDashboardConfig
+metadata:
+  annotations:
+    internal.config.kubernetes.io/previousKinds: OdhDashboardConfig
+    internal.config.kubernetes.io/previousNames: odh-dashboard-config
+    internal.config.kubernetes.io/previousNamespaces: default
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3"
+  labels:
+    app.kubernetes.io/part-of: rhods-dashboard
+    app.opendatahub.io/rhods-dashboard: "true"
+  name: odh-dashboard-config
+  namespace: redhat-ods-applications
+spec:
+  dashboardConfig:
+    disableAdminConnectionTypes: false
+    disableAcceleratorProfiles: false
+    disableBYONImageStream: false
+    disableClusterManager: false
+    disableCustomServingRuntimes: false
+    disableDistributedWorkloads: true
+    disableFineTuning: false
+    disableHome: false
+    disableHardwareProfiles: false
+    disableISVBadges: false
+    disableInfo: false
+    disableKueue: false # redhat build of kueue https://docs.redhat.com/en/documentation/red_hat_build_of_kueue/1.0/html/quotas_and_workloads/managing-workloads
+    disableKServe: false
+    disableKServeAuth: false
+    disableKServeMetrics: false
+    disableKServeRaw: false
+    disableLMEval: false
+    disableModelCatalog: false
+    disableModelRegistry: false
+    disableModelRegistrySecureDB: false
+    disableModelServing: false
+    disableNIMModelServing: false
+    disablePerformanceMetrics: false
+    disablePipelines: false
+    disableProjectSharing: false
+    disableProjects: false
+    disableProjectScoped: false
+    disableServingRuntimeParams: false
+    disableStorageClasses: false
+    disableSupport: false
+    disableTracking: false
+    disableTrustyBiasMetrics: false
+    disableUserManagement: false
+    enablement: true
+    genAiStudio: true
+    modelAsService: true
+    trainingJobs: true
+  groupsConfig:
+    adminGroups: rhods-admins
+    allowedGroups: system:authenticated
+  modelServerSizes:
+  - name: Small
+    resources:
+      limits:
+        cpu: "1"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 4Gi
+  - name: Medium
+    resources:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "4"
+        memory: 8Gi
+  - name: Large
+    resources:
+      limits:
+        cpu: "6"
+        memory: 16Gi
+      requests:
+        cpu: "6"
+        memory: 16Gi
+  notebookController:
+    enabled: true
+    notebookNamespace: rhods-notebooks
+    notebookTolerationSettings:
+      enabled: false
+      key: NotebooksOnly
+    pvcSize: 100Gi
+  notebookSizes:
+  - name: Small
+    resources:
+      limits:
+        cpu: "1"
+        memory: 8Gi
+      requests:
+        cpu: "1"
+        memory: 8Gi
+  - name: Medium
+    resources:
+      limits:
+        cpu: "2"
+        memory: 12Gi
+      requests:
+        cpu: "2"
+        memory: 12Gi
+  - name: Large
+    resources:
+      limits:
+        cpu: "4"
+        memory: 24Gi
+      requests:
+        cpu: "4"
+        memory: 24Gi
+  - name: X Large
+    resources:
+      limits:
+        cpu: "8"
+        memory: 48Gi
+      requests:
+        cpu: "8"
+        memory: 48Gi
+  templateDisablement: []
+  templateOrder: []

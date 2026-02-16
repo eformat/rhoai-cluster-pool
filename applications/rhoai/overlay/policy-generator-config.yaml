@@ -26,5 +26,12 @@ policyDefaults:
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: rhoai
+    placement:
+      placementName: placement-spokes-roadshow
     manifests:
-      - path: sno/
+      - path: roadshow/
+  - name: rhoai-prelude
+    placement:
+      placementName: placement-spokes-prelude
+    manifests:
+      - path: prelude/

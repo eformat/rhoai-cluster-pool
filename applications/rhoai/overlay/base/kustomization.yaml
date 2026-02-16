@@ -1,0 +1,7 @@
+---
+resources:
+  - ../../base
+  - leader-worker-set.yaml
+  - kuadrant-cr.yaml
+  - authorino-cr.yaml
+  - job-set-cr.yaml
