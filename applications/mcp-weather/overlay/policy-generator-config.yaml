@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: mcp-weather
 policyDefaults:
   placement:
-    placementName: placement-spokes-openshift
+    placementName: placement-spokes-roadshow
   categories:
     - CM Configuration Management
   complianceType: "musthave"
