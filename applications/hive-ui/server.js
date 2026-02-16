@@ -119,6 +119,8 @@ async function configureHiveTenantsRoadshow(params) {
     chartPath,
     '--namespace=hive',
     '--set',
+    `clusterPoolName=${ROADSHOW}`,
+    '--set',
     `baseDomain=${BASE_DOMAIN}`,
     '--set-json',
     `globalPullSecret=${JSON.stringify(pullSecretJson)}`,
