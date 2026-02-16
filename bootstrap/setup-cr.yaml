@@ -68,7 +68,7 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
-  name: placement-openshift-roadshow
+  name: placement-spokes-roadshow
   namespace: openshift-gitops
 spec:
   clusterSets:
@@ -88,7 +88,7 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
-  name: placement-openshift-prelude
+  name: placement-spokes-prelude
   namespace: openshift-gitops
 spec:
   clusterSets:
