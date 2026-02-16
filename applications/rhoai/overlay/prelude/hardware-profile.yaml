@@ -15,14 +15,14 @@ spec:
   - defaultCount: 2
     displayName: CPU
     identifier: cpu
-    maxCount: 4
+    maxCount: 28
     minCount: 1
     resourceType: CPU
   - defaultCount: 4Gi
     displayName: Memory
     identifier: memory
-    maxCount: 8Gi
-    minCount: 2Gi
+    maxCount: 128Gi
+    minCount: 1Gi
     resourceType: Memory
   scheduling:
     kueue:
