@@ -19,7 +19,8 @@ spec:
         metadata:
           name: cluster-autoscaler-spokes
         spec:
-          object-templates:
+          object-templates-raw: |
+            {{- if not (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: autoscaling.openshift.io/v1
@@ -40,5 +41,6 @@ spec:
                     enabled: true
                     unneededTime: 15m
                     utilizationThreshold: '0.7'
+            {{- end }}
           remediationAction: inform
           severity: low
