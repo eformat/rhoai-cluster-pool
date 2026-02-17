@@ -29,14 +29,6 @@ spec:
                   name: cert-manager-operator
             - complianceType: musthave
               objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  labels:
-                    openshift.io/cluster-monitoring: "true"
-                  name: agent-demo
-            - complianceType: musthave
-              objectDefinition:
                 apiVersion: operators.coreos.com/v1
                 kind: OperatorGroup
                 metadata:
