@@ -27,11 +27,12 @@ spec:
                 spec:
                   scopeSelector:
                     matchAll: true 
-                  hard:
-                    gp3-csi.storageclass.storage.k8s.io/requests.storage: 200Gi
-                    efs-sc.storageclass.storage.k8s.io/requests.storage: 200Gi
-                    gp2-csi.storageclass.storage.k8s.io/requests.storage: 0Gi
-                    persistentvolumeclaims: 30
+                  quota:
+                    hard:
+                      gp3-csi.storageclass.storage.k8s.io/requests.storage: 200Gi
+                      efs-sc.storageclass.storage.k8s.io/requests.storage: 200Gi
+                      gp2-csi.storageclass.storage.k8s.io/requests.storage: 0Gi
+                      persistentvolumeclaims: 30
             {{- end }}
           pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
