@@ -27,7 +27,7 @@ spec:
         namespace: redhat-ods-operator
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
-        path: applications/quickstarts/overlay
+        path: applications/quickstarts
         plugin:
           name: argocd-novault-plugin-kustomize
         targetRevision: main
