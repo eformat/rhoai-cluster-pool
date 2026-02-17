@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: quickstarts
 policyDefaults:
   placement:
-    placementName: placement-spokes-roadshow
+    placementName: placement-spokes-prelude
   categories:
     - CM Configuration Management
   complianceType: "musthave"
