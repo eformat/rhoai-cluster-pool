@@ -1,6 +1,6 @@
 ---
 apiVersion: dashboard.opendatahub.io/v1
-kind: OdhDocument
+kind: OdhQuickStart
 metadata:
   name: prelude-the-basics
   namespace: redhat-ods-applications
