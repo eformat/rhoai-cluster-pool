@@ -26,8 +26,7 @@ spec:
                   name: storage-limit
                 spec:
                   selector:
-                    annotations:
-                      openshift.io/requester: "admin"
+                    labels: {}   # match all namespaces (all users)
                   quota:
                     hard:
                       gp3-csi.storageclass.storage.k8s.io/requests.storage: 200Gi
