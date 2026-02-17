@@ -23,7 +23,7 @@ spec:
                 apiVersion: quota.openshift.io/v1
                 kind: ClusterResourceQuota
                 metadata:
-                  name: storage-limit-gold-class
+                  name: storage-limit
                 spec:
                   scopeSelector:
                     matchAll: true 
