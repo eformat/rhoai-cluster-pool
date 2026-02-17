@@ -1,5 +1,5 @@
 ---
-apiVersion: dashboard.opendatahub.io/v1
+apiVersion: console.openshift.io/v1
 kind: OdhQuickStart
 metadata:
   name: prelude-1-vault
