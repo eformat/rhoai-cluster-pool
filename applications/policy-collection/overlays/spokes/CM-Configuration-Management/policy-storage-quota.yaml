@@ -23,7 +23,7 @@ spec:
                 apiVersion: quota.openshift.io/v1
                 kind: ClusterResourceQuota
                 metadata:
-                  name: storage-limit
+                  name: storage-quota
                 spec:
                   selector:
                     annotations:
