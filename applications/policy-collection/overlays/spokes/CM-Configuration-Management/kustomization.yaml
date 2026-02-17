@@ -7,3 +7,4 @@ resources:
   - policy-gateway.yaml
   - policy-aws-creds.yaml
   - policy-cluster-autoscaler.yaml
+  - policy-storage-quota.yaml

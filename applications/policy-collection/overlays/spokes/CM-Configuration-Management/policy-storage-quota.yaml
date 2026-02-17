@@ -1,0 +1,36 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: storage-quota-spokes
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration, Rolling Restart - None  # None, Control, Compute, All
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: storage-quota
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: quota.openshift.io/v1
+                kind: ClusterResourceQuota
+                metadata:
+                  name: storage-limit-gold-class
+                spec:
+                  scopeSelector:
+                    matchAll: true 
+                  hard:
+                    gold.storageclass.storage.k8s.io/requests.storage: 200Gi
+                    persistentvolumeclaims: 30
+            {{- end }}
+          pruneObjectBehavior: DeleteIfCreated
+          remediationAction: inform
+          severity: high

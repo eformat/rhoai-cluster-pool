@@ -15,6 +15,7 @@ spec:
     - gateway-spokes
     - aws-creds-spokes
     - cluster-autoscaler-spokes
+    - storage-quota-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
