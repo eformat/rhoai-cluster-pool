@@ -68,9 +68,8 @@ metadata:
   namespace: stackrox
   name: stackrox-secured-cluster-services
 spec:
-  # does not exist in hcp spokes  {{ fromSecret "open-cluster-management-agent" "hub-kubeconfig-secret" "cluster-name" | base64dec }}
   clusterName: |
-    {{ fromConfigMap "openshift-config" "cluster-name" "cluster-name" }}
+    {{ fromSecret "open-cluster-management-agent" "hub-kubeconfig-secret" "cluster-name" | base64dec }}
   auditLogs:
     collection: Auto
   centralEndpoint: |
