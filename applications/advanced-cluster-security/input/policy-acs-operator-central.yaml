@@ -82,6 +82,6 @@ spec:
       scaling:
         autoScaling: Enabled
         maxReplicas: 5
-        minReplicas: 2
-        replicas: 2
+        minReplicas: 1
+        replicas: 1
     scannerComponent: Enabled
