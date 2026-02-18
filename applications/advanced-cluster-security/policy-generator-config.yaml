@@ -1,0 +1,126 @@
+---
+# yamllint disable rule:key-ordering
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: acs
+placementBindingDefaults:
+  name: acs
+policyDefaults:
+  placement:
+    placementName: placement-hub-openshift
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: policy-acs-operator-central
+    categories:
+      - SC System and Communications Protection
+    controls:
+      - SC-1 Policy and Procedures
+    manifests:
+      - path: input/policy-acs-operator-central.yaml
+  - name: policy-acs-central-status
+    categories:
+      - SI System and Information Integrity
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    dependencies:
+      - name: policy-acs-operator-central
+    manifests:
+      - path: input/policy-acs-central-status.yaml
+    remediationAction: inform
+  - name: policy-acs-central-ca-bundle
+    categories:
+      - SI System and Information Integrity
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    dependencies:
+      - name: policy-acs-central-status
+    manifests:
+      - path: input/policy-acs-central-ca-bundle.yaml
+  - name: policy-acs-central-ca-job
+    categories:
+      - SI System and Information Integrity
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    dependencies:
+      - name: policy-acs-central-status
+    manifests:
+      - path: input/policy-acs-central-ca-job.yaml
+  - name: policy-acs-sync-resources
+    categories:
+      - SI System and Information Integrity
+    consolidateManifests: false
+    copyPolicyMetadata: false
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    dependencies:
+      - name: policy-acs-central-status
+    manifests:
+      - path: input/policy-acs-sync-resources.yaml
+  - name: policy-acs-monitor-certs
+    categories:
+      - SC System and Communications Protection
+    controls:
+      - SC-8 Transmission Confidentiality and Integrity
+    dependencies:
+      - name: policy-acs-sync-resources
+    manifests:
+      - path: input/policy-acs-check-certificates.yaml
+  - name: policy-acs
+    categories:
+      - SI System and Information Integrity
+    consolidateManifests: false
+    copyPolicyMetadata: false
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    manifests:
+      - path: input/policy-acs.yaml
+    policySets:
+      - spokes-acs
+  - name: policy-acs-status
+    categories:
+      - SI System and Information Integrity
+    controls:
+      - SI-5 Security Alerts Advisories and Directives
+    manifests:
+      - path: input/policy-acs-status.yaml
+    policySets:
+      - hub-acs
+      - spokes-acs
+    remediationAction: inform
+    # - name: policy-acs-policy-import
+    #   categories:
+    #     - SC System and Communications Protection
+    #   controls:
+    #     - SC-1 Policy and Procedures
+    #   manifests:
+    #     - path: input/acs-policy-import-cron-job.yaml
+    # - name: policy-acs-policy-notifier
+    #   categories:
+    #     - SC System and Communications Protection
+    #   controls:
+    #     - SC-1 Policy and Procedures
+    #   manifests:
+    #     - path: input/acs-policy-notifier-cron-job.yaml
+policySets:
+  - name: hub-acs
+    placement:
+      placementName: placement-hub-openshift
+  - name: spokes-acs
+    placement:
+      placementName: placement-spokes-openshift
+# yamllint enable rule:key-ordering

@@ -1,0 +1,116 @@
+{
+    "policies": [
+        {
+            "name": "OpenShift: Route Secret Accessed",
+            "description": "Alert when the route secrets are accessed",
+            "rationale": "Route Secrets may be exploited if leaked beyond valid Route uses",
+            "remediation": "Audit the access carefully to ensure that this secret is only accessed for valid business purposes.",
+            "disabled": false,
+            "categories": [
+                "Anomalous Activity",
+                "Kubernetes Events"
+            ],
+            "lifecycleStages": [
+                "RUNTIME"
+            ],
+            "eventSource": "AUDIT_LOG_EVENT",
+            "exclusions": [],
+            "scope": [],
+            "severity": "MEDIUM_SEVERITY",
+            "enforcementActions": [],
+            "notifiers": [],
+            "SORTName": "",
+            "SORTLifecycleStage": "",
+            "SORTEnforcement": false,
+            "policyVersion": "1.1",
+            "policySections": [
+                {
+                    "sectionName": "",
+                    "policyGroups": [
+                        {
+                            "fieldName": "Kubernetes Resource",
+                            "booleanOperator": "OR",
+                            "negate": false,
+                            "values": [
+                                {
+                                    "value": "SECRETS"
+                                }
+                            ]
+                        },
+                        {
+                            "fieldName": "Kubernetes API Verb",
+                            "booleanOperator": "OR",
+                            "negate": false,
+                            "values": [
+                                {
+                                    "value": "GET"
+                                }
+                            ]
+                        },
+                        {
+                            "fieldName": "Kubernetes Resource Name",
+                            "booleanOperator": "OR",
+                            "negate": false,
+                            "values": [
+                                {
+                                    "value": "route-tls-secret-tenant"
+                                },
+                                {
+                                    "value": "route-tls-secret"
+                                },
+                                {
+                                    "value": "router-certs"
+                                },
+                                {
+                                    "value": "router-tenant-certs"
+                                }
+                            ]
+                        },
+                        {
+                            "fieldName": "Kubernetes User Name",
+                            "booleanOperator": "OR",
+                            "negate": true,
+                            "values": [
+                                {
+                                    "value": "system:serviceaccount:open-cluster-management-agent-addon:config-policy-controller-sa"
+                                },
+                                {
+                                    "value": "system:serviceaccount:ibm-common-services:ibm-management-ingress-operator"
+                                },
+                                {
+                                    "value": "system:serviceaccount:openshift-authentication-operator:authentication-operator"
+                                },
+                                {
+                                    "value": "system:serviceaccount:openshift-ingress-operator:ingress-operator"
+                                },
+                                {
+                                    "value": "system:serviceaccount:kube-system:generic-garbage-collector"
+                                },
+                                {
+                                    "value": "system:serviceaccount:openshift-operators:openshift-pipelines-operator"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "mitreAttackVectors": [
+                {
+                    "tactic": "TA0006",
+                    "techniques": [
+                        "T1552.007"
+                    ]
+                },
+                {
+                    "tactic": "TA0007",
+                    "techniques": [
+                        "T1613"
+                    ]
+                }
+            ],
+            "criteriaLocked": true,
+            "mitreVectorsLocked": true,
+            "isDefault": false
+        }
+    ]
+}

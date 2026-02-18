@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+data:
+  auth-provider.yaml: |
+    name: openshift
+    minimumRole: None
+    uiEndpoint: central-stackrox.apps.sno.sandbox1763.opentlc.com:443
+    groups:
+        - key: groups
+          value: cluster-admin
+          role: Admin
+    openshift:
+        enable: true
+kind: ConfigMap
+metadata:
+  name: declarative-configurations
+  namespace: stackrox

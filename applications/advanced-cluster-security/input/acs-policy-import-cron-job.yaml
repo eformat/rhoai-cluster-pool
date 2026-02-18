@@ -1,0 +1,144 @@
+---
+apiVersion: v1
+data:
+  import-policies.py: |
+    import json
+    import os
+    import sys
+    import requests
+    import base64
+
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    def policy_exists(pol) -> bool:
+      # check policy for unique name
+      return True in [pol["name"] in p["name"] for p in user_defined_policies]
+
+    if __name__ == "__main__":
+
+        CENTRAL = f"https://central"
+        ADMIN_PASSWD = base64.b64encode(f"admin:{os.environ.get('ROX_ADMIN_PASSWD')}".encode("ascii")).decode("ascii")
+        HEADERS={"Authorization": f"Basic {ADMIN_PASSWD}", "Content-Type": "application/x-www-form-urlencoded", "Accept": "*/*"}
+        DATA={"name": "policy-load", "role": "Admin"}
+
+        auth = requests.post(
+            f"{CENTRAL}/v1/apitokens/generate", data=json.dumps(DATA), headers=HEADERS, verify=False
+        )
+
+        APITOKEN = json.loads(auth.content)["token"]
+        APITOKEN_ID = json.loads(auth.content)["metadata"]["id"]
+        HEADERS = {"Authorization": f"Bearer {APITOKEN}", "Accept": "application/json"}
+
+        resp = requests.get(
+            f"{CENTRAL}/v1/policies", headers=HEADERS, timeout=5, verify=False
+        )
+
+        # ignore all default policies
+        all_policies = json.loads(resp.text)
+        user_defined_policies = [p for p in all_policies["policies"] if not p["isDefault"]]
+
+        # download policies to load
+        r = requests.get(f"{os.environ.get('POLICIES_URL')}", verify=False)
+        open(f"/tmp/policies-payload.json", "wb").write(r.content)
+
+        with open("/tmp/policies-payload.json", "r", encoding="utf-8") as f:
+            for policy in json.load(f)["policies"]:
+                # remove lastUpdated if it's defined
+                policy.pop("lastUpdated", None)
+                policy.pop("policyVersion", None)
+
+                if policy_exists(policy):
+                    if not "id" in policy:
+                        pid = [
+                            p["id"]
+                            for p in user_defined_policies
+                            if p["name"] == policy["name"]
+                        ][0]
+                        policy.update({"id": pid})
+                    print(f"Updating policy '{policy['name']}' '{policy['id']}' ...")
+
+                    r = requests.put(
+                        f"{CENTRAL}/v1/policies/{policy['id']}",
+                        headers=HEADERS,
+                        data=json.dumps(policy, separators=(',', ':')),
+                        verify=False,
+                        timeout=5
+                    )
+                else:
+                    policy.pop("id", None)
+                    print(f"Adding new policy '{policy['name']}'...")
+                    r = requests.post(
+                        f"{CENTRAL}/v1/policies",
+                        headers=HEADERS,
+                        data=json.dumps(policy, separators=(',', ':')),
+                        verify=False,
+                        timeout=5
+                    )
+
+                print(f"{r.status_code} {r.reason}")
+
+                if r.status_code >= 400:
+                    sys.exit(-1)
+
+        HEADERS = {"Authorization": f"Bearer {APITOKEN}", "Accept": "application/json"}
+        resp = requests.patch(
+            f"{CENTRAL}/v1/apitokens/revoke/{APITOKEN_ID}", headers=HEADERS, timeout=5, verify=False
+        )
+
+kind: ConfigMap
+metadata:
+  name: policy-import-script
+  namespace: stackrox
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: acs-policy-import
+  namespace: stackrox
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      name: acs-policy-import
+    spec:
+      template:
+        spec:
+          containers:
+            - command:
+                - /bin/bash
+                - '-c'
+                - |
+                  #!/usr/bin/env bash
+                  python -Wignore /opt/policy/import-policies.py
+              env:
+                - name: ROX_ADMIN_PASSWD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: central-htpasswd
+                - name: POLICIES_URL
+                  value: "https://bitbucket.srv.westpac.com.au/projects/A00C4E/repos/gitops/raw/applications/advanced-cluster-security/policies/policies-payload.json?at=refs%2Fheads%2Fdevelop"
+              image: registry.redhat.io/openshift4/ose-cli:latest
+              imagePullPolicy: Always
+              name: update-service-deploy
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /opt/policy
+                  name: policy-script
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          securityContext: {}
+          serviceAccountName: create-cluster-init
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - configMap:
+                name: policy-import-script
+              name: policy-script
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  suspend: false
