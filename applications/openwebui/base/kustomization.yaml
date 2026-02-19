@@ -1,0 +1,10 @@
+---
+resources:
+  - namespaces.yaml
+
+helmCharts:
+  - name: openwebui
+    includeCRDs: true
+    releaseName: chat
+    valuesFile: values.yaml
+    repo:  # we expand chart in folder

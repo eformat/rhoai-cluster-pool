@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openwebui.fullname" . }}
+  labels:
+    {{- include "openwebui.labels" . | nindent 4 }}
+data:
+  ENABLE_OLLAMA_API: "false"
+  ENABLE_OPENAI_API: "true"
+  ENABLE_VERSION_UPDATE_CHECK: "false"
+  OPENAI_API_BASE_URLS: {{ tpl (include "openwebui.openai-api-base-urls" .) . | quote }}
+  {{- range $k, $v := .Values.configuration.env }}
+  {{ $k }}: {{ quote $v }}
+  {{- end }}
+{{- if .Values.oauth.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openwebui.fullname" . }}-ocp-injected-certs
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+{{- end }}
+{{- if .Values.injectServiceCA }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openwebui.fullname" . }}-ocp-service-ca
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+{{- end }}
