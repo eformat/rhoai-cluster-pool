@@ -76,7 +76,7 @@ oauth:
   image:
     registry: image-registry.openshift-image-registry.svc:5000
     repo: openshift/oauth-proxy
-    tag: v4.20
+    tag: v4.4
   sarTemplate: >
     {"namespace": "chat", "resource": "services", "verb": "get"}
 
