@@ -83,11 +83,10 @@ spec:
     collector:
       collection: EBPF
       imageFlavor: Regular
-    taintToleration: TolerateTaints
-    collector:
       resources:
         limits:
           cpu: 500m
+    taintToleration: TolerateTaints
     compliance:
       resources:
         limits:
