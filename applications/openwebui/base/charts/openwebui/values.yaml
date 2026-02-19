@@ -16,9 +16,9 @@ configuration:
     ENABLE_SIGNUP: "false"
     WEBUI_AUTH: "false"
   extraArgs: []
-  vllmEndpoints:
-    - endpoint: http://maas/v1
-      token: ""
+#  vllmEndpoints:
+#    - endpoint: http://maas/v1
+#      token: ""
   data:
     type: pvc # type can be one of pvc or emptyDir
     size: 5Gi
