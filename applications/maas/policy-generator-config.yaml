@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: maas
 policyDefaults:
   placement:
-    placementName: placement-spokes-prelude
+    placementName: placement-spokes-openshift
   categories:
     - CM Configuration Management
   complianceType: "musthave"
