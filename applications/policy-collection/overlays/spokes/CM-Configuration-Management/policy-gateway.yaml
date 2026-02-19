@@ -33,17 +33,17 @@ spec:
                     argocd.argoproj.io/sync-wave: "2"
                 spec:
                   controllerName: openshift.io/gateway-controller/v1
-            # - complianceType: musthave
-            #   objectDefinition:
-            #     apiVersion: gateway.networking.k8s.io/v1
-            #     kind: GatewayClass
-            #     metadata:
-            #       name: openshift-default
-            #       annotations:
-            #         argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-            #         argocd.argoproj.io/sync-wave: "2"
-            #     spec:
-            #       controllerName: openshift.io/gateway-controller/v1
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: GatewayClass
+                metadata:
+                  name: openshift-default
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                spec:
+                  controllerName: openshift.io/gateway-controller/v1
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
@@ -101,43 +101,43 @@ spec:
                   # infrastructure:
                   #   labels:
                   #     serving.kserve.io/gateway: kserve-ingress-gateway
-            # - complianceType: musthave
-            #   objectDefinition:
-            #     apiVersion: gateway.networking.k8s.io/v1
-            #     kind: Gateway
-            #     metadata:
-            #       labels:
-            #         istio.io/rev: openshift-gateway
-            #         opendatahub.io/managed: "false"
-            #       name: maas-default-gateway
-            #       namespace: openshift-ingress
-            #       annotations:
-            #         argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-            #         argocd.argoproj.io/sync-wave: "2"
-            #         opendatahub.io/managed: "false"
-            #     spec:
-            #       gatewayClassName: openshift-default
-            #       listeners:
-            #         - allowedRoutes:
-            #             namespaces:
-            #               from: All
-            #           hostname: 'maas.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
-            #           name: http
-            #           port: 80
-            #           protocol: HTTP
-            #         - allowedRoutes:
-            #             namespaces:
-            #               from: All
-            #           hostname: 'maas.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
-            #           name: https
-            #           port: 443
-            #           protocol: HTTPS
-            #           tls:
-            #             certificateRefs:
-            #             - group: ""
-            #               kind: Secret
-            #               name: default-gateway-tls
-            #             mode: Terminate
-            #       infrastructure:
-            #         labels:
-            #           serving.kserve.io/gateway: kserve-ingress-gateway
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: gateway.networking.k8s.io/v1
+                kind: Gateway
+                metadata:
+                  labels:
+                    istio.io/rev: openshift-gateway
+                    opendatahub.io/managed: "false"
+                  name: maas-default-gateway
+                  namespace: openshift-ingress
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                    argocd.argoproj.io/sync-wave: "2"
+                    opendatahub.io/managed: "false"
+                spec:
+                  gatewayClassName: openshift-default
+                  listeners:
+                    - allowedRoutes:
+                        namespaces:
+                          from: All
+                      hostname: 'maas.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      name: http
+                      port: 80
+                      protocol: HTTP
+                    - allowedRoutes:
+                        namespaces:
+                          from: All
+                      hostname: 'maas.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      name: https
+                      port: 443
+                      protocol: HTTPS
+                      tls:
+                        certificateRefs:
+                        - group: ""
+                          kind: Secret
+                          name: default-gateway-tls
+                        mode: Terminate
+                  infrastructure:
+                    labels:
+                      serving.kserve.io/gateway: kserve-ingress-gateway
