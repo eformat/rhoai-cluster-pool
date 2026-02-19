@@ -78,8 +78,34 @@ spec:
     listenOnCreates: false
     listenOnEvents: true
     listenOnUpdates: false
+  # we tune these way down to save resources on the spoke cluster
   perNode:
     collector:
       collection: EBPF
       imageFlavor: Regular
     taintToleration: TolerateTaints
+    collector:
+      resources:
+        limits:
+          cpu: 500m
+    compliance:
+      resources:
+        limits:
+          cpu: '1'
+  scanner:
+    analyzer:
+      resources:
+        limits:
+          cpu: 500m
+    db:
+      resources:
+        limits:
+          cpu: 500m
+  sensor:
+    resources:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+      requests:
+        cpu: '1'
+        memory: 4Gi
