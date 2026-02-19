@@ -78,7 +78,7 @@ oauth:
     repo: openshift/oauth-proxy
     tag: v4.20
   sarTemplate: >
-    {"namespace": "{{ .Release.Namespace }}", "resource": "services", "verb": "get"}
+    {"namespace": "chat", "resource": "services", "verb": "get"}
 
 resources:
   limits:
