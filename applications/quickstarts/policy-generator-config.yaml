@@ -10,7 +10,7 @@ policyDefaults:
     placementName: placement-spokes-prelude
   categories:
     - CM Configuration Management
-  complianceType: "musthave"
+  complianceType: "mustonlyhave"
   controls:
     - CM-2 Baseline Configuration
   configurationPolicyAnnotations: {"policy.open-cluster-management.io/disable-templates": "true"}
