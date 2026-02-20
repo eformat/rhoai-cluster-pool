@@ -95,11 +95,11 @@ spec:
     analyzer:
       resources:
         limits:
-          cpu: 500m
+          cpu: 1
     db:
       resources:
         limits:
-          cpu: 500m
+          cpu: 1
   sensor:
     resources:
       limits:
