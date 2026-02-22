@@ -95,7 +95,16 @@ spec:
     analyzer:
       resources:
         limits:
-          cpu: 1
+          cpu: 500m
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 1
+        minReplicas: 1
+        replicas: 1
     db:
       resources:
         limits:
