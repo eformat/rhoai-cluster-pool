@@ -73,7 +73,7 @@ spec:
                             name: cluster
                           spec:
                             authentication:
-                              logoutRedirect: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}/realms/{{hub .ManagedClusterLabels.name hub}}/protocol/openid-connect/logout%3Fclient_id={{ (fromSecret "openshift-config" "openid-client-secret" "CLIENT_ID") | base64dec }}
+                              logoutRedirect: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}
                     remediationAction: inform
                     severity: low
             {{- end }}
