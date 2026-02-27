@@ -49,4 +49,25 @@ spec:
           pruneObjectBehavior: None
           remediationAction: inform
           severity: high
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: sso-logout-spokes
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
+            - complianceType: musthave
+                objectDefinition:
+                  apiVersion: config.openshift.io/v1
+                  kind: Console
+                  metadata:
+                    name: cluster
+                  spec:
+                    authentication:
+                      logoutRedirect: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}
+            {{- end }}
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: high
   remediationAction: enforce
