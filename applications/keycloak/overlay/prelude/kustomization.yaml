@@ -1,4 +1,6 @@
 ---
+namespace: keycloak
+
 resources:
   - ../../base
   - postgres.yaml
