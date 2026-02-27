@@ -2,3 +2,6 @@
 resources:
   - policy-cluster-admin.yaml
   - policy-oauth-htpasswd.yaml
+  - policy-sso-secret.yaml
+  - policy-oauth-sso.yaml
+  

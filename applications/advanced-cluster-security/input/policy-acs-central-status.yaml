@@ -18,16 +18,16 @@ status:
   conditions:
     - status: "True"
       type: Available
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: scanner-v4-indexer
-  namespace: stackrox
-status:
-  conditions:
-    - status: "True"
-      type: Available
+# --- disbale for resource constraints
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: scanner-v4-indexer
+#   namespace: stackrox
+# status:
+#   conditions:
+#     - status: "True"
+#       type: Available
 ---
 apiVersion: apps/v1
 kind: Deployment

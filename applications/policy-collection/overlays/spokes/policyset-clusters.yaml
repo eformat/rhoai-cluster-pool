@@ -16,6 +16,8 @@ spec:
     - aws-creds-spokes
     - cluster-autoscaler-spokes
     - storage-quota-spokes
+    - oauth-sso-spokes
+    - sso-secret-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

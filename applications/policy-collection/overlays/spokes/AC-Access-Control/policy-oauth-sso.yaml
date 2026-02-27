@@ -1,0 +1,51 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: oauth-sso-spokes
+  annotations:
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: oauth-sso-prelude
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OAuth
+                metadata:
+                  name: cluster
+                spec:
+                  identityProviders:
+                  - mappingMethod: claim
+                    name: prelude
+                    openID:
+                      claims:
+                        email:
+                        - email
+                        groups:
+                        - groups
+                        name:
+                        - name
+                        preferredUsername:
+                        - preferred_username
+                      clientID: '{{fromSecret "openshift-config" "openid-client-secret" "CLIENT_ID"}}'
+                      clientSecret:
+                        name: openid-client-secret
+                      extraScopes: []
+                      issuer: '{{fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL"}}/realms/{{.ManagedClusterLabels.name}}
+                    type: OpenID
+            {{- end }}
+          pruneObjectBehavior: DeleteIfCreated
+          remediationAction: inform
+          severity: high
+  remediationAction: enforce
