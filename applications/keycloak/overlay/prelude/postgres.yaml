@@ -14,4 +14,3 @@ spec:
     initdb:
       database: keycloak-postgres
       owner: keycloak-postgres
-      

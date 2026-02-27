@@ -5,7 +5,6 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: keycloak
 spec:
-  host: keycloak.apps.cluster.example.com
   to:
     kind: Service
     name: keycloak-service
