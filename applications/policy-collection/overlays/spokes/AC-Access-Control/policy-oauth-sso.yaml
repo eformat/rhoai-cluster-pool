@@ -45,6 +45,25 @@ spec:
                       extraScopes: []
                       issuer: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}/realms/{{hub .ManagedClusterLabels.name hub}}
                     type: OpenID
+            - complianceType: musthave
+                objectDefinition:
+                  apiVersion: policy.open-cluster-management.io/v1
+                  kind: ConfigurationPolicy
+                  metadata:
+                    name: sso-logout-spokes
+                  spec:
+                    object-templates:
+                      - complianceType: musthave
+                        objectDefinition:
+                          apiVersion: config.openshift.io/v1
+                          kind: Console
+                          metadata:
+                            name: cluster
+                          spec:
+                            authentication:
+                              logoutRedirect: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}/realms/{{hub .ManagedClusterLabels.name hub}}/protocol/openid-connect/logout?client_id={{ (fromSecret "openshift-config" "openid-client-secret" "CLIENT_ID") | base64dec }}
+                    remediationAction: inform
+                    severity: low
             {{- end }}
           pruneObjectBehavior: None
           remediationAction: inform
