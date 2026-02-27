@@ -44,7 +44,6 @@ spec:
                       extraScopes: []
                       issuer: {{fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL"}}/realms/{{hub .ManagedClusterLabels.name hub}}
                     type: OpenID
-              recreateOption: IfRequired
             {{- end }}
           pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
