@@ -6,4 +6,4 @@ resources:
   - postgres.yaml
   - keycloak.yaml
   - route.yaml
- 
+  - service.yaml
