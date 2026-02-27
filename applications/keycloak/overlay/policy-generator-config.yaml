@@ -18,6 +18,7 @@ policyDefaults:
   disabled: false
   namespace: openshift-gitops
   pruneObjectBehavior: "None"
+  recreateOption: IfRequired
   remediationAction: enforce
   severity: medium
   standards:
