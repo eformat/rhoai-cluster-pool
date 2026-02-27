@@ -31,6 +31,5 @@ spec:
   additionalOptions:
     - name: enable-recovery
       value: 'true'
-  spec:
-    update:
-      strategy: RollingUpdate
+  update:
+    strategy: RollingUpdate
