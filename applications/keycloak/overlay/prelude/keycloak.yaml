@@ -18,7 +18,6 @@ spec:
       name: keycloak-postgres-app
       key: password
   hostname:
-    hostname: keycloak.apps.cluster.example.com
     strict: false
     strictBackchannel: false
   http:
