@@ -1,0 +1,7 @@
+---
+resources:
+  - ../../base
+  - postgres.yaml
+  - keycloak.yaml
+  - route.yaml
+ 

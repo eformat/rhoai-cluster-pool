@@ -1,0 +1,34 @@
+---
+# Source: keycloak-auth/templates/keycloak.yaml
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  db:
+    vendor: postgres
+    database: keycloak-postgres
+    host: keycloak-postgres-rw
+    usernameSecret:
+      name: keycloak-postgres-app
+      key: username
+    passwordSecret:
+      name: keycloak-postgres-app
+      key: password
+  hostname:
+    hostname: keycloak.apps.cluster.example.com
+    strict: false
+    strictBackchannel: false
+  http:
+    httpEnabled: False
+    tlsSecret: keycloak-internal-tls
+  ingress:
+    enabled: false
+  instances: 1
+  transaction:
+    xaEnabled: true
+  additionalOptions:
+    - name: enable-recovery
+      value: 'true'

@@ -1,0 +1,17 @@
+---
+# Source: keycloak-auth/charts/cloudnative-pg/templates/cluster.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-postgres
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  instances: 1
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: keycloak-postgres
+      owner: keycloak-postgres
+      

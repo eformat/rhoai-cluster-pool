@@ -1,0 +1,116 @@
+---
+# Source: keycloak-auth/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: keycloak-internal-tls
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+---
+# Source: keycloak-auth/charts/cloudnative-pg/templates/cluster.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-postgres
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  instances: 1
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: keycloak-postgres
+      owner: keycloak-postgres
+---
+# Source: keycloak-auth/templates/keycloak.yaml
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  db:
+    vendor: postgres
+    database: keycloak-postgres
+    host: keycloak-postgres-rw
+    usernameSecret:
+      name: keycloak-postgres-app
+      key: username
+    passwordSecret:
+      name: keycloak-postgres-app
+      key: password
+  hostname:
+    hostname: keycloak.apps.cluster.example.com
+    strict: false
+    strictBackchannel: false
+  http:
+    httpEnabled: False
+    tlsSecret: keycloak-internal-tls
+  ingress:
+    enabled: false
+  instances: 1
+  transaction:
+    xaEnabled: true
+  additionalOptions:
+    - name: enable-recovery
+      value: 'true'
+---
+# Source: keycloak-auth/templates/operatorgroup.yaml
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: rhbk-operator
+spec:
+  upgradeStrategy: Default
+  targetNamespaces:
+    - keycloak
+---
+# Source: keycloak-auth/templates/route.yaml
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: keycloak
+spec:
+  host: keycloak.apps.cluster.example.com
+  to:
+    kind: Service
+    name: keycloak-service
+    weight: 100
+  port:
+    targetPort: https
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+# Source: keycloak-auth/charts/cloudnative-pg/templates/subscription.yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: cloudnative-pg
+  source: certified-operators
+  sourceNamespace: openshift-marketplace
+---
+# Source: keycloak-auth/templates/subscription.yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhbk-operator
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  channel: stable-v26.2
+  installPlanApproval: Automatic
+  name: rhbk-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

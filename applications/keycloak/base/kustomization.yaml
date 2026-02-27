@@ -1,0 +1,4 @@
+---
+resources:
+  - operator-group.yaml
+  - subscription.yaml
