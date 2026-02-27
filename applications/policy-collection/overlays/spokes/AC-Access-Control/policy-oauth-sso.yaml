@@ -48,4 +48,5 @@ spec:
           pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
           severity: high
+  recreateOption: IfRequired
   remediationAction: enforce
