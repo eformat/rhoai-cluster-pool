@@ -31,3 +31,6 @@ spec:
   additionalOptions:
     - name: enable-recovery
       value: 'true'
+#  features:
+#    enabled:
+#      - rolling-updates:v2
