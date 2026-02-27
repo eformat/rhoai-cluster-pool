@@ -25,12 +25,12 @@ spec:
     tlsSecret: keycloak-internal-tls
   ingress:
     enabled: false
-  instances: 1
+  instances: 2
   transaction:
     xaEnabled: true
   additionalOptions:
     - name: enable-recovery
       value: 'true'
-#  features:
-#    enabled:
-#      - rolling-updates:v2
+  spec:
+    update:
+      strategy: RollingUpdate
