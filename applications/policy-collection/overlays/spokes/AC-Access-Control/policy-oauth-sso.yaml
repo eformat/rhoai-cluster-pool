@@ -18,7 +18,7 @@ spec:
         spec:
           object-templates-raw: |
             {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
-            - complianceType: musthave
+            - complianceType: mustonlyhave
               recordDiff: InStatus
               objectDefinition:
                 apiVersion: config.openshift.io/v1
