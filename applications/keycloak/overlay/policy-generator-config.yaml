@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: keycloak
 policyDefaults:
   placement:
-    placementName: placement-spokes-prelude
+    placementName: placement-hub-openshift
   categories:
     - CM Configuration Management
   complianceType: "musthave"
