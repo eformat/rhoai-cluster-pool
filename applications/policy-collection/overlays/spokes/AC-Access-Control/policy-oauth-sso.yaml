@@ -42,7 +42,7 @@ spec:
                       clientSecret:
                         name: openid-client-secret
                       extraScopes: []
-                      issuer: '{{fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL"}}'/realms/'{{.ManagedClusterLabels.name}}'
+                      issuer: '{{fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL"}}'/realms/'{{hub .ManagedClusterLabels.name hub}}'
                     type: OpenID
             {{- end }}
           pruneObjectBehavior: DeleteIfCreated
