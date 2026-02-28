@@ -1,0 +1,6 @@
+---
+namespace: chat
+
+resources:
+  - ../../base
+  - secret.yaml
