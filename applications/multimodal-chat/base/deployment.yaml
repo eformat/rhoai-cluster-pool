@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: multimodal-chatbot
-          image: quay.io/rh-aiservices-bu/multimodal-chatbot:latest
+          image: quay.io/eformat/multimodal-chatbot:latest # quay.io/rh-aiservices-bu/multimodal-chatbot:latest
           ports:
             - containerPort: 5000
               protocol: TCP
