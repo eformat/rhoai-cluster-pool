@@ -3,4 +3,4 @@ namespace: chat
 
 resources:
   - ../../base
-  - secret.yaml
+#  - secret.yaml
