@@ -1,0 +1,102 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    alpha.maas.opendatahub.io/tiers: '["enterprise", "premium", "free"]'
+    opendatahub.io/hardware-profile-name: mig-2g-35gb
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: qwen25-vl-7b-instruct-fp8
+    serving.kserve.io/stop: "false"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: qwen25-vl-7b-instruct-fp8
+spec:
+  model:
+    name: RedHatAI/Qwen2.5-VL-7B-Instruct-FP8-Dynamic
+    uri: hf://RedHatAI/Qwen2.5-VL-7B-Instruct-FP8-Dynamic
+  replicas: 1
+  router:
+    gateway:
+      refs:
+      - name: maas-default-gateway
+        namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+    - name: main
+      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
+      args:
+      - --served-model-name={{.Name}}
+      - --model=/mnt/models
+      - --max-model-len=60000
+      - --gpu-memory-utilization=0.99
+      - --enable-ssl-refresh
+      - --ssl-certfile=/var/run/kserve/tls/tls.crt
+      - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      - --enforce-eager
+      command:
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      resources:
+        limits:
+          cpu: "2"
+          memory: 18Gi
+          nvidia.com/mig-2g.35gb: "1"
+        requests:
+          cpu: "2"
+          memory: 18Gi
+          nvidia.com/mig-2g.35gb: "1"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: qwen25-vl-7b-instruct-fp8-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: qwen25-vl-7b-instruct-fp8-sa
+  annotations:
+    kubernetes.io/service-account.name: "qwen25-vl-7b-instruct-fp8-sa"
+    openshift.io/display-name: qwen25-vl-7b-instruct-fp8-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: qwen25-vl-7b-instruct-fp8-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - qwen25-vl-7b-instruct-fp8
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: qwen25-vl-7b-instruct-fp8-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: qwen25-vl-7b-instruct-fp8-view-role
+subjects:
+- kind: ServiceAccount
+  name: qwen25-vl-7b-instruct-fp8-sa

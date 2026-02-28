@@ -1,0 +1,105 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    alpha.maas.opendatahub.io/tiers: '["enterprise", "premium", "free"]'
+    opendatahub.io/hardware-profile-name: mig-1g-18gb
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: granite-vision-3.2-2b
+    serving.kserve.io/stop: "false"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: granite-vision-32-2b
+spec:
+  model:
+    name: ibm-granite/granite-vision-3.2-2b
+    uri: hf://ibm-granite/granite-vision-3.2-2b
+  replicas: 1
+  router:
+    gateway:
+      refs:
+      - name: maas-default-gateway
+        namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+    - name: main
+      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
+      args:
+      - --served-model-name={{.Name}}
+      - --model=/mnt/models
+      - --max-model-len=70000
+      - --enable-ssl-refresh
+      - --ssl-certfile=/var/run/kserve/tls/tls.crt
+      - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      - --distributed-executor-backend=mp
+      - --dtype=half
+      - --enable-auto-tool-choice
+      - --tool-call-parser
+      - granite
+      command:
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      resources:
+        limits:
+          cpu: "1"
+          memory: 12Gi
+          nvidia.com/mig-1g.18gb: "1"
+        requests:
+          cpu: "1"
+          memory: 12Gi
+          nvidia.com/mig-1g.18gb: "1"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: granite-vision-32-2b-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: granite-vision-32-2b-sa
+  annotations:
+    kubernetes.io/service-account.name: "granite-vision-32-2b-sa"
+    openshift.io/display-name: granite-vision-32-2b-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: granite-vision-32-2b-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - granite-vision-32-2b
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: granite-vision-32-2b-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: granite-vision-32-2b-view-role
+subjects:
+- kind: ServiceAccount
+  name: granite-vision-32-2b-sa
