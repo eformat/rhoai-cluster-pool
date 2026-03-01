@@ -3,7 +3,6 @@ apiVersion: console.openshift.io/v1
 kind: OdhQuickStart
 metadata:
   name: prelude-rag-talk-to-data
-  namespace: redhat-ods-applications
   annotations:
     opendatahub.io/categories: 'Getting started,RAG,Document processing'
     platform.opendatahub.io/instance.name: default-dashboard
