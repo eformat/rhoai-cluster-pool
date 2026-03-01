@@ -1,0 +1,215 @@
+---
+apiVersion: console.openshift.io/v1
+kind: OdhQuickStart
+metadata:
+  name: prelude-rag-talk-to-data
+  namespace: redhat-ods-applications
+  annotations:
+    opendatahub.io/categories: 'Getting started,RAG,Document processing'
+    platform.opendatahub.io/instance.name: default-dashboard
+    internal.config.kubernetes.io/previousNamespaces: default
+    platform.opendatahub.io/version: 3.0.0
+    platform.opendatahub.io/type: OpenShift AI Self-Managed
+  labels:
+    app: rhods-dashboard
+    app.kubernetes.io/part-of: rhods-dashboard
+    app.opendatahub.io/rhods-dashboard: 'true'
+    platform.opendatahub.io/part-of: dashboard
+spec:
+  description: Build a private, document-aware AI assistant using RAG. Data never leaves your environment.
+  displayName: Prelude -2- Talk to Your Own Data (RAG)
+  appName: rhoai
+  durationMinutes: 20
+  icon: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaQAAAFnCAIAAABmUqp4AAAeCnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZtpdhw3loX/YxW9BMzDch6mc3oHvfz+LpJUWyr5tO0q0WKmk8EI4A13ACB3/ue/r/sv/rRYvcul9Tpq9fzJI49ovOn+88fe9+Dz+/75KH+9Cz9/7mr7eht5Tbymzw96/byG78+/fuH7NRjvyh9u1NfXD+bPPxj58xr7LzeKn5ekEen9/rrR+LpRip8fhK8b2Gdavo7e/jiFeT6vX7//CQN/nb7l/vOw/+X/G9HbheekGE8KyfM9pvwZQNLf4JLxpvE9pMaFIdX3SeJ7TN9TIiC/i5P/w6jcr1n58e6XrGz7EaOfkpLq5wrHBz8Hs/54/e3nofzy+dcN3QvxH56c1o9y+OnzMMjrL9P5/nvv7u7e85md5UpI69ekvqf43nEhN8np/Vrlq/G38L69r8FXd1TvIuXbLz/5Wjw5kpYbctjBwg3nva6wGGKOJ5KSGOMiUfqsk6IRV/KOPGV9hRtbGmmnTrYW6U18Gn+MJbznjve4FToP3oErY+Bmgd+ITt/+E19/eqN7VfIhKJjbXqwYV1RTMAxlTt+5ioSE+11H5QX4++vXP8prIoPlhbkzQfPzc4tZwldtqY7SS3TiwsLrp9dC2183IEQ8uzCYkMiAryGVUINvMbYQiGMnP8aNOk0TJykIpcTNKGNOqZKcHvVsfqeFd20s8fMxmEUiCs3USM1IRq4ywEb9tNypISup5FJKLa30MorVVHMttdZWBX7WUsuttNpa620066nnXnrtrXfXR7cRRwIcy6ijjT7GMOOhxp2N3zYuMJtxpplnmXW22eeYtiiflVdZdbXV3RrLdtxpgxO77rb7HttOOJTSyaecetrpZxy7lNpNN99y622333HtR9aC+6T1X77+etbCd9biy5QubD+yxq+29n2LIDgpyhkZizmQ8aYMUNBROfM95BydUqec+QGOpRIZZVFydlDGyGA+IZYbfuTu/zL3U95czv9W3uJ35pxS95/InFPq/iRz/5q332TtQfDyyb0MqQ0VVJ9oPy6y2PkPTvrrr+4vXRgblFO7um6EHec4m4FpgqskJn4Hlb22wHLWQ1ZgLbI26zj39Eo64y55Wx4Uwyak5ZRbRs6nrZl8BzRyX72WMLnRFtqT23WbrVEKUallB
+  introduction: |-
+    ### Experience 2: Talk to Your Own Data (RAG)
+
+    **What is RAG?**
+    RAG (Retrieval Augmented Generation) lets AI models answer questions using private documents.
+    The key: the data never leaves the local environment.
+
+    **What will be accomplished:**
+    - Upload a document (PDF, text file, or URL)
+    - Watch it get processed into searchable chunks
+    - Ask questions that only the document can answer
+    - See source citations showing where answers came from
+
+    **Why this matters:**
+    - Data stays private and local
+    - No cloud uploads or external APIs
+    - Models can work with internal company documents
+    - Full transparency into how answers are generated
+
+  prerequisites:
+    - Completed "Prelude -1- Chat with an LLM" quickstart
+    - Access to the OpenShift cluster
+    - Admin credentials (username and password)
+    - Optional, A PDF or text document to upload (sample document will be provided)
+
+  tasks:
+    - description: |-
+        ### Upload a Document to the RAG System
+
+        In this task, a document will be uploaded that the AI model can reference when answering questions.
+
+        1. Navigate to the **OpenShift Console** from the hamburger menu in the top right corner
+
+        2. Go to **Home → Projects**
+
+        3. Find and select the **chat** project
+
+        4. In the left navigation, click **Networking → Routes**
+
+        5. Click on the **chat-openwebui** route URL
+
+        6. Login with OpenShift using the **admin** user and password
+
+        7. Once in OpenWebUI, look for the **document upload** section or **Knowledge Base** option
+
+        8. Upload a document - use the pre-loaded sample document (Red Hat technical brief), or drag and drop a PDF or text file, or paste a URL to a document
+
+        **What happens behind the scenes:**
+        The document is being processed locally. It's broken into chunks, embedded into vectors, and stored in the local vector database (Milvus).
+
+        **Key point:** The data never leaves this OpenShift environment.
+
+      title: Task 1 - Upload a Document
+      review:
+        instructions: |-
+          Did the document upload successfully?
+
+        failedTaskHelp: If the upload failed, check the file format (PDF or TXT recommended) and try again. Ensure the file size is reasonable (under 10MB for best results).
+      summary:
+        success: >-
+          Great! The document has been uploaded and is being processed into searchable chunks.
+        failed: Upload failed. Check the file format and try again.
+
+    - description: |-
+        ### Watch the Document Get Chunked and Embedded
+
+        The document is now being processed. Here's what's happening:
+
+        **1. Chunking:**
+        - The document is broken into smaller, overlapping pieces (chunks)
+        - Each chunk is typically 500-1000 characters
+        - This makes the content searchable and retrievable
+
+        **2. Embedding:**
+        - Each chunk is converted into a vector (a list of numbers)
+        - Vectors capture the semantic meaning of the text
+        - Similar concepts have similar vectors
+
+        **3. Storage:**
+        - Vectors are stored in **Milvus** (the local vector database)
+        - This happens entirely within the OpenShift cluster
+        - No external API calls or cloud uploads
+
+        **Check the processing status:**
+
+        1. Look for a **processing indicator** or **status message** in the UI
+
+        2. Once complete, the document should show as "Ready" or "Indexed"
+
+        **Visual confirmation:**
+        Some interfaces show a progress bar or chunk count. If available, observe:
+        - Number of chunks created
+        - Embedding model used (e.g., `all-MiniLM-L6-v2`)
+        - Storage location (Milvus)
+
+      title: Task 2 - Document Processing and Embedding
+      review:
+        instructions: |-
+          Does the document show as "Ready" or "Indexed"?
+
+        failedTaskHelp: If processing is stuck, wait a few moments and refresh. Large documents may take 1-2 minutes to process.
+      summary:
+        success: >-
+          Perfect! The document is now chunked, embedded, and ready for questions.
+        failed: Processing incomplete. Wait a moment and check the status again.
+
+    - description: |-
+        ### Ask Questions Only the Document Can Answer
+
+        Now test the RAG system by asking questions that require the uploaded document.
+
+        1. In the **chat interface**, start a new conversation
+
+        2. **Enable the document** for this conversation - look for a **knowledge base selector** or **document picker**, select the uploaded document to tell the AI to retrieve information from it
+
+        3. **Ask a specific question** that can only be answered using the document. Example, "What is the main topic of this document?" or "Summarize the key points from section 2"
+
+        4. **Observe the response** - the model should answer using information from the document. The answer should be accurate and reference content the model couldn't have known without the document.
+
+        **What's happening:**
+        When a question is asked, the system:
+        1. Converts the question into a vector
+        2. Searches the vector database for similar chunks
+        3. Retrieves the top relevant chunks (usually 3-5)
+        4. Sends those chunks + question to the LLM
+        5. The LLM generates an answer based on the provided context
+
+      title: Task 3 - Chat with the Document
+      review:
+        instructions: |-
+          Did the model answer the question accurately based on the document?
+
+        failedTaskHelp: If the answer seems generic or wrong, ensure the document is selected or enabled for the conversation. Try asking a more specific question.
+      summary:
+        success: >-
+          Excellent! The RAG system successfully retrieved information from the document.
+        failed: Try enabling the document in the conversation settings and ask again.
+
+    - description: |-
+        ### See Where the Answer Came From
+
+        One of the most powerful features of RAG is **transparency**. The system can show which parts of the document were used to generate each answer.
+
+        1. **Look for source citations** in the response - some UIs show "Sources" or "References" below the answer. Click to expand and see the retrieved chunks.
+
+        2. **Examine the retrieved chunks** - typically 3-5 chunks are retrieved per question. Each chunk should be relevant to the question and may come from different parts of the document.
+
+        3. **Verify the citations** - read the source chunks and confirm they contain the information in the answer. This proves the model isn't hallucinating.
+
+        **This is not magic. This is transparent AI.**
+
+        The system is showing exactly:
+        - What chunks were retrieved
+        - How relevant they are (sometimes with similarity scores)
+        - Where in the document they came from
+
+        **Privacy checkpoint:**
+        Notice that all of this happened locally:
+        - Document stored in local Milvus database
+        - Embeddings generated by local models
+        - LLM inference running on local GPUs
+        - Zero external API calls
+
+      title: Task 4 - Understand Source Citations
+      review:
+        instructions: |-
+          Can the source chunks be viewed and do they match the answer?
+
+        failedTaskHelp: If sources aren't visible, check the UI for a "Show Sources" or "References" toggle. Some interfaces display this automatically, others require clicking to expand.
+      summary:
+        success: >-
+          Perfect! The RAG system's transparency is clear - the sources prove the answer.
+        failed: Sources not visible. Look for a toggle or expand option in the UI.
+  conclusion: >-
+    Congratulations! A private, document-aware AI assistant has been built using RAG.
+
+    **What was accomplished:**
+    - Uploaded a document and watched it get processed
+    - Asked questions that only the document could answer
+    - Saw source citations proving where answers came from
+    - Confirmed all data stayed local (no cloud uploads)
+
+    **Key takeaway:**
+    This is private AI. The data never left the OpenShift environment.
+
+    **Next steps:**
+    - Try uploading more documents
+    - Experiment with different types of questions
+    - Continue to Experience 3 - Build an AI Agent
+    - Explore the OpenShift AI model serving documentation
+
+  nextQuickStart: []
