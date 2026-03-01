@@ -1,5 +1,7 @@
 ---
 resources:
+  - prelude-1-app.yaml
   - prelude-1-chat-llm.yaml
-  - prelude-1-vault.yaml
   - prelude-1-vault-secrets.yaml
+  - prelude-1-vault.yaml
+  - prelude-2-rag-talk-to-data.yaml
