@@ -24,7 +24,6 @@ spec:
   provider: ''
   docsLink: ''
   quickStart: prelude-chat-llm
-  shownOnEnabledPage: true
   isEnabled: true
   getStartedMarkDown: >-
     # Chat with an LLM
