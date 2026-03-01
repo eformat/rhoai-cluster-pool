@@ -1,6 +1,4 @@
 ---
-namespace: redhat-ods-applications
-
 resources:
   - prelude-1-app.yaml
   - prelude-1-chat-llm.yaml

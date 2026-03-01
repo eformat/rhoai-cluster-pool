@@ -3,6 +3,7 @@ apiVersion: console.openshift.io/v1
 kind: OdhQuickStart
 metadata:
   name: prelude-chat-llm
+  namespace: redhat-ods-applications
   annotations:
     opendatahub.io/categories: 'Getting started,Agents,Notebook environments'
     platform.opendatahub.io/instance.name: default-dashboard
