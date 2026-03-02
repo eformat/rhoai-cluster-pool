@@ -52,7 +52,7 @@ spec:
 
         In this task, a document will be uploaded that the AI model can reference when answering questions.
 
-        1. Navigate to the **OpenShift Console** from the hamburger menu in the top right corner
+        1. Navigate to the **OpenShift Console** from the hamburger menu titled "Applications" in the top right corner
 
         2. Go to **Home → Projects**
 
