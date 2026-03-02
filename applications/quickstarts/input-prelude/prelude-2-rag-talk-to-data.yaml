@@ -64,7 +64,7 @@ spec:
 
         6. Login with OpenShift using the **admin** user and password
 
-        7. Once in OpenWebUI, look for the **document upload** section or **Knowledge Base** option
+        7. Once in OpenWebUI, look for the **document upload** section or **Workspace -> Knowledge** option
 
         8. Upload a document - use the pre-loaded sample document (Red Hat technical brief), or drag and drop a PDF or text file, or paste a URL to a document
 
