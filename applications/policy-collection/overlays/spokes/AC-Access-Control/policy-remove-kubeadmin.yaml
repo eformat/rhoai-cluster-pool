@@ -26,6 +26,7 @@ spec:
                   name: kubeadmin
                   namespace: kube-system
                 type: Opaque
+            {{- end }}
           remediationAction: inform
           severity: low
   remediationAction: enforce
