@@ -18,6 +18,7 @@ spec:
     - storage-quota-spokes
     - oauth-sso-spokes
     - sso-secret-spokes
+    - remove-kubeadmin-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
