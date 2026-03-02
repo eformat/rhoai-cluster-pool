@@ -52,7 +52,7 @@ spec:
 
         In this task, a document will be uploaded that the AI model can reference when answering questions.
 
-        1. Navigate to the **OpenShift Console** from the hamburger menu in the top right corner
+        1. Navigate to the **OpenShift Console** from the hamburger menu titled "Applications" in the top right corner
 
         2. Go to **Home → Projects**
 
@@ -64,7 +64,7 @@ spec:
 
         6. Login with OpenShift using the **admin** user and password
 
-        7. Once in OpenWebUI, look for the **document upload** section or **Knowledge Base** option
+        7. Once in OpenWebUI, look for the **document upload** section or **Workspace -> Knowledge** option
 
         8. Upload a document - use the pre-loaded sample document (Red Hat technical brief), or drag and drop a PDF or text file, or paste a URL to a document
 
