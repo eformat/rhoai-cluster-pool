@@ -1,0 +1,359 @@
+---
+apiVersion: console.openshift.io/v1
+kind: OdhQuickStart
+metadata:
+  name: prelude-agents-build-autonomous-assistant
+  namespace: redhat-ods-applications
+  annotations:
+    opendatahub.io/categories: 'Getting started,AI Agents,Automation'
+    platform.opendatahub.io/instance.name: default-dashboard
+    internal.config.kubernetes.io/previousNamespaces: default
+    platform.opendatahub.io/version: 3.0.0
+    platform.opendatahub.io/type: OpenShift AI Self-Managed
+  labels:
+    app: rhods-dashboard
+    app.kubernetes.io/part-of: rhods-dashboard
+    app.opendatahub.io/rhods-dashboard: 'true'
+    platform.opendatahub.io/part-of: dashboard
+spec:
+  description: Build an autonomous AI agent that can use tools, make decisions, and solve complex tasks.
+  displayName: Prelude -3- Build an Autonomous AI Agent
+  appName: rhoai
+  durationMinutes: 30
+  icon: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaQAAAFnCAIAAABmUqp4AAAeCnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZtpdhw3loX/YxW9BMzDch6mc3oHvfz+LpJUWyr5tO0q0WKmk8EI4A13ACB3/ue/r/sv/rRYvcul9Tpq9fzJI49ovOn+88fe9+Dz+/75KH+9Cz9/7mr7eht5Tbymzw96/byG78+/fuH7NRjvyh9u1NfXD+bPPxj58xr7LzeKn5ekEen9/rrR+LpRip8fhK8b2Gdavo7e/jiFeT6vX7//CQN/nb7l/vOw/+X/G9HbheekGE8KyfM9pvwZQNLf4JLxpvE9pMaFIdX3SeJ7TN9TIiC/i5P/w6jcr1n58e6XrGz7EaOfkpLq5wrHBz8Hs/54/e3nofzy+dcN3QvxH56c1o9y+OnzMMjrL9P5/nvv7u7e85md5UpI69ekvqf43nEhN8np/Vrlq/G38L69r8FXd1TvIuXbLz/5Wjw5kpYbctjBwg3nva6wGGKOJ5KSGOMiUfqsk6IRV/KOPGV9hRtbGmmnTrYW6U18Gn+MJbznjve4FToP3oErY+Bmgd+ITt/+E19/eqN7VfIhKJjbXqwYV1RTMAxlTt+5ioSE+11H5QX4++vXP8prIoPlhbkzQfPzc4tZwldtqY7SS3TiwsLrp9dC2183IEQ8uzCYkMiAryGVUINvMbYQiGMnP8aNOk0TJykIpcTNKGNOqZKcHvVsfqeFd20s8fMxmEUiCs3USM1IRq4ywEb9tNypISup5FJKLa30MorVVHMttdZWBX7WUsuttNpa620066nnXnrtrXfXR7cRRwIcy6ijjT7GMOOhxp2N3zYuMJtxpplnmXW22eeYtiiflVdZdbXV3RrLdtxpgxO77rb7HttOOJTSyaecetrpZxy7lNpNN99y622333HtR9aC+6T1X77+etbCd9biy5QubD+yxq+29n2LIDgpyhkZizmQ8aYMUNBROfM95BydUqec+QGOpRIZZVFydlDGyGA+IZYbfuTu/zL3U95czv9W3uJ35pxS95/InFPq/iRz/5q332TtQfDyyb0MqQ0VVJ9oPy6y2PkPTvrrr+4vXRgblFO7um6EHec4m4FpgqskJn4Hlb22wHLWQ1ZgLbI26zj39Eo64y55Wx4Uwyak5ZRbRs6nrZl8BzRyX72WMLnRFtqT23WbrVEKUallB
+  introduction: |-
+    ### Experience 3: Build an Autonomous AI Agent
+
+    **What is an AI Agent?**
+    An AI agent is a system that can autonomously use tools, make decisions, and complete multi-step tasks.
+    Unlike simple chatbots that just generate text, agents can **take actions** and **reason** about what to do next.
+
+    **The demo: Trip Planning Assistant**
+    You'll watch an agent autonomously plan a trip by:
+    - Searching the web for weather forecasts
+    - Finding activity recommendations
+    - Calculating total costs
+    - Combining all information into a comprehensive travel plan
+
+    All without any hardcoded logic - the agent decides what to do at each step.
+
+    **What will be accomplished:**
+    - Explore the tools available to agents (web search, calculator, etc.)
+    - Watch an agent autonomously solve a multi-step trip planning problem
+    - Analyze how the agent chooses which tools to use and when
+    - Test your own multi-step challenges
+
+    **Why this matters:**
+    - Agents can automate complex workflows that previously required human decision-making
+    - They transparently show their reasoning at each step (not a black box)
+    - Any API, database, or function can become an agent tool
+    - Everything runs locally in your OpenShift environment
+
+  prerequisites:
+    - Completed "Prelude -2- Talk to Your Own Data (RAG)" quickstart
+    - Access to the OpenShift cluster
+    - Admin credentials (username and password)
+    - Basic understanding of LLMs and tool calling
+
+  tasks:
+    - description: |-
+        ### Return to the Chat Interface
+
+        Good news! The agent capabilities use the same OpenWebUI interface from the RAG quickstart. Let's return there.
+
+        1. Navigate to the **OpenShift Console** from the hamburger menu titled "Applications" in the top right corner
+
+        2. Go to **Home → Projects**
+
+        3. Find and select the **chat** project (same as Prelude -2-)
+
+        4. In the left navigation, click **Networking → Routes**
+
+        5. Click on the **chat-openwebui** route URL
+
+        6. Login with OpenShift using the **admin** user and password
+
+        **What's new for agents?**
+        Behind the scenes, OpenShift has deployed MCP (Model Context Protocol) tools to this cluster:
+        - **MCP Gateway:** Routes tool calls between the LLM and tool servers
+        - **MCP Weather:** Provides weather forecast data
+        - **MCP Fast Tools:** Calculator, search, and utility functions
+        - **MCP OpenShift:** Kubernetes/OpenShift API access
+
+        These tools are running in the background, ready to be used by agents.
+
+      title: Task 1 - Access the Chat Interface
+      review:
+        instructions: |-
+          Did you successfully access OpenWebUI (same interface as the RAG quickstart)?
+
+        failedTaskHelp: This is the same interface from Prelude -2-. If access failed, verify the chat project exists and the route is active.
+      summary:
+        success: >-
+          Perfect! You're back in OpenWebUI where agent tools are available.
+        failed: Access failed. This should be the same route from the RAG quickstart.
+
+    - description: |-
+        ### Verify MCP Tools Are Running
+
+        OpenShift deployed agent tools automatically using GitOps. Let's verify they're running.
+
+        **Option A: Check via OpenShift Console (Recommended)**
+
+        1. In the **OpenShift Console**, navigate to **Home → Search**
+
+        2. Select **Project:** `mcp-system`
+
+        3. Search for **Pods** - you should see:
+           - `fast-mcp-tools-*` (calculator, utilities)
+           - `mcp-weather-*` (weather API)
+           - `mcp-openshift-*` (Kubernetes tools)
+
+        4. Check that pods are in **Running** status
+
+        5. Navigate to **Networking → Routes** to see the MCP gateway endpoint
+
+        **Option B: Check via OpenWebUI (Alternative)**
+
+        1. In OpenWebUI, click your **profile icon** (top right)
+
+        2. Go to **Admin Panel → Settings**
+
+        3. Look for **Functions** or **Tools** section
+
+        4. Check if MCP tools are listed (may require configuration in some deployments)
+
+        **What you're seeing:**
+        These are containerized microservices that provide tools to AI agents. Each tool:
+        - Has a specific function (weather, calculator, etc.)
+        - Exposes an API the LLM can call
+        - Runs independently in its own pod
+        - Is managed by OpenShift GitOps
+
+        **Key OpenShift concept:** Infrastructure-as-Code via ACM Policy and ArgoCD deployed these tools automatically when the cluster was provisioned.
+
+      title: Task 2 - Verify Agent Tools Are Deployed
+      review:
+        instructions: |-
+          Can you see MCP tool pods running in the mcp-system namespace?
+
+        failedTaskHelp: If pods aren't visible, check that you selected the "mcp-system" project in the console. The tools may still be deploying - wait 1-2 minutes and refresh.
+      summary:
+        success: >-
+          Excellent! MCP agent tools are running and ready to use.
+        failed: Tools not visible. Check the mcp-system namespace or wait for deployment to complete.
+
+    - description: |-
+        ### Configure OpenWebUI to Use MCP Tools
+
+        The tools are deployed, but we need to tell OpenWebUI how to access them. This connects the LLM to the MCP Gateway.
+
+        **Steps:**
+
+        1. In **OpenWebUI**, click your **profile icon** (top right)
+
+        2. Go to **Settings → Functions** (or **Admin Panel → Functions** depending on version)
+
+        3. Look for **MCP** or **External Functions** section
+
+        4. **Add the MCP Gateway endpoint:**
+           - Gateway URL: Look for the route in the `mcp-system` namespace
+           - Or use internal service: `http://mcp-gateway.mcp-system.svc.cluster.local`
+
+        5. **Test the connection** - you should see available tools listed:
+           - weather
+           - calculator
+           - search
+           - (and others)
+
+        6. **Enable the tools** you want to use for the agent
+
+        **Alternative (if the above isn't available):**
+        Some OpenWebUI deployments auto-discover MCP tools. Try starting a conversation and typing a tool-related question like "What's the weather in Boston?" - if it works, tools are already connected.
+
+        **What's happening:**
+        You're configuring OpenWebUI to route tool calls through the MCP Gateway, which then routes them to the appropriate tool microservices.
+
+      title: Task 3 - Connect OpenWebUI to MCP Tools
+      review:
+        instructions: |-
+          Can you see MCP tools listed and enabled in OpenWebUI?
+
+        failedTaskHelp: If MCP configuration isn't visible, the deployment may have different settings. Try asking a test question in chat like "What is 5 + 3?" - if it calculates correctly, tools are working even without visible config.
+      summary:
+        success: >-
+          Perfect! OpenWebUI is now connected to the MCP agent tools.
+        failed: Configuration not found. Tools might be auto-configured - proceed to next task to test.
+
+    - description: |-
+        ### Execute the Trip Planning Task
+
+        Now give the agent a realistic multi-step task that requires planning, research, and calculation.
+
+        **The Trip Planning Challenge:**
+
+        Ask the agent this question:
+
+        *"I want to visit Boston next month. What will the weather be like? Recommend 3 popular things to do. If each activity costs around $30 and lunch costs $15 per day for 2 days, what's my total estimated cost?"*
+
+        **Why this task is challenging:**
+        - Requires **web search** (weather forecast, Boston attractions)
+        - Requires **calculator** (total cost calculation: 3 activities × $30 + 2 lunches × $15)
+        - Requires **planning** (agent must decide order of operations)
+        - Requires **synthesis** (combining results into a coherent answer)
+
+        **Steps:**
+
+        1. Start a new conversation with the agent
+
+        2. Copy and paste the trip planning question above (or modify for a different city)
+
+        3. **Watch the agent work** - most interfaces show the agent's "thinking" in real-time:
+           - See it plan the approach ("First I'll check weather, then find activities...")
+           - Watch it decide which tool to call next
+           - See each tool's response
+           - Observe how it combines information
+
+        4. **Review the final answer** - it should include:
+           - Weather forecast
+           - 3 recommended activities
+           - Total cost calculation with breakdown
+
+        **This is the magic moment:** The agent is autonomously choosing tools, making API calls, and reasoning through a multi-step problem - all visible to you.
+
+      title: Task 4 - Execute the Trip Planning Task
+      review:
+        instructions: |-
+          Did the agent successfully provide weather, recommendations, and a cost calculation?
+
+        failedTaskHelp: If the agent failed, try a simpler test first like "What is 25 * 4?" to verify tools work. Check that web search and calculator tools are enabled. The agent might also need internet access.
+      summary:
+        success: >-
+          Excellent! The agent autonomously planned a trip using multiple tools and calculations.
+        failed: The agent couldn't complete the task. Verify tool connectivity and try a simpler question first.
+
+    - description: |-
+        ### Analyze the Agent's Decision-Making
+
+        Now let's examine **how** the agent solved the trip planning task. This is where agent transparency becomes valuable.
+
+        **Review the execution trace and identify:**
+
+        1. **Initial Planning**
+           - Did the agent outline its approach at the start?
+           - Example: "I'll search for Boston weather, then find activities, then calculate costs"
+
+        2. **Tool Selection Logic**
+           - Check which tool was called for each sub-task:
+             - Weather/attractions → should use **Web Search**
+             - Cost calculation → should use **Calculator**
+           - Did it choose the right tool each time?
+
+        3. **Order of Operations**
+           - Agents can work in different orders (both valid):
+             - Sequential: weather → activities → calculation
+             - Parallel: gather all info, then calculate
+           - What order did your agent choose? Why might it have chosen that?
+
+        4. **Error Resilience (Try This)**
+           - Ask a follow-up: *"Actually, I want to go to Paris instead. What changes?"*
+           - Watch the agent adapt its previous answer
+           - See if it reuses calculations or starts fresh
+
+        5. **Transparency Check**
+           - Can you see **every tool call** that was made?
+           - Are the tool responses visible?
+           - Could you audit this if needed?
+
+        **Key insight:** Unlike a black-box AI, agents show their work. Every decision is traceable.
+
+      title: Task 5 - Analyze the Agent's Decision-Making
+      review:
+        instructions: |-
+          Can you identify which tools were called and in what order?
+
+        failedTaskHelp: If the tool calls aren't visible, look for a "Show Details", "Debug Mode", or "Tool Calls" toggle in the UI. Some interfaces show this in a sidebar or expandable section.
+      summary:
+        success: >-
+          Perfect! You can see exactly how the agent made decisions and used tools.
+        failed: Tool execution not visible. Look for a debug or detail view option.
+
+    - description: |-
+        ### Try Your Own Multi-Step Challenge
+
+        Now that you've seen how agents work, create your own multi-step task.
+
+        **Challenge ideas to try:**
+
+        1. **Budget Comparison:**
+           - *"Compare the cost of a 3-day trip to Chicago vs Miami. Assume $100/night hotel and $40/day for food."*
+           - Should use calculator multiple times
+
+        2. **Research + Calculation:**
+           - *"What's the population of Tokyo, and how many baseball stadiums would fit in that city area?"*
+           - Requires web search + math + creative reasoning
+
+        3. **Document + Web Hybrid (if RAG is enabled):**
+           - *"Based on our company travel policy document, can I expense a $200 dinner in New York?"*
+           - Should query knowledge base + potentially search for NYC restaurant norms
+
+        4. **Multi-Location Planning:**
+           - *"I'm visiting San Francisco, Seattle, and Portland. What's the weather in each city and which should I visit first based on best weather?"*
+           - Requires multiple searches + comparison logic
+
+        **What to observe:**
+        - Does the agent break down the problem correctly?
+        - Are the tool choices appropriate?
+        - Does it show its reasoning at each step?
+
+        **Optional: Share your results**
+        - Try a creative multi-step question
+        - See if you can "stump" the agent
+        - Notice when it asks for clarification vs makes assumptions
+
+      title: Task 6 - Try Your Own Multi-Step Challenge
+      review:
+        instructions: |-
+          Did you try your own multi-step challenge and observe how the agent handled it?
+
+        failedTaskHelp: This task is open-ended and exploratory. Any multi-step question that requires 2+ tools counts as a success. The goal is experimentation.
+      summary:
+        success: >-
+          Amazing! You're now thinking like an agent developer - breaking problems into tool-enabled steps.
+        failed: Feel free to try more examples or proceed to the conclusion.
+
+  conclusion: >-
+    Congratulations! You've witnessed autonomous AI agents in action.
+
+    **What was accomplished:**
+    - Explored the tools available to agents (calculator, web search, etc.)
+    - Watched an agent autonomously plan and execute a trip planning task
+    - Analyzed how the agent chose which tools to use and when
+    - Experimented with your own multi-step challenges
+
+    **Key takeaway:**
+    Agents are not just chatbots. They are autonomous systems that can:
+    - Break down complex problems into steps
+    - Choose and use the right tools for each sub-task
+    - Show transparent reasoning at every step
+    - Adapt when things change
+
+    **This is the foundation of agentic AI:**
+    - **Transparency:** Every tool call is visible and auditable
+    - **Autonomy:** The agent decides the approach, not hardcoded rules
+    - **Extensibility:** Any API or function can become an agent tool
+    - **Local control:** All processing happens in your OpenShift environment
+
+    **Real-world applications:**
+    - Customer service agents that look up orders, process refunds, check inventory
+    - DevOps agents that diagnose issues, query logs, run tests
+    - Research agents that gather data, analyze trends, generate reports
+    - Data processing agents that clean, transform, and validate datasets
+
+    **Next steps:**
+    - Think about multi-step processes in your work that could be automated
+    - Explore what tools exist in your environment (databases, APIs, services)
+    - Continue to Experience 4 (if available) or explore advanced agent patterns
+    - Read the OpenShift AI documentation on model serving and tool integration
+
+  nextQuickStart: []
