@@ -31,3 +31,18 @@ spec:
   additionalOptions:
     - name: enable-recovery
       value: 'true'
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - volumeMounts:
+              - name: prelude-theme
+                mountPath: /opt/keycloak/themes/prelude/login/theme.properties
+                subPath: theme.properties
+              - name: prelude-theme
+                mountPath: /opt/keycloak/themes/prelude/login/resources/css/styles.css
+                subPath: styles.css
+        volumes:
+          - name: prelude-theme
+            configMap:
+              name: keycloak-theme-prelude
