@@ -1,0 +1,387 @@
+apiVersion: v1
+data:
+  styles.css: |
+    /* Prelude-matched Keycloak Login Theme
+       Red Hat dark theme: #151515 base, #EE0000 accent, Red Hat Display/Text fonts */
+
+    @import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;900&family=Red+Hat+Text:wght@400;500;600;700&display=swap');
+
+    /* ── Color Variables ── */
+    :root {
+      --rh-red-50: #EE0000;
+      --rh-red-60: #A60000;
+      --rh-red-70: #5F0000;
+      --rh-red-80: #3F0000;
+      --rh-gray-10: #F2F2F2;
+      --rh-gray-20: #E0E0E0;
+      --rh-gray-40: #A3A3A3;
+      --rh-gray-50: #707070;
+      --rh-gray-70: #383838;
+      --rh-gray-80: #292929;
+      --rh-gray-90: #1F1F1F;
+      --rh-gray-95: #151515;
+    }
+
+    /* ── Full-height page (no white bottom) ── */
+    html,
+    html.login-pf {
+      min-height: 100vh;
+      height: 100%;
+      background: var(--rh-gray-95) !important;
+    }
+
+    /* ── Body & Background ── */
+    .login-pf body {
+      background:
+        linear-gradient(
+          135deg,
+          transparent 0%,
+          transparent 45%,
+          rgba(238, 0, 0, 0.06) 45%,
+          rgba(238, 0, 0, 0.03) 55%,
+          transparent 55%
+        ) no-repeat right center / 40% 200%,
+        linear-gradient(
+          135deg,
+          transparent 0%,
+          transparent 47%,
+          rgba(238, 0, 0, 0.03) 47%,
+          rgba(238, 0, 0, 0.015) 53%,
+          transparent 53%
+        ) no-repeat calc(100% - 5%) center / 30% 200%,
+        var(--rh-gray-95);
+      background-size: 40% 200%, 30% 200%, cover;
+      font-family: "Red Hat Text", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .login-pf-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+    }
+
+    /* Light bottom section + dark footer strip (Prelude-style) */
+    .login-pf-page::after {
+      content: '';
+      flex: 1;
+      display: block;
+      background-color: var(--rh-gray-10);
+      background-image:
+        linear-gradient(to right, var(--rh-red-50), rgba(238, 0, 0, 0.2), transparent),
+        linear-gradient(var(--rh-gray-80), var(--rh-gray-80)),
+        linear-gradient(var(--rh-gray-95), var(--rh-gray-95));
+      background-size: 100% 1px, 100% 1px, 100% 60px;
+      background-position: top, bottom 60px, bottom;
+      background-repeat: no-repeat;
+      margin-top: 40px;
+      min-height: 140px;
+    }
+
+
+    /* Override login.css mobile white background */
+    @media (max-width: 767px) {
+      .login-pf body {
+        background:
+          linear-gradient(
+            135deg,
+            transparent 0%,
+            transparent 45%,
+            rgba(238, 0, 0, 0.06) 45%,
+            rgba(238, 0, 0, 0.03) 55%,
+            transparent 55%
+          ) no-repeat right center / 40% 200%,
+          linear-gradient(
+            135deg,
+            transparent 0%,
+            transparent 47%,
+            rgba(238, 0, 0, 0.03) 47%,
+            rgba(238, 0, 0, 0.015) 53%,
+            transparent 53%
+          ) no-repeat calc(100% - 5%) center / 30% 200%,
+          var(--rh-gray-95) !important;
+        background-size: 40% 200%, 30% 200%, cover !important;
+      }
+    }
+
+    /* ── Header ── */
+    #kc-header {
+      color: #fff;
+    }
+
+    #kc-header-wrapper {
+      font-family: "Red Hat Display", sans-serif;
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: -0.025em;
+      color: #fff;
+      padding-top: 40px;
+      padding-bottom: 8px;
+    }
+
+    /* Red accent bar above header */
+    #kc-header-wrapper::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: var(--rh-red-50);
+      margin-bottom: 16px;
+    }
+
+    /* ── Login Card ── */
+    .login-pf-page .card-pf,
+    #kc-login,
+    .card-pf {
+      background: var(--rh-gray-90);
+      border: 1px solid var(--rh-gray-70);
+      border-top: 1px solid var(--rh-gray-70);
+      border-radius: 0;
+      box-shadow: none;
+      color: #fff;
+    }
+
+    .login-pf-page .login-pf-header,
+    .login-pf-page .login-pf-header h1,
+    #kc-page-title {
+      font-family: "Red Hat Display", sans-serif;
+      color: #fff;
+    }
+
+    /* ── Form Labels ── */
+    .login-pf-page .login-pf-accounts,
+    .login-pf-page label,
+    .control-label,
+    label {
+      font-family: "Red Hat Text", sans-serif;
+      color: var(--rh-gray-20);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    /* ── Form Inputs ── */
+    .login-pf-page .form-control,
+    .form-control {
+      background-color: var(--rh-gray-90);
+      border: 1px solid var(--rh-gray-70);
+      border-radius: 0;
+      color: #fff;
+      font-family: "Red Hat Text", sans-serif;
+      font-size: 16px;
+      padding: 12px 16px;
+      height: auto;
+      box-shadow: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .login-pf-page .form-control::placeholder,
+    .form-control::placeholder {
+      color: var(--rh-gray-50);
+    }
+
+    .login-pf-page .form-control:focus,
+    .form-control:focus {
+      border-color: var(--rh-red-50);
+      box-shadow: 0 0 0 1px var(--rh-red-50);
+      outline: none;
+      background-color: var(--rh-gray-90);
+      color: #fff;
+    }
+
+    /* ── Primary Button (Login) ── */
+    #kc-form-buttons .btn-primary,
+    #kc-login .btn-primary,
+    .btn-primary {
+      background-color: var(--rh-red-50);
+      border: none;
+      border-radius: 0;
+      color: #fff;
+      font-family: "Red Hat Text", sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 12px 32px;
+      transition: all 0.2s;
+      text-shadow: none;
+      box-shadow: none;
+    }
+
+    #kc-form-buttons .btn-primary:hover,
+    #kc-login .btn-primary:hover,
+    .btn-primary:hover {
+      background-color: var(--rh-red-60);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    #kc-form-buttons .btn-primary:focus,
+    #kc-login .btn-primary:focus,
+    .btn-primary:focus {
+      background-color: var(--rh-red-60);
+      box-shadow: 0 0 0 2px var(--rh-red-50);
+      outline: none;
+      color: #fff;
+    }
+
+    #kc-form-buttons .btn-primary:active,
+    #kc-login .btn-primary:active,
+    .btn-primary:active {
+      background-color: var(--rh-red-60);
+      box-shadow: none;
+      color: #fff;
+    }
+
+    .btn-primary:disabled,
+    .btn-primary.disabled {
+      background-color: var(--rh-gray-70);
+      color: var(--rh-gray-50);
+      border: none;
+    }
+
+    /* ── Links ── */
+    .login-pf-page a,
+    a {
+      color: var(--rh-red-50);
+      transition: color 0.2s;
+    }
+
+    .login-pf-page a:hover,
+    a:hover {
+      color: var(--rh-red-60);
+      text-decoration: underline;
+    }
+
+    /* ── Alert / Error Messages ── */
+    .alert-error,
+    .alert-danger {
+      background-color: var(--rh-red-80);
+      border: 1px solid var(--rh-red-70);
+      color: #F9A8A8;
+      border-radius: 0;
+    }
+
+    .alert-warning {
+      background-color: var(--rh-gray-80);
+      border: 1px solid var(--rh-gray-70);
+      color: #fff;
+      border-radius: 0;
+    }
+
+    .alert-success {
+      background-color: var(--rh-gray-80);
+      border: 1px solid var(--rh-gray-70);
+      color: #fff;
+      border-radius: 0;
+    }
+
+    /* ── Checkbox / Remember Me ── */
+    .login-pf-page .checkbox label,
+    .checkbox label {
+      color: var(--rh-gray-40);
+      font-size: 14px;
+    }
+
+    /* ── Social Login Buttons ── */
+    #kc-social-providers li a,
+    .kc-social-provider-name {
+      background-color: var(--rh-gray-80);
+      border: 1px solid var(--rh-gray-70);
+      border-radius: 0;
+      color: #fff;
+      font-family: "Red Hat Text", sans-serif;
+      transition: background-color 0.2s;
+    }
+
+    #kc-social-providers li a:hover {
+      background-color: var(--rh-gray-70);
+      color: #fff;
+    }
+
+    /* ── Separator ── */
+    #kc-form-options,
+    .kc-social-section {
+      border-color: var(--rh-gray-70);
+    }
+
+    /* ── Footer / Info ── */
+    #kc-info {
+      color: var(--rh-gray-50);
+      font-family: "Red Hat Text", sans-serif;
+      background-color: transparent;
+    }
+
+    #kc-info-wrapper {
+      color: var(--rh-gray-50);
+      font-family: "Red Hat Text", sans-serif;
+      background-color: var(--rh-gray-95);
+      border-top: 1px solid var(--rh-gray-80);
+    }
+
+    /* ── Container overrides ── */
+    .login-pf .container {
+      padding-top: 0;
+    }
+
+    .login-pf-page .login-pf-brand {
+      margin-top: 0;
+    }
+
+    /* ── Misc PatternFly overrides ── */
+    .login-pf-page .list-view-pf .list-group-item {
+      background-color: var(--rh-gray-90);
+      border-color: var(--rh-gray-70);
+      color: #fff;
+    }
+
+    .login-pf-page .list-view-pf .list-group-item:hover {
+      background-color: var(--rh-gray-80);
+    }
+
+    /* Override help text */
+    .help-block,
+    .hint-text {
+      color: var(--rh-gray-50);
+    }
+
+    /* Select dropdowns */
+    select.form-control {
+      background-color: var(--rh-gray-90);
+      color: #fff;
+    }
+
+    /* ── Override light backgrounds from login.css ── */
+    .select-auth-box-parent {
+      border-color: var(--rh-gray-70);
+      background-color: transparent;
+    }
+
+    .select-auth-box-parent:hover {
+      background-color: var(--rh-gray-80);
+    }
+
+    .select-auth-box-headline {
+      color: var(--rh-red-50);
+    }
+
+    .select-auth-box-desc {
+      color: var(--rh-gray-40);
+    }
+
+    .login-pf-page .login-pf-signup {
+      color: var(--rh-gray-50);
+    }
+
+    #kc-form-options .checkbox {
+      color: var(--rh-gray-50);
+    }
+  theme.properties: |
+    parent=keycloak
+    import=common/keycloak
+    styles=web_modules/@patternfly/react-core/dist/styles/base.css web_modules/@patternfly/react-core/dist/styles/app.css node_modules/patternfly/dist/css/patternfly.min.css node_modules/patternfly/dist/css/patternfly-additions.min.css css/login.css css/tile.css css/styles.css
+kind: ConfigMap
+metadata:
+  name: keycloak-theme-prelude
+  namespace: keycloak
