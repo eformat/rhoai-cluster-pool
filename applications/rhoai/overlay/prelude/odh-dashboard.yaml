@@ -21,6 +21,7 @@ spec:
     disableClusterManager: false
     disableCustomServingRuntimes: false
     disableDistributedWorkloads: true
+    disableFeatureStore: false
     disableFineTuning: false
     disableHome: false
     disableHardwareProfiles: false
@@ -31,6 +32,7 @@ spec:
     disableKServeAuth: false
     disableKServeMetrics: false
     disableKServeRaw: false
+    disableLLMd: false
     disableLMEval: false
     disableModelCatalog: false
     disableModelRegistry: false
@@ -41,6 +43,7 @@ spec:
     disablePipelines: false
     disableProjectSharing: false
     disableProjects: false
+    projectRBAC: false
     disableProjectScoped: false
     disableServingRuntimeParams: false
     disableStorageClasses: false
