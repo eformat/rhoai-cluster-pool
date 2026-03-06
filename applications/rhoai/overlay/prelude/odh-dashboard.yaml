@@ -48,20 +48,20 @@ spec:
     disableTracking: false
     disableTrustyBiasMetrics: false
     disableUserManagement: false
-    automl: true
-    autorag: true
-    aiAssetExternalModels: true
-    deploymentWizardYAMLViewer: true
+    # automl: true
+    # autorag: true
+    # aiAssetExternalModels: true
+    # deploymentWizardYAMLViewer: true
     enablement: true
     genAiStudio: true
-    maasApiKeys: true
+    # maasApiKeys: true
     mlflow: true
     modelAsService: true
     trainingJobs: true
-    genAiStudioConfig:
-      aiAssetExternalModels:
-        externalProviders: true
-        clusterDomains: []
+    # genAiStudioConfig:
+    #   aiAssetExternalModels:
+    #     externalProviders: true
+    #     clusterDomains: []
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated
