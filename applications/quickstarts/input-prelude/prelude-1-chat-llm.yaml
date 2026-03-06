@@ -60,4 +60,5 @@ spec:
     Congratulations! You successfully completed Chattin with an LLM quickstart.
 
     Let's keep going !
-  nextQuickStart: []
+  nextQuickStart:
+    - prelude-rag-talk-to-data
