@@ -106,10 +106,10 @@ weather:
   demoMode: true
 
 # Environment variables
-env:
-  MCP_SERVER_PORT: "3001"
-  MCP_SERVER_HOST: "0.0.0.0"
-  WEATHER_CACHE_TTL: "300"  # 5 minutes
+# env:
+#   MCP_SERVER_PORT: "3001"
+#   MCP_SERVER_HOST: "0.0.0.0"
+#   WEATHER_CACHE_TTL: "300"  # 5 minutes
 
 # Network Policies
 networkPolicy:
