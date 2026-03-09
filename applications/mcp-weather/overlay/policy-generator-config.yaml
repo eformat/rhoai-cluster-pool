@@ -25,5 +25,12 @@ policyDefaults:
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: mcp-weather-sno
+    placement:
+      placementName: placement-spokes-roadshow
     manifests:
       - path: sno/
+  - name: mcp-weather-sno-prelude
+    placement:
+      placementName: placement-spokes-prelude
+    manifests:
+      - path: prelude/
