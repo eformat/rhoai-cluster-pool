@@ -1,0 +1,14 @@
+---
+namespace: chat
+
+resources:
+  - rbac.yaml
+
+helmCharts:
+  - name: kubernetes-mcp-server
+    namespace: chat
+    includeCRDs: false
+    valuesFile: values.yaml
+    version: 0.1.0
+    releaseName: kubernetes-mcp-server
+    repo: https://eformat.github.io/helm-charts
