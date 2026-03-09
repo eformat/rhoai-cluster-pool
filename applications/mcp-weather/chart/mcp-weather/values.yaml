@@ -2,7 +2,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/eformat/mcp-weather:latest # quay.io/rh-aiservices-bu/mcp-weather
+  repository: quay.io/eformat/mcp-weather # quay.io/rh-aiservices-bu/mcp-weather
   tag: "latest" # "0.1.0-amd64"
   pullPolicy: IfNotPresent
 
