@@ -1,0 +1,78 @@
+---
+apiVersion: llamastack.io/v1alpha1
+kind: LlamaStackDistribution
+metadata:
+  annotations:
+    openshift.io/display-name: lsd-genai-playground
+  labels:
+    opendatahub.io/dashboard: 'true'
+  name: lsd-genai-playground
+spec:
+  replicas: 1
+  server:
+    containerSpec:
+      command:
+      - /bin/sh
+      - -c
+      - llama stack run /etc/llama-stack/run.yaml
+      env:
+        - name: VLLM_TLS_VERIFY
+          value: 'false'
+        - name: MILVUS_DB_PATH
+          value: ~/.llama/milvus.db
+        - name: FMS_ORCHESTRATOR_URL
+          value: 'http://localhost'
+        - name: LLAMA_STACK_CONFIG_DIR
+          value: /opt/app-root/src/.llama/distributions/rh/
+        - name: TELEMETRY_SINKS
+          value: 'console, otel_trace, otel_metric'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://data-science-collector-collector.redhat-ods-monitoring.svc.cluster.local:4318
+        - name: OTEL_SERVICE_NAME
+          value: lsd-genai-playground-service
+        - name: QWEN35_MODEL
+          value: "Qwen/Qwen3.5-9B"
+        - name: QWEN35_URL
+          value: "http://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/qwen35-9b/v1"
+        - name: QWEN35_MAX_TOKENS
+          value: "60000"
+        - name: LLAMA4_MODEL
+          value: "llama-4-scout-17b-16e-instruct-w4a16"
+        - name: LLAMA4_URL
+          value: "http://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/llama-4-scout-17b-16e-instruct-w4a16/v1"
+        - name: LLAMA4_MAX_TOKENS
+          value: "400000"
+        - name: QWEN25_MODEL
+          value: "RedHatAI/Qwen2.5-VL-7B-Instruct-FP8-Dynamic"
+        - name: QWEN25_URL
+          value: "http://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/qwen25-vl-7b-instruct-fp8/v1"
+        - name: QWEN25_MAX_TOKENS
+          value: "60000"
+        - name: GRANITE32_MODEL
+          value: "ibm-granite/granite-vision-3.2-2b"
+        - name: GRANITE32_URL
+          value: "http://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/granite-vision-32-2b/v1"
+        - name: GRANITE32_MAX_TOKENS
+          value: "70000"
+        - name: MAAS_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: maas-api-token
+              key: apiKey
+        - name: LLAMA_STACK_LOGGING
+          value: all=debug
+      name: llama-stack
+      port: 8321
+      resources:
+        limits:
+          cpu: "2"
+          memory: 12Gi
+        requests:
+          cpu: 250m
+          memory: 500Mi
+    distribution:
+      #name: remote-vllm
+      name: rh-dev
+      #image: quay.io/eformat/distribution-remote-vllm:0.2.15
+    userConfig:
+      configMapName: llama-stack-config

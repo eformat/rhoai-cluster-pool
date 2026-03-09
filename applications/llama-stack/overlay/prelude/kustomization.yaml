@@ -1,0 +1,6 @@
+---
+namespace: chat
+
+resources:
+  - llama-stack.yaml
+  - configmap.yaml

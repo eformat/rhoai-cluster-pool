@@ -1,0 +1,170 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: llama-stack-config
+data:
+  run.yaml: |
+    # Llama Stack Configuration
+    version: "2"
+    image_name: rh
+    apis:
+    - agents
+    - datasetio
+    - files
+    - inference
+    - safety
+    - scoring
+    # - telemetry
+    - tool_runtime
+    - vector_io
+    providers:
+      inference:
+      - provider_id: sentence-transformers
+        provider_type: inline::sentence-transformers
+        config: {}
+      - provider_id: qwen35-inference
+        provider_type: remote::vllm
+        config:
+          api_token: ${env.MAAS_API_TOKEN:=fake}
+          max_tokens: ${env.QWEN35_MAX_TOKENS:=60000}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          base_url: ${env.QWEN35_URL:=}
+      - provider_id: llama4-inference
+        provider_type: remote::vllm
+        config:
+          api_token: ${env.MAAS_API_TOKEN:=fake}
+          max_tokens: ${env.LLAMA4_MAX_TOKENS:=400000}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          base_url: ${env.LLAMA4_URL:=}
+      - provider_id: qwen25-inference
+        provider_type: remote::vllm
+        config:
+          api_token: ${env.MAAS_API_TOKEN:=fake}
+          max_tokens: ${env.QWEN25_MAX_TOKENS:=60000}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          base_url: ${env.QWEN25_URL:=}
+      - provider_id: granite32-inference
+        provider_type: remote::vllm
+        config:
+          api_token: ${env.MAAS_API_TOKEN:=fake}
+          max_tokens: ${env.GRANITE32_MAX_TOKENS:=70000}
+          tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+          base_url: ${env.GRANITE32_URL:=}
+      vector_io:
+      - provider_id: milvus
+        provider_type: inline::milvus
+        config:
+          db_path: /opt/app-root/src/.llama/distributions/rh/milvus.db
+          persistence:
+            backend: kv_default
+            namespace: vector_io::milvus
+      agents:
+      - provider_id: meta-reference
+        provider_type: inline::meta-reference
+        config:
+          persistence:
+            agent_state:
+              backend: kv_default
+              namespace: agents
+            responses:
+              backend: sql_default
+              table_name: responses
+      eval: []
+      files:
+      - provider_id: meta-reference-files
+        provider_type: inline::localfs
+        config:
+          metadata_store:
+            backend: sql_default
+            table_name: files_metadata
+          storage_dir: /opt/app-root/src/.llama/distributions/rh/files
+      datasetio:
+      - provider_id: huggingface
+        provider_type: remote::huggingface
+        config:
+          kvstore:
+            backend: kv_default
+            namespace: datasetio::huggingface
+      scoring:
+      - provider_id: basic
+        provider_type: inline::basic
+        config: {}
+      - provider_id: llm-as-judge
+        provider_type: inline::llm-as-judge
+        config: {}
+      tool_runtime:
+      - provider_id: rag-runtime
+        provider_type: inline::rag-runtime
+        config: {}
+      - provider_id: model-context-protocol
+        provider_type: remote::model-context-protocol
+        config: {}
+      # telemetry:
+      # - provider_id: meta-reference
+      #   provider_type: inline::meta-reference
+      #   config:
+      #     service_name: "${env.OTEL_SERVICE_NAME:=}"
+      #     sinks: ${env.TELEMETRY_SINKS:=console}
+      #     sqlite_db_path: /opt/app-root/src/.llama/distributions/rh/trace_store.db
+      #     otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
+    metadata_store:
+      type: sqlite
+      db_path: /opt/app-root/src/.llama/distributions/rh/inference_store.db
+    storage:
+      backends:
+        kv_default:
+          db_path: /opt/app-root/src/.llama/distributions/rh/kvstore.db
+          type: kv_sqlite
+        sql_default:
+          db_path: /opt/app-root/src/.llama/distributions/rh/sql_store.db
+          type: sql_sqlite
+      stores:
+        conversations:
+          backend: sql_default
+          table_name: openai_conversations
+        inference:
+          backend: sql_default
+          table_name: inference_store
+        metadata:
+          backend: kv_default
+          namespace: registry
+    registered_resources:
+      models:
+      - provider_id: sentence-transformers
+        model_id: sentence-transformers/ibm-granite/granite-embedding-125m-english
+        provider_model_id: ibm-granite/granite-embedding-125m-english
+        model_type: embedding
+        metadata:
+          embedding_dimension: 768
+      - provider_id: qwen35-inference
+        model_id: Qwen/Qwen3.5-9B
+        model_type: llm
+        metadata:
+          display_name: Qwen3.5-9B
+      - provider_id: llama4-inference
+        model_id: llama-4-scout-17b-16e-instruct-w4a16
+        model_type: llm
+        metadata:
+          display_name: Llama-4-scout-17b-16e-instruct-w4a16
+      - provider_id: qwen25-inference
+        model_id: RedHatAI/Qwen2.5-VL-7B-Instruct-FP8-Dynamic
+        model_type: llm
+        metadata:
+          display_name: Qwen2.5-VL-7B-Instruct-FP8-Dynamic
+      - provider_id: granite32-inference
+        model_id: ibm-granite/granite-vision-3.2-2b
+        model_type: llm
+        metadata:
+          display_name: Granite-Vision-3.2-2b
+      shields: []
+      vector_dbs: []
+      datasets: []
+      scoring_fns: []
+      benchmarks: []
+      tool_groups:
+      - toolgroup_id: builtin::rag
+        provider_id: rag-runtime
+    server:
+      port: 8321
+    telemetry:
+      enabled: true
