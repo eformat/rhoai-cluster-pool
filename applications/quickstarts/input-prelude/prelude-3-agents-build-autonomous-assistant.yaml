@@ -144,46 +144,47 @@ spec:
         failed: Tools not visible. Check the mcp-system namespace or wait for deployment to complete.
 
     - description: |-
-        ### Configure OpenWebUI to Use MCP Tools
+        ### Discover Available MCP Tools
 
-        The tools are deployed, but we need to tell OpenWebUI how to access them. This connects the LLM to the MCP Gateway.
+        The MCP tools are deployed and ready to use. Let's explore what tools are available in OpenWebUI.
 
         **Steps:**
 
-        1. In **OpenWebUI**, click your **profile icon** (top right)
+        1. In **OpenWebUI**, look for the **Workspace** menu (left sidebar or top navigation)
 
-        2. Go to **Settings → Functions** (or **Admin Panel → Functions** depending on version)
+        2. Click **Workspace → Tools**
 
-        3. Look for **MCP** or **External Functions** section
+        3. Click **+ New Tools** (or **Add Tools** button)
 
-        4. **Add the MCP Gateway endpoint:**
-           - Gateway URL: Look for the route in the `mcp-system` namespace
-           - Or use internal service: `http://mcp-gateway.mcp-system.svc.cluster.local`
+        4. You should see a list of available MCP tools:
+           - **weather** - Get weather forecasts for any location
+           - **calculator** - Perform mathematical calculations
+           - **openshift** - Query Kubernetes/OpenShift resources
+           - (and possibly others)
 
-        5. **Test the connection** - you should see available tools listed:
-           - weather
-           - calculator
-           - search
-           - (and others)
+        5. **Browse the tool descriptions** - each tool shows:
+           - What it does
+           - What parameters it accepts
+           - Example usage
 
-        6. **Enable the tools** you want to use for the agent
+        6. These tools are **automatically available** to the LLM when you chat
 
-        **Alternative (if the above isn't available):**
-        Some OpenWebUI deployments auto-discover MCP tools. Try starting a conversation and typing a tool-related question like "What's the weather in Boston?" - if it works, tools are already connected.
+        **What you're seeing:**
+        OpenWebUI has discovered the MCP tools running in the `mcp-system` namespace. When you ask a question that requires a tool (like "What's the weather in Boston?"), the LLM will automatically choose and call the appropriate tool.
 
-        **What's happening:**
-        You're configuring OpenWebUI to route tool calls through the MCP Gateway, which then routes them to the appropriate tool microservices.
+        **Key insight:**
+        You don't need to "enable" tools manually - the LLM intelligently decides when to use them based on your question.
 
-      title: Task 3 - Connect OpenWebUI to MCP Tools
+      title: Task 3 - Discover Available MCP Tools
       review:
         instructions: |-
-          Can you see MCP tools listed and enabled in OpenWebUI?
+          Can you see MCP tools listed in Workspace → Tools?
 
-        failedTaskHelp: If MCP configuration isn't visible, the deployment may have different settings. Try asking a test question in chat like "What is 5 + 3?" - if it calculates correctly, tools are working even without visible config.
+        failedTaskHelp: If you don't see the Tools section, check that you're in the Workspace menu (left sidebar). If tools still aren't visible, they may not be configured yet - proceed to the next task to test if they work anyway.
       summary:
         success: >-
-          Perfect! OpenWebUI is now connected to the MCP agent tools.
-        failed: Configuration not found. Tools might be auto-configured - proceed to next task to test.
+          Excellent! You've discovered the available MCP agent tools.
+        failed: Tools not visible. Proceed to next task to test if they work anyway.
 
     - description: |-
         ### Execute the Trip Planning Task

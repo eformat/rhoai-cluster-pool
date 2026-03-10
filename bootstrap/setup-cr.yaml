@@ -88,6 +88,26 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
+  name: placement-mcp-tools
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - {key: vendor, operator: In, values: ["OpenShift"]}
+            - {key: name, operator: NotIn, values: ["local-cluster"]}
+        celSelector:
+          celExpressions:
+            - managedCluster.metadata.name.matches('(roadshow|prelude)-.*')
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  labels:
+    custom: gitops-operator-policy
   name: placement-spokes-prelude
   namespace: openshift-gitops
 spec:

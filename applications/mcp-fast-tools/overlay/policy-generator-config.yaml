@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: mcp-fast-tools
 policyDefaults:
   placement:
-    placementName: placement-spokes-roadshow
+    placementName: placement-mcp-tools
   categories:
     - CM Configuration Management
   complianceType: "musthave"
