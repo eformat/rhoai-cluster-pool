@@ -4,3 +4,4 @@ resources:
   - prelude-1-chat-llm.yaml
   - prelude-2-rag-talk-to-data.yaml
   - prelude-3-agents-build-autonomous-assistant.yaml
+  - prelude-4-workshop-chat-loaded-model-3-3.yaml
