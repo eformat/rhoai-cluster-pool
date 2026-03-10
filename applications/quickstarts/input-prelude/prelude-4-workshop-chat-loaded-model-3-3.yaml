@@ -2,7 +2,7 @@
 apiVersion: console.openshift.io/v1
 kind: OdhQuickStart
 metadata:
-  name: workshop-chat-loaded-model-3-3
+  name: prelude-workshop-chat-loaded-model-3-3
   namespace: redhat-ods-applications
   annotations:
     opendatahub.io/categories: 'Getting started,Generative AI,Playground'
@@ -17,7 +17,7 @@ metadata:
     platform.opendatahub.io/part-of: dashboard
 spec:
   description: Chat with a model that is already deployed in your OpenShift AI 3.3 project.
-  displayName: Workshop - Chat with a Loaded Model (5-10 min)
+  displayName: Prelude - 4 - Workshop - Chat with a Loaded Model (5-10 min)
   appName: rhoai
   durationMinutes: 10
   icon: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMxYjZlNGIiLz48cGF0aCBkPSJNMTQgMThoMzZhNiA2IDAgMCAxIDYgNnYxOGE2IDYgMCAwIDEtNiA2SDI5bC0xMSA4di04aC00YTYgNiAwIDAgMS02LTZWMjRhNiA2IDAgMCAxIDYtNnoiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjMzIiByPSIzIiBmaWxsPSIjMWI2ZTRiIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMyIgcj0iMyIgZmlsbD0iIzFiNmU0YiIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMzMiIHI9IjMiIGZpbGw9IiMxYjZlNGIiLz48L3N2Zz4=

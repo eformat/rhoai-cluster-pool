@@ -3,11 +3,16 @@ apiVersion: serving.kserve.io/v1alpha1
 kind: LLMInferenceService
 metadata:
   annotations:
+    alpha.maas.opendatahub.io/tiers: '["premium", "enterprise"]'
+    opendatahub.io/hardware-profile-name: h200-priority
+    opendatahub.io/hardware-profile-namespace: 
     opendatahub.io/model-type: generative
     openshift.io/display-name: kimi-k2-5
     security.opendatahub.io/enable-auth: "true"
   labels:
-    kueue.x-k8s.io/queue-name: default
+    kueue.x-k8s.io/priority-class: high-priority
+    kueue.x-k8s.io/queue-name: h200-priority
+    opendatahub.io/genai-asset: "true"
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
   name: kimi-k2-5
@@ -15,7 +20,7 @@ spec:
   model:
     name: kimi-k2-5
     #uri: hf://moonshotai/Kimi-K2.5
-    uri: "pvc://task-pv-claim/kimi-k2-5"
+    uri: "pvc://data-fp4/kimi-k2-5"
   replicas: 1
   router: {}
   template:
@@ -34,7 +39,8 @@ spec:
         - --ssl-keyfile=/var/run/kserve/tls/tls.key
         - --distributed-executor-backend=mp
         - --nnodes=1
-        - --tensor-parallel-size=8
+        - --max-model-len=100000
+        - --tensor-parallel-size=4
         - --pipeline-parallel-size=1
         - --trust-remote-code
         - --enable-auto-tool-choice
@@ -76,11 +82,15 @@ spec:
         limits:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "4"
         requests:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "4"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
 ---
 apiVersion: v1
 kind: ServiceAccount
