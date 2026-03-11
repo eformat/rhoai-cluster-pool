@@ -8,3 +8,4 @@ resources:
   - policy-aws-creds.yaml
   - policy-cluster-autoscaler.yaml
   - policy-storage-quota.yaml
+  - policy-acm-clean.yaml

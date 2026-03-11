@@ -1,0 +1,107 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: acm-clean-spokes
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: acm-clean-spokes
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: openshift-acm-clean
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: ServiceAccount
+                metadata:
+                  name: acm-clean
+                  namespace: openshift-acm-clean
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRole
+                metadata:
+                  name: acm-clean
+                rules:
+                  - apiGroups: ["policy.open-cluster-management.io"]
+                    resources: ["policy", "policies"]
+                    verbs: ["*"]
+                  - apiGroups: ["kyverno.io"]
+                    resources: ["policy", "policies"]
+                    verbs: ["*"]
+                  - apiGroups: [""]
+                    resources: ["namespaces"]
+                    verbs: ["get", "list"]
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  name: acm-clean
+                subjects:
+                  - kind: ServiceAccount
+                    name: acm-clean
+                    namespace: openshift-acm-clean
+                roleRef:
+                  kind: ClusterRole
+                  name: acm-clean
+                  apiGroup: rbac.authorization.k8s.io
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: batch/v1
+                kind: CronJob
+                metadata:
+                  name: acm-clean
+                  namespace: openshift-acm-clean
+                spec:
+                  concurrencyPolicy: Forbid
+                  failedJobsHistoryLimit: 1
+                  jobTemplate:
+                    metadata:
+                      name: acm-clean
+                    spec:
+                      template:
+                        spec:
+                          serviceAccountName: acm-clean
+                          containers:
+                            - command:
+                                - /bin/bash
+                                - -c
+                                - |
+                                  # this is temporary workaround for policy sync bug in governance 2.15.1 on spokes
+                                  if oc -n open-cluster-management-agent-addon logs -l app=governance-policy-framework 2>/dev/null | grep -qi "connection refused"; then
+                                    oc -n open-cluster-management-agent-addon delete pods -l app=config-policy-controller
+                                    oc -n open-cluster-management-agent-addon delete pods -l app=governance-policy-framework
+                                  fi
+                                  exit 0
+                              image: registry.redhat.io/openshift4/ose-cli:latest
+                              imagePullPolicy: Always
+                              name: acm-clean
+                              resources: {}
+                              terminationMessagePath: /dev/termination-log
+                              terminationMessagePolicy: File
+                          dnsPolicy: ClusterFirst
+                          restartPolicy: OnFailure
+                          schedulerName: default-scheduler
+                          securityContext: {}
+                          terminationGracePeriodSeconds: 30
+                  schedule: '*/10 * * * *'
+                  successfulJobsHistoryLimit: 3
+                  suspend: false
+          remediationAction: inform
+          severity: low
