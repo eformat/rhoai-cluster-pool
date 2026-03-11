@@ -1,0 +1,12 @@
+---
+prefix: red
+
+clusterDomain: 'apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+
+model:
+  endpoint: "https://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/qwen35-9b/v1"
+  id: "qwen35-9b"
+  name: "Qwen35-9b"
+  contextWindow: 60000
+  maxTokens: 60000
+  apiKey: "fake"

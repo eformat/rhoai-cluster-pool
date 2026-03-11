@@ -40,7 +40,7 @@ spec:
         - --distributed-executor-backend=mp
         - --nnodes=1
         - --max-model-len=100000
-        - --tensor-parallel-size=4
+        - --tensor-parallel-size=8
         - --pipeline-parallel-size=1
         - --trust-remote-code
         - --enable-auto-tool-choice
@@ -82,11 +82,11 @@ spec:
         limits:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "4"
+          nvidia.com/gpu: "8"
         requests:
           cpu: "8"
           memory: 128Gi
-          nvidia.com/gpu: "4"
+          nvidia.com/gpu: "8"
     tolerations:
     - effect: NoSchedule
       key: nvidia.com/gpu

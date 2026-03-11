@@ -1,0 +1,14 @@
+---
+namespace: claw
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: openclaw
+    namespace: claw
+    includeCRDs: false
+    valuesFile: values.yaml
+    version: 0.1.0
+    releaseName: openclaw
+    repo: https://eformat.github.io/helm-charts

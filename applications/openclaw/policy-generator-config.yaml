@@ -2,12 +2,12 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: mcp-openshift
+  name: openclaw
 placementBindingDefaults:
-  name: mcp-openshift
+  name: openclaw
 policyDefaults:
   placement:
-    placementName: placement-spokes-roadshow
+    placementName: placement-spokes-prelude
   categories:
     - CM Configuration Management
   complianceType: "musthave"
@@ -24,13 +24,8 @@ policyDefaults:
     - NIST SP 800-53
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
-  - name: mcp-openshift-sno
-    placement:
-      placementName: placement-spokes-roadshow
-    manifests:
-      - path: sno/
-  - name: mcp-openshift-prelude
+  - name: openclaw-prelude
     placement:
       placementName: placement-spokes-prelude
     manifests:
-      - path: prelude/
+      - path: base/
