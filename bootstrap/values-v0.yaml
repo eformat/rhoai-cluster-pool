@@ -23,8 +23,8 @@ operators:
     namespace:
       name: open-cluster-management
       create: true
-    channels: [release-2.14] # v0,1
-    version: "2.14.0" # v1
+    channels: [release-2.15] # v0,1
+    version: "2.15.1" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
