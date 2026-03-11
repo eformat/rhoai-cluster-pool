@@ -3,6 +3,7 @@ namespace: claw
 
 resources:
   - namespace.yaml
+  - rbac.yaml
 
 helmCharts:
   - name: openclaw
