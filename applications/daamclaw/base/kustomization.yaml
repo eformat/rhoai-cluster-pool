@@ -1,0 +1,15 @@
+---
+namespace: claw
+
+resources: # see openclaw
+  # - namespace.yaml
+  # - rbac.yaml
+
+helmCharts:
+  - name: daamclaw
+    namespace: daamclaw
+    includeCRDs: false
+    valuesFile: values.yaml
+    version: 0.1.0
+    releaseName: daamclaw
+    repo: https://eformat.github.io/helm-charts
