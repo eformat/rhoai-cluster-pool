@@ -84,10 +84,10 @@ spec:
                                 - -c
                                 - |
                                   # this is temporary workaround for policy sync bug in governance 2.15.1 on spokes
-                                  if oc -n open-cluster-management-agent-addon logs -l app=governance-policy-framework 2>/dev/null | grep -qi "connection refused"; then
-                                    oc -n open-cluster-management-agent-addon delete pods -l app=config-policy-controller
-                                    oc -n open-cluster-management-agent-addon delete pods -l app=governance-policy-framework
-                                  fi
+                                  #if oc -n open-cluster-management-agent-addon logs -l app=governance-policy-framework 2>/dev/null | grep -qi "connection refused"; then
+                                  oc -n open-cluster-management-agent-addon delete pods -l app=config-policy-controller
+                                  oc -n open-cluster-management-agent-addon delete pods -l app=governance-policy-framework
+                                  #fi
                                   exit 0
                               image: registry.redhat.io/openshift4/ose-cli:latest
                               imagePullPolicy: Always

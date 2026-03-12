@@ -39,7 +39,7 @@ spec:
         - --ssl-keyfile=/var/run/kserve/tls/tls.key
         - --distributed-executor-backend=mp
         - --nnodes=1
-        - --max-model-len=100000
+        - --max-model-len=100000 # 262144
         - --tensor-parallel-size=8
         - --pipeline-parallel-size=1
         - --trust-remote-code
