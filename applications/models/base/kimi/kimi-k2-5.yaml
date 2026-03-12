@@ -20,7 +20,7 @@ spec:
   model:
     name: kimi-k2-5
     #uri: hf://moonshotai/Kimi-K2.5
-    uri: "pvc://data-fp4/kimi-k2-5"
+    uri: "pvc://data/kimi-k2-5"
   replicas: 1
   router: {}
   template:
