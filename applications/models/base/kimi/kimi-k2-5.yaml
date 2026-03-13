@@ -1,83 +1,79 @@
----
 apiVersion: serving.kserve.io/v1alpha1
 kind: LLMInferenceService
 metadata:
   annotations:
     alpha.maas.opendatahub.io/tiers: '["premium", "enterprise"]'
     opendatahub.io/hardware-profile-name: h200-priority
-    opendatahub.io/hardware-profile-namespace: 
+    opendatahub.io/hardware-profile-namespace: kimi-k25
     opendatahub.io/model-type: generative
     openshift.io/display-name: kimi-k2-5
     security.opendatahub.io/enable-auth: "true"
   labels:
     kueue.x-k8s.io/priority-class: high-priority
     kueue.x-k8s.io/queue-name: h200-priority
-    opendatahub.io/genai-asset: "true"
     opendatahub.io/dashboard: "true"
     opendatahub.io/genai-asset: "true"
   name: kimi-k2-5
+  namespace: kimi-k25
 spec:
   model:
     name: kimi-k2-5
-    #uri: hf://moonshotai/Kimi-K2.5
-    uri: "pvc://data/kimi-k2-5"
+    uri: pvc://data/kimi-k2-5
   replicas: 1
-  router: {}
+  router:
+    gateway:
+      refs:
+      - name: maas-default-gateway
+        namespace: openshift-ingress
+    route: {}
   template:
     containers:
-    - name: main
-      env:
-        - name: TIKTOKEN_CACHE_DIR
-          value: /tmp
-        - name: VLLM_LOGGING_LEVEL
-          value: DEBUG
-      args:
-        - --served-model-name={{.Name}}
-        - --model=/mnt/models
-        - --enable-ssl-refresh
-        - --ssl-certfile=/var/run/kserve/tls/tls.crt
-        - --ssl-keyfile=/var/run/kserve/tls/tls.key
-        - --distributed-executor-backend=mp
-        - --nnodes=1
-        - --max-model-len=100000 # 262144
-        - --tensor-parallel-size=8
-        - --pipeline-parallel-size=1
-        - --trust-remote-code
-        - --enable-auto-tool-choice
-        - --tool-call-parser=kimi_k2
-        - --mm-encoder-tp-mode data
-        - --enable-expert-parallel
-      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
+    - args:
+      - --served-model-name={{.Name}}
+      - --model=/mnt/models
+      - --enable-ssl-refresh
+      - --ssl-certfile=/var/run/kserve/tls/tls.crt
+      - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      - --distributed-executor-backend=mp
+      - --nnodes=1
+      - --max-model-len=262144
+      - --tensor-parallel-size=8
+      - --pipeline-parallel-size=1
+      - --trust-remote-code
+      - --enable-auto-tool-choice
+      - --tool-call-parser=kimi_k2
+      - --mm-encoder-tp-mode=data
+      - --enable-expert-parallel
+      - --reasoning-parser=kimi_k2
       command:
-        - python
-        - -m
-        - vllm.entrypoints.openai.api_server
-      startupProbe:
-        httpGet:
-          path: /v1/models
-          port: 8000
-          scheme: HTTPS
-        initialDelaySeconds: 7200
-        failureThreshold: 10
-        periodSeconds: 20
-      readinessProbe:
-        httpGet:
-          path: /v1/models
-          port: 8000
-          scheme: HTTPS
-        timeoutSeconds: 5
-        periodSeconds: 10
-        successThreshold: 1
-        failureThreshold: 60
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      env:
+      - name: TIKTOKEN_CACHE_DIR
+        value: /tmp
+      - name: VLLM_LOGGING_LEVEL
+        value: DEBUG
+      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
       livenessProbe:
+        failureThreshold: 3
         httpGet:
           path: /v1/models
           port: 8000
           scheme: HTTPS
-        timeoutSeconds: 10
         periodSeconds: 10
         successThreshold: 1
-        failureThreshold: 3
+        timeoutSeconds: 10
+      name: main
+      readinessProbe:
+        failureThreshold: 60
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
       resources:
         limits:
           cpu: "8"
@@ -87,53 +83,15 @@ spec:
           cpu: "8"
           memory: 128Gi
           nvidia.com/gpu: "8"
+      startupProbe:
+        failureThreshold: 360
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 30
+        periodSeconds: 20
     tolerations:
     - effect: NoSchedule
       key: nvidia.com/gpu
       operator: Exists
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: kimi-k2-5-sa
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kimi-k2-5-sa-kimi-k2-5-sa
-  annotations:
-    kubernetes.io/service-account.name: "kimi-k2-5-sa"
-    openshift.io/display-name: kimi-k2-5-sa
-  labels:
-    opendatahub.io/dashboard: "true"
-type: kubernetes.io/service-account-token
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: kimi-k2-5-view-role
-rules:
-- apiGroups:
-  - serving.kserve.io
-  resourceNames:
-  - kimi-k2-5
-  resources:
-  - llminferenceservices
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    opendatahub.io/dashboard: "true"
-  name: kimi-k2-5-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: kimi-k2-5-view-role
-subjects:
-- kind: ServiceAccount
-  name: kimi-k2-5-sa
