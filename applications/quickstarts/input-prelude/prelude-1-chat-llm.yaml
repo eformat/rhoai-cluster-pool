@@ -30,13 +30,13 @@ spec:
     - description: |-
         ### 
 
-        1. Browse to the OpenShift Console URL from the hamburger menu in the top right hand corner.
+        1. Browse to the OpenShift Console URL by clicking the 3x3 checkered square icon in the top right hand corner.
 
         2. Browse to Home > Projects.
 
         3. You should see the **chat** project. Select it.
 
-        4. Scroll down the page untit you see Inventory **1 Route**. Select it.
+        4. Once you select the project, you will see various sections appear including Analytics and other information. Scroll down until you see the section titled **Inventory**. Within the Inventory section, locate the **Routes** subsection which should show **1 Route**. Select it.
 
         5. Click on the application URL it should look look something like **https://chat-openwebui-chat.apps.your-domain.com**
 
