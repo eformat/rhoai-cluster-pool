@@ -2,7 +2,7 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: mcp-weather
+  name: {{ include "mcp-weather.fullname" . }}
 spec:
   port:
     targetPort: http
@@ -10,7 +10,7 @@ spec:
     termination: edge
   to:
     kind: Service
-    name: mcp-weather
+    name: {{ include "mcp-weather.fullname" . }}
     weight: 100
   wildcardPolicy: None
 status: {}

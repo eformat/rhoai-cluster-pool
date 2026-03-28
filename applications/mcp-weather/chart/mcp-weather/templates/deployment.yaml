@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mcp-weather
+  name: {{ include "mcp-weather.fullname" . }}
   labels:
     {{- include "mcp-weather.labels" . | nindent 4 }}
 spec:
