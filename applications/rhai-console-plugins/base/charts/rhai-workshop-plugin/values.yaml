@@ -2,7 +2,13 @@ image: quay.io/eformat/rhai-workshop-plugin:latest
 initImage: registry.redhat.io/openshift4/ose-cli:latest
 
 tutorialUrls:
+  - name: RHAI Quickstart Navigation
+    url: https://rhai-code.github.io/rhai-nav-quickstart
   - name: Voice Agents
     url: https://eformat.github.io/voice-agents/voice-agents/index.html
   - name: Rainforest
     url: https://eformat.github.io/rainforest-docs
+  - name: Special Potato
+    url: https://eformat.github.io/special-potato
+  - name: Quickstart 1
+    url: https://soyr-redhat.github.io/demo-platform-quickstart-test
