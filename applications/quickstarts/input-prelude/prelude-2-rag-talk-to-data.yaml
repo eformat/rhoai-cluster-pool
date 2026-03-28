@@ -110,12 +110,6 @@ spec:
 
         2. Once complete, the document should show as "Ready" or "Indexed"
 
-        **Visual confirmation:**
-        Some interfaces show a progress bar or chunk count. If available, observe:
-        - Number of chunks created
-        - Embedding model used (e.g., `all-MiniLM-L6-v2`)
-        - Storage location (Milvus)
-
       title: Task 2 - Document Processing and Embedding
       review:
         instructions: |-
@@ -164,7 +158,7 @@ spec:
 
         One of the most powerful features of RAG is **transparency**. The system can show which parts of the document were used to generate each answer.
 
-        1. **Look for source citations** in the response - some UIs show "Sources" or "References" below the answer. Click to expand and see the retrieved chunks.
+        1. **Look for source citations** Open WebUI and many other UIs show "Sources" or "References" below the answer. Click to expand and see the retrieved chunks.
 
         2. **Examine the retrieved chunks** - typically 3-5 chunks are retrieved per question. Each chunk should be relevant to the question and may come from different parts of the document.
 

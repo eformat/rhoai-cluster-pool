@@ -25,10 +25,10 @@ spec:
     ### Experience 1: Chat with an LLM
 
     **What are Open Source LLMs?**
-    Large Language Models (LLMs) are AI systems trained to understand and generate text. The models here are open source, accessible by everyone, and hosted locally in your OpenShift environment—no external APIs, no data leaving your cluster.
+    Large Language Models (LLMs) are AI systems trained to understand and generate text. The models here are open source, accessible by everyone, and hosted locally in your OpenShift environment. No external APIs, no data leaving your cluster.
 
     **What's running:**
-    You'll be chatting with open source models from the <a href="https://red.ht/rhai-hf" target="_blank">Red Hat AI Hugging Face Repo</a>. These models offer:
+    You'll be chatting with multiple models. Some hosted, some available on the <a href="https://red.ht/rhai-hf" target="_blank">Red Hat AI Hugging Face Repo</a>. These models offer:
     - **Multimodal capabilities** - you can even upload images and chat with them
     - **Tool calling access** for building AI agents (explored in later experiences)
     - **Multiple models** to choose from, each with different strengths
@@ -76,7 +76,7 @@ spec:
           You have completed this task.
         failed: Try the steps again.
   conclusion: >-
-    Congratulations! You successfully completed Chattin with an LLM quickstart.
+    Congratulations! You successfully completed the Chatting with an LLM quickstart.
 
     Let's keep going !
   nextQuickStart:

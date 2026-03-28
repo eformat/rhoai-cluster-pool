@@ -165,13 +165,13 @@ spec:
            - Connection status
            - Available operations
 
-        6. These tools are **automatically available** to the LLM when you chat
+        6. These tools are **registered and available** to enable in your chats
 
         **What you're seeing:**
-        OpenWebUI has connected to the MCP tools running in the `chat` project. When you ask a question that requires a tool (like "What's the weather in Boston?"), the LLM will automatically choose and call the appropriate tool.
+        OpenWebUI has connected to the MCP tools running in the `chat` project. These tools are now available to use in your conversations.
 
         **Key insight:**
-        You don't need to "enable" tools manually - the LLM intelligently decides when to use them based on your question.
+        While tools are registered here, you'll need to **enable them per chat session** using the Integrations button (covered in the next task). Once enabled, the LLM intelligently decides when to use them based on your question.
 
       title: Task 3 - Discover Available MCP Tools
       review:
@@ -193,39 +193,53 @@ spec:
 
         Ask the agent this question:
 
-        *"I want to visit Boston next month. What will the weather be like? Recommend 3 popular things to do. If each activity costs around $30 and lunch costs $15 per day for 2 days, what's my total estimated cost?"*
+        *"What's the current weather in Boston? Based on that weather, recommend 3 suitable outdoor or indoor activities. If each activity costs around $30 and lunch costs $15 per day for 2 days, what's my total estimated cost?"*
 
-        **Why this task is challenging:**
-        - Requires **web search** (weather forecast, Boston attractions)
-        - Requires **calculator** (total cost calculation: 3 activities × $30 + 2 lunches × $15)
-        - Requires **planning** (agent must decide order of operations)
-        - Requires **synthesis** (combining results into a coherent answer)
+        **Why this demonstrates tool calling:**
+        - Uses the **weather tool** to get real-time weather data for Boston
+        - The model uses weather context to provide relevant activity recommendations
+        - The model performs **cost calculations** ($90 for activities + $30 for lunches = $120)
+        - Demonstrates **tool integration** - the agent gets real data from an external MCP server
 
         **Steps:**
 
         1. Start a new conversation with the agent
 
-        2. Copy and paste the trip planning question above (or modify for a different city)
+        2. **CRITICAL: Enable Tools for This Chat Session**
+           - Look for the **diamond-shaped "Integrations" button** in the chat interface (appears as 4 smaller squares forming a diamond ◆)
+           - This button is typically located near the message input area or in the top toolbar
+           - Click the **Integrations** button
+           - A panel will appear showing available tools
+           - **Select/enable the tools you want to use** for this conversation:
+             - ✓ Enable **mcp-weather** (for weather queries)
+             - ✓ Enable any other relevant tools that appear
+           - Close the integrations panel
+           - **Note:** Tools must be enabled per chat session - this is not automatic!
 
-        3. **Watch the agent work** - most interfaces show the agent's "thinking" in real-time:
+        3. Copy and paste the trip planning question above (or modify for a different city)
+
+        4. **Watch the agent work** - most interfaces show the agent's "thinking" in real-time:
            - See it plan the approach ("First I'll check weather, then find activities...")
            - Watch it decide which tool to call next
            - See each tool's response
            - Observe how it combines information
 
-        4. **Review the final answer** - it should include:
-           - Weather forecast
+        5. **Review the final answer** - it should include:
+           - Weather forecast (from the weather tool)
            - 3 recommended activities
            - Total cost calculation with breakdown
 
         **This is the magic moment:** The agent is autonomously choosing tools, making API calls, and reasoning through a multi-step problem - all visible to you.
+
+        **Troubleshooting:** If the model responds with "I don't have access to real-time weather data" or similar, you forgot to enable tools via the Integrations (◆) button. Go back to step 2!
 
       title: Task 4 - Execute the Trip Planning Task
       review:
         instructions: |-
           Did the agent successfully provide weather, recommendations, and a cost calculation?
 
-        failedTaskHelp: If the agent failed, try a simpler test first like "What is 25 * 4?" to verify tools work. Check that web search and calculator tools are enabled. The agent might also need internet access.
+        failedTaskHelp: |-
+          If the agent failed, the most common issue is forgetting to enable tools via the Integrations (◆) button - make sure you clicked it and selected the tools before sending your question. If tools are enabled but still not working, try a simpler test like "What's the weather in New York?" to isolate the issue.
       summary:
         success: >-
           Excellent! The agent autonomously planned a trip using multiple tools and calculations.
@@ -282,6 +296,8 @@ spec:
 
         Now that you've seen how agents work, create your own multi-step task.
 
+        **Before you start:** Remember to enable the appropriate tools via the Integrations (◆) button for each new chat session!
+
         **Challenge ideas to try:**
 
         1. **Budget Comparison:**
@@ -315,7 +331,7 @@ spec:
         instructions: |-
           Did you try your own multi-step challenge and observe how the agent handled it?
 
-        failedTaskHelp: This task is open-ended and exploratory. Any multi-step question that requires 2+ tools counts as a success. The goal is experimentation.
+        failedTaskHelp: This task is open-ended and exploratory. Any multi-step question that requires 2+ tools counts as a success. The goal is experimentation. Remember to enable tools via the Integrations (◆) button if starting a new chat!
       summary:
         success: >-
           Amazing! You're now thinking like an agent developer - breaking problems into tool-enabled steps.
