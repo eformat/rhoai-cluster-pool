@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rhai-nav-plugin.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhai-nav-plugin.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "rhai-nav-plugin.selectorLabels" . | nindent 6 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "rhai-nav-plugin.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "rhai-nav-plugin.fullname" . }}
+      initContainers:
+        - name: enable-plugin
+          image: {{ .Values.initImage }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              PLUGIN={{ include "rhai-nav-plugin.fullname" . }}
+              if kubectl get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}' 2>/dev/null | grep -q "$PLUGIN"; then
+                echo "Plugin $PLUGIN already enabled"
+              else
+                kubectl patch consoles.operator.openshift.io cluster --type=json \
+                  -p="[{\"op\":\"add\",\"path\":\"/spec/plugins/-\",\"value\":\"$PLUGIN\"}]"
+                echo "Plugin $PLUGIN enabled"
+              fi
+      containers:
+        - image: {{ .Values.image }}
+          imagePullPolicy: Always
+          name: {{ include "rhai-nav-plugin.name" . }}
+          ports:
+            - containerPort: 9443
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/serving-cert
+              name: plugin-serving-cert
+              readOnly: true
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+              readOnly: true
+              subPath: nginx.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+        - name: plugin-serving-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "rhai-nav-plugin.fullname" . }}-serving-cert
+        - name: nginx-conf
+          configMap:
+            defaultMode: 420
+            name: {{ include "rhai-nav-plugin.fullname" . }}-nginx-conf

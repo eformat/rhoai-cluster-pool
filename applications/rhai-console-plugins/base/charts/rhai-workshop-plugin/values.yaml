@@ -1,0 +1,8 @@
+image: quay.io/eformat/rhai-workshop-plugin:latest
+initImage: registry.redhat.io/openshift4/ose-cli:latest
+
+tutorialUrls:
+  - name: Voice Agents
+    url: https://eformat.github.io/voice-agents/voice-agents/index.html
+  - name: Rainforest
+    url: https://eformat.github.io/rainforest-docs

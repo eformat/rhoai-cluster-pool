@@ -1,0 +1,15 @@
+apiVersion: console.openshift.io/v1
+kind: ConsolePlugin
+metadata:
+  name: {{ include "rhai-workshop-plugin.fullname" . }}
+  labels:
+    {{- include "rhai-workshop-plugin.labels" . | nindent 4 }}
+spec:
+  displayName: RHAI Workshop Plugin
+  backend:
+    type: Service
+    service:
+      basePath: /
+      name: {{ include "rhai-workshop-plugin.fullname" . }}
+      namespace: {{ .Release.Namespace }}
+      port: 9443

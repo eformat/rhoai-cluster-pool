@@ -1,0 +1,6 @@
+apiVersion: v2
+name: rhai-code-demo-plugin
+description: RHAI Code Demos OpenShift Console Plugin
+type: application
+version: 0.1.0
+appVersion: "latest"

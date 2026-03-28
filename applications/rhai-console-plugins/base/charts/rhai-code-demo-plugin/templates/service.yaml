@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rhai-code-demo-plugin.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    service.alpha.openshift.io/serving-cert-secret-name: {{ include "rhai-code-demo-plugin.fullname" . }}-serving-cert
+  labels:
+    {{- include "rhai-code-demo-plugin.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: 9443-tcp
+      port: 9443
+      protocol: TCP
+      targetPort: 9443
+  selector:
+    {{- include "rhai-code-demo-plugin.selectorLabels" . | nindent 4 }}
+  sessionAffinity: None
+  type: ClusterIP

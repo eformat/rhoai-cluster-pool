@@ -1,0 +1,2 @@
+image: quay.io/eformat/rhai-code-demo-plugin:latest
+initImage: registry.redhat.io/openshift4/ose-cli:latest

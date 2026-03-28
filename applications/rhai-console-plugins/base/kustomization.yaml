@@ -1,0 +1,25 @@
+---
+resources:
+  - namespaces.yaml
+
+helmCharts:
+
+  - name: rhai-nav-plugin
+    namespace: rhai-nav-plugin
+    includeCRDs: true
+    releaseName: rhai-nav-plugin
+    valuesFile: values.yaml
+
+  - name: rhai-code-demo-plugin
+    namespace: rhai-code-demo-plugin
+    includeCRDs: true
+    releaseName: rhai-code-demo-plugin
+    valuesFile: values.yaml
+    repo:  # we expand chart in folder
+
+  - name: rhai-workshop-plugin
+    namespace: rhai-workshop-plugin
+    includeCRDs: true
+    releaseName: rhai-workshop-plugin
+    valuesFile: values.yaml
+    repo:  # we expand chart in folder

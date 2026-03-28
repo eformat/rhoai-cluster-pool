@@ -1,0 +1,15 @@
+apiVersion: console.openshift.io/v1
+kind: ConsolePlugin
+metadata:
+  name: {{ include "rhai-nav-plugin.fullname" . }}
+  labels:
+    {{- include "rhai-nav-plugin.labels" . | nindent 4 }}
+spec:
+  displayName: RHAI Navigation Plugin
+  backend:
+    type: Service
+    service:
+      basePath: /
+      name: {{ include "rhai-nav-plugin.fullname" . }}
+      namespace: {{ .Release.Namespace }}
+      port: 9443
