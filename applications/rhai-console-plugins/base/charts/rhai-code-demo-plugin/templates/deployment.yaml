@@ -36,6 +36,27 @@ spec:
                   -p="[{\"op\":\"add\",\"path\":\"/spec/plugins/-\",\"value\":\"$PLUGIN\"}]"
                 echo "Plugin $PLUGIN enabled"
               fi
+
+              # Patch IngressController to allow iframe embedding
+              echo "Patching IngressController to remove X-Frame-Options and Content-Security-Policy"
+              kubectl patch ingresscontroller/default -n openshift-ingress-operator --type=merge -p "{
+                \"spec\": {
+                  \"httpHeaders\": {
+                    \"actions\": {
+                      \"response\": [
+                        {
+                          \"name\": \"X-Frame-Options\",
+                          \"action\": { \"type\": \"Delete\" }
+                        },
+                        {
+                          \"name\": \"Content-Security-Policy\",
+                          \"action\": { \"type\": \"Delete\" }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }"
       containers:
         - image: {{ .Values.image }}
           imagePullPolicy: Always
