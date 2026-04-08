@@ -73,8 +73,12 @@ spec:
               "higgs-audio-v2-generation-3B-base",
               "--model",
               "bosonai/higgs-audio-v2-generation-3B-base",
+              "--revision",
+              "10840182ca4ad5d9d9113b60b9bb3c1ef1ba3f84",
               "--audio-tokenizer-type",
               "bosonai/higgs-audio-v2-tokenizer",
+              "--audio-tokenizer-revision",
+              "9d4988fbd4ad07b4cac3a5fa462741a41810dbec",
               "--limit-mm-per-prompt",
               "audio=50",
               "--max-model-len",
@@ -105,7 +109,7 @@ spec:
             - name: cache
               mountPath: /.cache
           terminationMessagePolicy: File
-          image: "quay.io/eformat/higgs-audio-vllm:latest"
+          image: "quay.io/eformat/higgs-audio-vllm:stable"
       automountServiceAccountToken: false
       volumes:
         - name: shm
