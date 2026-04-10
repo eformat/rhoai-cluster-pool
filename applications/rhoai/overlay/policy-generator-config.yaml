@@ -30,6 +30,11 @@ policies:
       placementName: placement-spokes-roadshow
     manifests:
       - path: roadshow/
+  - name: rhoai-prelude-nightly
+    placement:
+      placementName: placement-spokes-prelude-nightly
+    manifests:
+      - path: prelude-nightly/
   - name: rhoai-prelude
     placement:
       placementName: placement-spokes-prelude
