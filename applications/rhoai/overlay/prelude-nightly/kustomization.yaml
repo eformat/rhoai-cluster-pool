@@ -4,6 +4,7 @@ resources:
   - hardware-profile.yaml
   - odh-document.yaml
   - mlflow.yaml
+  - catalog-source.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
