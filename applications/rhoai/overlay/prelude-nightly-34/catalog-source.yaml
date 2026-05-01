@@ -6,8 +6,10 @@ metadata:
   namespace: openshift-marketplace
 spec:
   displayName: RHOAI 3.4 Nightly
+  grpcPodConfig:
+    securityContextConfig: restricted
   image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.4
-  publisher: RHOAI Dev
+  publisher: RHOAI Development Catalog
   sourceType: grpc
   updateStrategy:
     registryPoll:
