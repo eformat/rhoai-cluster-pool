@@ -4,7 +4,7 @@ metadata:
   name: rhods-operator
   namespace: redhat-ods-operator
 spec:
-  channel: beta
+  channel: stable-3.4
   installPlanApproval: Automatic
   name: rhods-operator
   source: rhoai-catalog-nightly
