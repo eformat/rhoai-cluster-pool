@@ -57,14 +57,13 @@ spec:
     # deploymentWizardYAMLViewer: true
     enablement: true
     genAiStudio: true
-    # maasApiKeys: true
+    maasApiKeys: true
     mlflow: true
     modelAsService: true
     trainingJobs: true
-    # genAiStudioConfig:
-    #   aiAssetExternalModels:
-    #     externalProviders: true
-    #     clusterDomains: []
+    genAiStudioConfig:
+      aiAssetExternalModels:
+        externalProviders: true
     observabilityDashboard: true
   groupsConfig:
     adminGroups: rhods-admins
