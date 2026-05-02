@@ -1,2 +1,4 @@
+namespace: rhai-nav-plugin
+
 image: quay.io/eformat/rhai-nav-plugin:latest
 initImage: registry.redhat.io/openshift4/ose-cli:latest

@@ -1,15 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rhai-code-demo-plugin.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "rhai-code-demo-plugin.labels" . | nindent 4 }}
+    app: rhai-code-demo-plugin
+    app.kubernetes.io/component: rhai-code-demo-plugin
+    app.kubernetes.io/instance: rhai-code-demo-plugin
+    app.kubernetes.io/part-of: rhai-code-demo-plugin
+    app.openshift.io/runtime-namespace: {{ .Values.namespace }}
+  name: rhai-code-demo-plugin
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "rhai-code-demo-plugin.selectorLabels" . | nindent 6 }}
+      app: rhai-code-demo-plugin
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,9 +22,9 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "rhai-code-demo-plugin.labels" . | nindent 8 }}
+        app: rhai-code-demo-plugin
     spec:
-      serviceAccountName: {{ include "rhai-code-demo-plugin.fullname" . }}
+      serviceAccountName: rhai-code-demo-plugin
       initContainers:
         - name: enable-plugin
           image: {{ .Values.initImage }}
@@ -28,7 +32,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              PLUGIN={{ include "rhai-code-demo-plugin.fullname" . }}
+              PLUGIN=rhai-code-demo-plugin
               if kubectl get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}' 2>/dev/null | grep -q "$PLUGIN"; then
                 echo "Plugin $PLUGIN already enabled"
               else
@@ -36,31 +40,10 @@ spec:
                   -p="[{\"op\":\"add\",\"path\":\"/spec/plugins/-\",\"value\":\"$PLUGIN\"}]"
                 echo "Plugin $PLUGIN enabled"
               fi
-
-              # Patch IngressController to allow iframe embedding
-              echo "Patching IngressController to remove X-Frame-Options and Content-Security-Policy"
-              kubectl patch ingresscontroller/default -n openshift-ingress-operator --type=merge -p "{
-                \"spec\": {
-                  \"httpHeaders\": {
-                    \"actions\": {
-                      \"response\": [
-                        {
-                          \"name\": \"X-Frame-Options\",
-                          \"action\": { \"type\": \"Delete\" }
-                        },
-                        {
-                          \"name\": \"Content-Security-Policy\",
-                          \"action\": { \"type\": \"Delete\" }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }"
       containers:
         - image: {{ .Values.image }}
           imagePullPolicy: Always
-          name: {{ include "rhai-code-demo-plugin.name" . }}
+          name: rhai-code-demo-plugin
           ports:
             - containerPort: 9443
               protocol: TCP
@@ -78,8 +61,8 @@ spec:
         - name: plugin-serving-cert
           secret:
             defaultMode: 420
-            secretName: {{ include "rhai-code-demo-plugin.fullname" . }}-serving-cert
+            secretName: plugin-serving-cert
         - name: nginx-conf
           configMap:
             defaultMode: 420
-            name: {{ include "rhai-code-demo-plugin.fullname" . }}-nginx-conf
+            name: nginx-conf

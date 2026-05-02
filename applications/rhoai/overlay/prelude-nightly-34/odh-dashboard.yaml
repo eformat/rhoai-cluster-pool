@@ -65,6 +65,7 @@ spec:
     #   aiAssetExternalModels:
     #     externalProviders: true
     #     clusterDomains: []
+    observabilityDashboard: true
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated

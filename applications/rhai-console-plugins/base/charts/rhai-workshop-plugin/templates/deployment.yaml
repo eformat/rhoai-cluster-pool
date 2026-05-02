@@ -1,15 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rhai-workshop-plugin.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "rhai-workshop-plugin.labels" . | nindent 4 }}
+    app: rhai-workshop-plugin
+    app.kubernetes.io/component: rhai-workshop-plugin
+    app.kubernetes.io/instance: rhai-workshop-plugin
+    app.kubernetes.io/part-of: rhai-workshop-plugin
+    app.openshift.io/runtime-namespace: {{ .Values.namespace }}
+  name: rhai-workshop-plugin
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "rhai-workshop-plugin.selectorLabels" . | nindent 6 }}
+      app: rhai-workshop-plugin
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,18 +22,18 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "rhai-workshop-plugin.labels" . | nindent 8 }}
+        app: rhai-workshop-plugin
     spec:
-      serviceAccountName: {{ include "rhai-workshop-plugin.fullname" . }}
+      serviceAccountName: rhai-workshop-plugin
       initContainers:
-        - name: config-init
+        - name: cluster-setup
           image: {{ .Values.initImage }}
           command:
             - /bin/sh
             - -c
             - |
               # Enable the console plugin if not already enabled
-              PLUGIN={{ include "rhai-workshop-plugin.fullname" . }}
+              PLUGIN=rhai-workshop-plugin
               if kubectl get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}' 2>/dev/null | grep -q "$PLUGIN"; then
                 echo "Plugin $PLUGIN already enabled"
               else
@@ -38,54 +42,68 @@ spec:
                 echo "Plugin $PLUGIN enabled"
               fi
 
-              # Generate config.json
-              OPENSHIFT_AI_URL=$(kubectl get consolelink rhodslink -o jsonpath='{.spec.href}' 2>/dev/null || echo "")
-              TUTORIAL_URLS=$(cat /config/tutorialUrls)
-              cat > /config-out/config.json <<EOF
-              {
-                "openshiftAiUrl": "${OPENSHIFT_AI_URL}",
-                "tutorialUrls": ${TUTORIAL_URLS}
-              }
-              EOF
-          volumeMounts:
-            - mountPath: /config
-              name: workshop-config
-              readOnly: true
-            - mountPath: /config-out
-              name: generated-config
+              # Patch IngressController to allow iframe embedding
+              echo "Patching IngressController to remove X-Frame-Options and Content-Security-Policy"
+              kubectl patch ingresscontroller/default -n openshift-ingress-operator --type=merge -p "{
+                \"spec\": {
+                  \"httpHeaders\": {
+                    \"actions\": {
+                      \"response\": [
+                        {
+                          \"name\": \"X-Frame-Options\",
+                          \"action\": { \"type\": \"Delete\" }
+                        },
+                        {
+                          \"name\": \"Content-Security-Policy\",
+                          \"action\": { \"type\": \"Delete\" }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }"
       containers:
         - image: {{ .Values.image }}
           imagePullPolicy: Always
-          name: {{ include "rhai-workshop-plugin.name" . }}
+          name: rhai-workshop-plugin
           ports:
             - containerPort: 9443
               protocol: TCP
+          env:
+            - name: PORT
+              value: "9443"
+            - name: PLUGIN_DIST_DIR
+              value: /app/dist
+            - name: TLS_CERT_FILE
+              value: /var/serving-cert/tls.crt
+            - name: TLS_KEY_FILE
+              value: /var/serving-cert/tls.key
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
           volumeMounts:
             - mountPath: /var/serving-cert
               name: plugin-serving-cert
               readOnly: true
-            - mountPath: /etc/nginx/nginx.conf
-              name: nginx-conf
-              readOnly: true
-              subPath: nginx.conf
-            - mountPath: /usr/share/nginx/html/config.json
-              name: generated-config
-              readOnly: true
-              subPath: config.json
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
         - name: plugin-serving-cert
           secret:
             defaultMode: 420
-            secretName: {{ include "rhai-workshop-plugin.fullname" . }}-serving-cert
-        - name: nginx-conf
-          configMap:
-            defaultMode: 420
-            name: {{ include "rhai-workshop-plugin.fullname" . }}-nginx-conf
-        - name: workshop-config
-          configMap:
-            defaultMode: 420
-            name: {{ include "rhai-workshop-plugin.fullname" . }}-workshop-config
-        - name: generated-config
-          emptyDir: {}
+            secretName: plugin-serving-cert

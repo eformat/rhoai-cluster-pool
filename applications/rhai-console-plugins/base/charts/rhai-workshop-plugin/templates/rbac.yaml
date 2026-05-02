@@ -1,36 +1,89 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "rhai-workshop-plugin.fullname" . }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "rhai-workshop-plugin.labels" . | nindent 4 }}
+  name: rhai-workshop-plugin
+  namespace: {{ .Values.namespace }}
 ---
+# ClusterRole for init container: enable console plugin + patch IngressController
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "rhai-workshop-plugin.fullname" . }}-consolelink-reader
-  labels:
-    {{- include "rhai-workshop-plugin.labels" . | nindent 4 }}
+  name: rhai-workshop-cluster-setup
 rules:
   - apiGroups: ["console.openshift.io"]
     resources: ["consolelinks"]
-    verbs: ["get"]
+    verbs: ["get", "list"]
   - apiGroups: ["operator.openshift.io"]
     resources: ["consoles"]
+    verbs: ["get", "patch"]
+  - apiGroups: ["operator.openshift.io"]
+    resources: ["ingresscontrollers"]
     verbs: ["get", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "rhai-workshop-plugin.fullname" . }}-consolelink-reader
-  labels:
-    {{- include "rhai-workshop-plugin.labels" . | nindent 4 }}
+  name: rhai-workshop-cluster-setup
 subjects:
   - kind: ServiceAccount
-    name: {{ include "rhai-workshop-plugin.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+    name: rhai-workshop-plugin
+    namespace: {{ .Values.namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ include "rhai-workshop-plugin.fullname" . }}-consolelink-reader
+  name: rhai-workshop-cluster-setup
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRole for Go backend auth middleware: TokenReview + SubjectAccessReview
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rhai-workshop-auth
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rhai-workshop-auth
+subjects:
+  - kind: ServiceAccount
+    name: rhai-workshop-plugin
+    namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: rhai-workshop-auth
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRole for Go backend: read ConsoleLinks, ConfigMaps, watch namespaces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rhai-workshop-config-reader
+rules:
+  - apiGroups: ["console.openshift.io"]
+    resources: ["consolelinks"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rhai-workshop-config-reader
+subjects:
+  - kind: ServiceAccount
+    name: rhai-workshop-plugin
+    namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: rhai-workshop-config-reader
   apiGroup: rbac.authorization.k8s.io

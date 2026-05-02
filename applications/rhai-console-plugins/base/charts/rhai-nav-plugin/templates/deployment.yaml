@@ -1,15 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rhai-nav-plugin.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "rhai-nav-plugin.labels" . | nindent 4 }}
+    app: rhai-nav-plugin
+    app.kubernetes.io/component: rhai-nav-plugin
+    app.kubernetes.io/instance: rhai-nav-plugin
+    app.kubernetes.io/part-of: rhai-nav-plugin
+    app.openshift.io/runtime-namespace: {{ .Values.namespace }}
+  name: rhai-nav-plugin
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "rhai-nav-plugin.selectorLabels" . | nindent 6 }}
+      app: rhai-nav-plugin
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,9 +22,9 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "rhai-nav-plugin.labels" . | nindent 8 }}
+        app: rhai-nav-plugin
     spec:
-      serviceAccountName: {{ include "rhai-nav-plugin.fullname" . }}
+      serviceAccountName: rhai-nav-plugin
       initContainers:
         - name: enable-plugin
           image: {{ .Values.initImage }}
@@ -28,7 +32,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              PLUGIN={{ include "rhai-nav-plugin.fullname" . }}
+              PLUGIN=rhai-nav-plugin
               if kubectl get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}' 2>/dev/null | grep -q "$PLUGIN"; then
                 echo "Plugin $PLUGIN already enabled"
               else
@@ -39,7 +43,7 @@ spec:
       containers:
         - image: {{ .Values.image }}
           imagePullPolicy: Always
-          name: {{ include "rhai-nav-plugin.name" . }}
+          name: rhai-nav-plugin
           ports:
             - containerPort: 9443
               protocol: TCP
@@ -57,8 +61,8 @@ spec:
         - name: plugin-serving-cert
           secret:
             defaultMode: 420
-            secretName: {{ include "rhai-nav-plugin.fullname" . }}-serving-cert
+            secretName: plugin-serving-cert
         - name: nginx-conf
           configMap:
             defaultMode: 420
-            name: {{ include "rhai-nav-plugin.fullname" . }}-nginx-conf
+            name: nginx-conf

@@ -1,14 +1,24 @@
+namespace: rhai-workshop-plugin
+
 image: quay.io/eformat/rhai-workshop-plugin:latest
 initImage: registry.redhat.io/openshift4/ose-cli:latest
 
+showTabs: "true"
 tutorialUrls:
-  - name: RHAI Quickstart Navigation
-    url: https://rhai-code.github.io/rhai-nav-quickstart
-  - name: Voice Agents
-    url: https://eformat.github.io/voice-agents/voice-agents/index.html
-  - name: Rainforest
-    url: https://eformat.github.io/rainforest-docs
-  - name: Special Potato
-    url: https://eformat.github.io/special-potato
-  - name: Quickstart 1
-    url: https://soyr-redhat.github.io/demo-platform-quickstart-test
+  - name: Voice Agents Smart Start
+    url: https://rhpds.github.io/ai-lightning-voice-agents-showroom
+  - name: Factory Floor Tycoon Smart Start
+    url: https://rhpds.github.io/ai-lightning-fft-agentic-lab-showroom
+  - name: Word Swarm Smart Start
+    url: https://rhpds.github.io/ai-lightning-wordswarm-showroom
+
+showroomDefaults:
+  guid: "abc123"
+  bastion_public_hostname: "bastion.example.com"
+  bastion_ssh_user_name: "lab-user"
+  bastion_ssh_password: "%bastion_ssh_password%"
+  openshift_console_url: "https://console-openshift-console.apps.cluster.example.com"
+  openshift_cluster_ingress_domain: "apps.cluster.example.com"
+  openshift_api_url: "https://api.cluster.example.com:6443"
+  user: "user-abc123"
+  password: "%password%"
