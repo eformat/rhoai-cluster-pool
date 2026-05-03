@@ -8,7 +8,7 @@
 {{- $_ := set $userRoleBinding "name" (printf "%s-%s" $username $clusterRole) }}
 {{- $_ := set $userRoleBinding "namespace" (printf "user-%s" $username) }}
 {{- $_ := set $userRoleBinding "clusterRole" $clusterRole }}
-{{- $_ := set $userRoleBinding "users" (list (printf "%s@redhat.com" $username)) }}
+{{- $_ := set $userRoleBinding "users" (list (printf "%s" $username)) }}
 ---
 {{ include "rbac.role-binding" $userRoleBinding }}
 {{- end }}
