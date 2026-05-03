@@ -1,0 +1,15 @@
+{{- range .Values.namespaces }}
+{{- if ne (toString .createNamespace) "false" }}
+---
+{{ include "rbac.namespace" . }}
+{{- end }}
+{{- end }}
+{{- range $username := concat .Values.userNamespaces.users .Values.userNamespaces.htpasswdUsers }}
+{{- $ns := dict }}
+{{- $_ := set $ns "name" (printf "user-%s" $username) }}
+{{- $ctx := dict "username" $username "Template" $.Template "Chart" $.Chart "Release" $.Release }}
+{{- $_ := set $ns "labels" (tpl (toJson $.Values.userNamespaces.labels) $ctx | fromJson) }}
+{{- $_ := set $ns "annotations" (tpl (toJson $.Values.userNamespaces.annotations) $ctx | fromJson) }}
+---
+{{ include "rbac.namespace" $ns }}
+{{- end }}

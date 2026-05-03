@@ -1,0 +1,177 @@
+---
+reservations:
+  h200: {}
+
+gpuConfig:
+  resources:
+    - name: "H200 Full GPU"
+      type: "nvidia.com/gpu"
+      count: 32
+      share: 0.0625
+      gpuEquivalent: 1.0
+    - name: "MIG 3g.71gb"
+      type: "nvidia.com/mig-3g.71gb"
+      count: 0
+      share: 0.03125
+      gpuEquivalent: 0.5
+    - name: "MIG 2g.35gb"
+      type: "nvidia.com/mig-2g.35gb"
+      count: 0
+      share: 0.015625
+      gpuEquivalent: 0.25
+    - name: "MIG 1g.18gb"
+      type: "nvidia.com/mig-1g.18gb"
+      count: 0
+      share: 0.0078125
+      gpuEquivalent: 0.125
+  totalCpu: 632
+  totalMemory: 6920
+
+totalResources:
+  h200:
+    cpu: 632
+    memory: 6920
+    nvidia.com/gpu:
+      count: 32
+      share: 0.0625
+    nvidia.com/mig-3g.71gb:
+      count: 0
+      share: 0.03125
+    nvidia.com/mig-2g.35gb:
+      count: 0
+      share: 0.015625
+    nvidia.com/mig-1g.18gb:
+      count: 0
+      share: 0.0078125
+
+
+clusterRoles:
+
+clusterRoleBindings:
+
+namespaces:
+  - name: maas
+    labels:
+      opendatahub.io/dashboard: "true"
+      kueue-managed: "true"
+      kueue.openshift.io/managed: "true"
+      rhai-tmm.dev/owner: "admin"
+    annotations:
+      openshift.io/display-name: MaaS Models Deployment
+      openshift.io/description: >
+        A managed namespace for MaaS Model Deployment
+      openshift.io/requester: gitops
+    includeUnreserved: true
+
+roleBindings:
+
+localQueues:
+
+clusterQueues:
+  default:
+    resourceGroups:
+      - flavors:
+          default-flavor:
+            cpu: 32
+            memory: 128Gi
+
+cohorts: {}
+
+resourceFlavors:
+  default-flavor: {}
+  h200:
+    nodeLabels:
+      node.kubernetes.io/instance-type: m7i.8xlarge
+    tolerations:
+      - key: nvidia.com/gpu
+        effect: NoSchedule
+        operator: Equal
+        value: h200
+
+workloadPriorityClasses:
+  high-priority:
+    value: 10000
+    description: High priority usage, associated with the h200-priority ClusterQueue
+
+hardwareProfiles:
+  default-profile:
+    displayName: Default (CPU only)
+    description: >-
+      This profile offers access to the CPU-only worker nodes in this cluster
+      and is suitable for use with CPU-based workbenches, pipelines, etc.
+    cpu: 4
+    mem: 18Gi
+  unreserved-gpu:
+    displayName: H200 GPU (Unreserved)
+    description: >-
+      This profile offers access to an entire H200 from GPU workers, drawing
+      from the unreserved pool of resources (limited availability and first
+      come, first served)
+    cpu: 28
+    memory: 110Gi
+    gpu:
+      identifier: nvidia.com/gpu
+      displayName: H200 GPU
+      max: 32
+    localQueue: unreserved
+  unreserved-mig-71gb:
+    displayName: 71GB Slice (Unreserved)
+    description: >-
+      This profile offers access to an 71GB MIG slice from GPU workers, drawing
+      from the unreserved pool of resources (limited availability and first
+      come, first served)
+    cpu: 0
+    memory: 0Gi
+    gpu:
+      identifier: nvidia.com/mig-3g.71gb
+      displayName: 71GB MIG Slice
+      max: 0
+    localQueue: unreserved
+  unreserved-mig-35gb:
+    displayName: 35GB Slice (Unreserved)
+    description: >-
+      This profile offers access to an 35GB MIG slice from GPU workers, drawing
+      from the unreserved pool of resources (limited availability and first
+      come, first served)
+    cpu: 0
+    memory: 0Gi
+    gpu:
+      identifier: nvidia.com/mig-2g.35gb
+      displayName: 35GB MIG Slice
+      max: 0
+    localQueue: unreserved
+  unreserved-mig-18gb:
+    displayName: 18GB Slice (Unreserved)
+    description: >-
+      This profile offers access to an 18GB MIG slice from GPU workers, drawing
+      from the unreserved pool of resources (limited availability and first
+      come, first served)
+    cpu: 0
+    memory: 0Gi
+    gpu:
+      identifier: nvidia.com/mig-1g.18gb
+      displayName: 18GB MIG Slice
+      max: 0
+    localQueue: unreserved
+
+userNamespaces:
+  labels:
+    opendatahub.io/dashboard: "true"
+    kueue-managed: "true"
+    kueue.openshift.io/managed: "true"
+    rhai-tmm.dev/owner: "{{ lower .username }}"
+  annotations:
+    openshift.io/display-name: "User {{ title .username }} Project"
+    openshift.io/description: >
+      A managed namespace for {{ .username }} to self-serve resources
+    openshift.io/requester: gitops
+  clusterRoles:
+    - admin
+  localQueues:
+    - name: default
+      clusterQueue: default
+    - name: unreserved
+      clusterQueue: unreserved
+  htpasswdUsers: []
+  users:
+    - admin

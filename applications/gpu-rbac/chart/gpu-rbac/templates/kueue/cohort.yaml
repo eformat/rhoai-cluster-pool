@@ -1,0 +1,5 @@
+{{- range $name, $cohort := .Values.cohorts }}
+{{- $_ := set $cohort "name" $name }}
+---
+{{ include "kueue.cohort" $cohort }}
+{{- end }}

@@ -1,0 +1,21 @@
+{{- range .Values.localQueues }}
+---
+{{ include "kueue.local-queue" . }}
+{{- end }}
+{{- range .Values.namespaces }}
+{{- if .includeUnreserved }}
+{{- $queue := dict "name" "unreserved" "namespace" .name "clusterQueue" "unreserved" }}
+---
+{{ include "kueue.local-queue" $queue }}
+{{- end }}
+{{- end }}
+{{- range $username := concat $.Values.userNamespaces.users $.Values.userNamespaces.htpasswdUsers }}
+{{- range $localQueue := $.Values.userNamespaces.localQueues }}
+{{- $userQueue := dict }}
+{{- $_ := set $userQueue "name" $localQueue.name }}
+{{- $_ := set $userQueue "namespace" (printf "user-%s" $username) }}
+{{- $_ := set $userQueue "clusterQueue" $localQueue.clusterQueue }}
+---
+{{ include "kueue.local-queue" $userQueue }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,91 @@
+{{- range $flavor, $resources := (include "kueue.calculate-resources" . | fromJson) }}
+  {{- range $user, $quota := $resources }}
+    {{- $resourceGroups := list }}
+    {{- $resourceGroup := dict "flavors" dict }}
+    {{- $userResources := get $resources $user }}
+    {{- range $resource, $count := $userResources }}
+      {{- if eq $resource "memory"}}
+        {{- $_ := set $userResources $resource (printf "%.0fGi" $count) }}
+      {{- end }}
+    {{- end }}
+    {{- $_ := set $resourceGroup.flavors $flavor (get $resources $user) }}
+    {{- $resourceGroups = append $resourceGroups $resourceGroup }}
+    {{- $clusterqueue := dict }}
+    {{- $_ := set $clusterqueue "resourceGroups" $resourceGroups }}
+    {{- if ne $user "remaining" }}
+      {{- $ns := printf "user-%s" $user }}
+      {{- $labels := dict }}
+      {{- with (get $userResources "until") }}
+        {{- $_ := set $labels "rhai-tmm.dev/until" (printf "%.0f" .) }}
+        {{- $_ := unset $userResources "until" }}
+      {{- end }}
+      {{- $_ := set $clusterqueue "name" $ns }}
+      {{- $_ := set $clusterqueue "cohort" "unreserved" }}
+      {{- $_ := set $clusterqueue "namespaceSelector" (dict "matchLabels" (dict "kubernetes.io/metadata.name" $ns)) }}
+      {{- $_ := set $clusterqueue "preemption" (dict "borrowWithinCohort" (dict "policy" "Never") "reclaimWithinCohort" "Any" "withinClusterQueue" "Never") }}
+      {{- $_ := set $clusterqueue "flavorFungibility" (dict "whenCanBorrow" "Borrow" "whenCanPreempt" "TryNextFlavor") }}
+      {{- $_ := set $clusterqueue "queueingStrategy" "BestEffortFIFO" }}
+      {{- $_ := set $clusterqueue "stopPolicy" "None" }}
+      {{- if $labels }}
+        {{- $_ := set $clusterqueue "labels" $labels }}
+      {{- end }}
+---
+{{ include "kueue.cluster-queue" $clusterqueue }}
+      {{- $userQueue := dict }}
+      {{- $_ := set $userQueue "name" "reserved" }}
+      {{- $_ := set $userQueue "namespace" $ns }}
+      {{- $_ := set $userQueue "clusterQueue" $ns }}
+      {{- if $labels }}
+        {{- $_ := set $userQueue "labels" $labels }}
+      {{- end }}
+---
+{{ include "kueue.local-queue" $userQueue }}
+      {{- range $resource, $count := $userResources }}
+        {{- if hasPrefix "nvidia.com" $resource }}
+          {{- $normalized := (include "rbac.normalized-resource-id" $resource) }}
+          {{- $profile := dict "name" (printf "reserved-%s" $normalized) }}
+          {{- $_ := set $profile "namespace" $ns }}
+          {{- if $labels }}
+            {{- $_ := set $profile "labels" $labels }}
+          {{- end }}
+          {{- $_ := set $profile "displayName" (printf "Reserved %s" (upper $normalized)) }}
+          {{- $_ := set $profile "description" (printf "Your reserved quota of %.0f %s" $count $resource) }}
+          {{- $_ := set $profile "localQueue" "reserved" }}
+          {{- $_ := set $profile "cpu" (get $userResources "cpu") }}
+          {{- $_ := set $profile "mem" (get $userResources "memory") }}
+          {{- $gpu := dict "identifier" $resource }}
+          {{- $_ := set $gpu "max" $count }}
+          {{- $_ := set $profile "gpu" $gpu }}
+---
+{{ include "rbac.hardware-profile" $profile }}
+        {{- end }}
+      {{- end }}
+    {{- else }}
+      {{- /* Define the unreserved Cohort and ClusterQueues */}}
+      {{- $_ := set $clusterqueue "name" "unreserved" }}
+---
+{{ include "kueue.cohort" $clusterqueue }}
+    {{- $_ := set $clusterqueue "cohort" "unreserved" }}
+    {{- $resourceGroups := list }}
+    {{- range $rg := $clusterqueue.resourceGroups }}
+      {{- $flavors := dict }}
+      {{- range $flavor, $quotas := $rg.flavors }}
+        {{- $newFlavor := dict }}
+        {{- range $k, $_ := $quotas }}
+          {{- $_ := set $newFlavor $k 0 }}
+        {{- end }}
+        {{- $_ := set $flavors $flavor $newFlavor }}
+      {{- end }}
+      {{- $resourceGroups = append $resourceGroups (dict "flavors" $flavors) }}
+    {{- end }}
+    {{- $_ := set $clusterqueue "resourceGroups" $resourceGroups }}
+---
+{{ include "kueue.cluster-queue" $clusterqueue }}
+      {{- $_ := set $clusterqueue "name" "unreserved-priority" }}
+      {{- $_ := set $clusterqueue "namespaceSelector" (dict "matchLabels" (dict "rhai-tmm.dev/clusterqueues" "h200-priority")) }}
+      {{- $_ := set $clusterqueue "preemption" (dict "borrowWithinCohort" (dict "maxPriorityThreshold" 100 "policy" "LowerPriority") "reclaimWithinCohort" "LowerPriority") }}
+---
+{{ include "kueue.cluster-queue" $clusterqueue }}
+    {{- end }}
+  {{- end }}
+{{- end }}

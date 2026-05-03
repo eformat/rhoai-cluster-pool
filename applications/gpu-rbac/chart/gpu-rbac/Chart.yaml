@@ -1,0 +1,7 @@
+apiVersion: v2
+name: rbac
+description: A Chart for managing RBAC, Kueue resources, and quota assignment for users
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+icon: https://avatars1.githubusercontent.com/u/68044996?s=200&v=4

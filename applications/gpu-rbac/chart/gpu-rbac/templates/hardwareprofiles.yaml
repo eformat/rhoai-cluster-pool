@@ -1,0 +1,5 @@
+{{- range $name, $profile := .Values.hardwareProfiles }}
+{{- $_ := set $profile "name" $name }}
+---
+{{ include "rbac.hardware-profile" $profile }}
+{{- end }}

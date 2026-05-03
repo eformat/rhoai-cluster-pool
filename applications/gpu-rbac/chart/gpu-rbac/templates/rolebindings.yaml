@@ -1,0 +1,40 @@
+{{- range .Values.roleBindings }}
+---
+{{ include "rbac.role-binding" . }}
+{{- end }}
+{{- range $username := .Values.userNamespaces.users }}
+{{- range $clusterRole := $.Values.userNamespaces.clusterRoles }}
+{{- $userRoleBinding := dict }}
+{{- $_ := set $userRoleBinding "name" (printf "%s-%s" $username $clusterRole) }}
+{{- $_ := set $userRoleBinding "namespace" (printf "user-%s" $username) }}
+{{- $_ := set $userRoleBinding "clusterRole" $clusterRole }}
+{{- $_ := set $userRoleBinding "users" (list (printf "%s@redhat.com" $username)) }}
+---
+{{ include "rbac.role-binding" $userRoleBinding }}
+{{- end }}
+{{- $builderRoleBinding := dict }}
+{{- $_ := set $builderRoleBinding "name" "builder-hostmount-scc" }}
+{{- $_ := set $builderRoleBinding "namespace" (printf "user-%s" $username) }}
+{{- $_ := set $builderRoleBinding "clusterRole" "system:openshift:scc:hostmount-anyuid-v2" }}
+{{- $_ := set $builderRoleBinding "serviceAccounts" (list (dict "name" "builder" "namespace" (printf "user-%s" $username))) }}
+---
+{{ include "rbac.role-binding" $builderRoleBinding }}
+{{- end }}
+{{- range $username := .Values.userNamespaces.htpasswdUsers }}
+{{- range $clusterRole := $.Values.userNamespaces.clusterRoles }}
+{{- $userRoleBinding := dict }}
+{{- $_ := set $userRoleBinding "name" (printf "%s-%s" $username $clusterRole) }}
+{{- $_ := set $userRoleBinding "namespace" (printf "user-%s" $username) }}
+{{- $_ := set $userRoleBinding "clusterRole" $clusterRole }}
+{{- $_ := set $userRoleBinding "users" (list $username) }}
+---
+{{ include "rbac.role-binding" $userRoleBinding }}
+{{- end }}
+{{- $builderRoleBinding := dict }}
+{{- $_ := set $builderRoleBinding "name" "builder-hostmount-scc" }}
+{{- $_ := set $builderRoleBinding "namespace" (printf "user-%s" $username) }}
+{{- $_ := set $builderRoleBinding "clusterRole" "system:openshift:scc:hostmount-anyuid-v2" }}
+{{- $_ := set $builderRoleBinding "serviceAccounts" (list (dict "name" "builder" "namespace" (printf "user-%s" $username))) }}
+---
+{{ include "rbac.role-binding" $builderRoleBinding }}
+{{- end }}
