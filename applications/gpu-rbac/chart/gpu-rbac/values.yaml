@@ -182,3 +182,5 @@ userNamespaces:
   htpasswdUsers: []
   users:
     - admin
+    - admin1
+    - admin2
