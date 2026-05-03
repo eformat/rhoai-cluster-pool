@@ -132,7 +132,7 @@ spec:
   {{- end }}{{/* End of user-per-flavor iteration */}}
   {{- range $k, $v := $resources }}
     {{- /* Within our flavor's remaining resources, strip the GPUs down to a count instead of count + share */}}
-    {{- if and (kindIs "map" $v) (get $v "count") }}
+    {{- if and (kindIs "map" $v) (hasKey $v "count") }}
       {{- $_ := set $resources $k $v.count }}
     {{- end }}
   {{- end }}
