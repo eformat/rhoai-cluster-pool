@@ -14,5 +14,8 @@ spec:
   tolerations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  {{- with $spec.topologyName }}
+  topologyName: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}

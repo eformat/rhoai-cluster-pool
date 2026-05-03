@@ -77,6 +77,12 @@ clusterQueues:
 
 cohorts: {}
 
+topologies:
+  default:
+    levels:
+      - nodeLabel: topology.kubernetes.io/zone
+      - nodeLabel: kubernetes.io/hostname
+
 resourceFlavors:
   default-flavor: {}
   h200:
@@ -87,6 +93,7 @@ resourceFlavors:
         effect: NoSchedule
         operator: Equal
         value: h200
+    topologyName: default
 
 workloadPriorityClasses:
   high-priority:

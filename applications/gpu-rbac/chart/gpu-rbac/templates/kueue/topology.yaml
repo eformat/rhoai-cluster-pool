@@ -1,0 +1,10 @@
+{{- range $name, $spec := .Values.topologies }}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: Topology
+metadata:
+  name: {{ $name }}
+spec:
+  levels:
+    {{- toYaml $spec.levels | nindent 4 }}
+{{- end }}
