@@ -2,17 +2,3 @@
 prefix: red
 
 clusterDomain: 'apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
-
-# -- Gateway image
-image:
-  repository: quay.io/opendatahub/odh-openclaw-rhel9  # quay.io/sallyom/openclaw
-  tag: latest
-  pullPolicy: Always
-
-model:
-  endpoint: "https://maas.apps.ocp.cloud.rhai-tmm.dev/kimi-k25/kimi-k2-5/v1"
-  id: "kimi-k2-5"
-  name: "kimi-k2-5"
-  contextWindow: 262144
-  maxTokens: 262144
-  apiKey: "fake"

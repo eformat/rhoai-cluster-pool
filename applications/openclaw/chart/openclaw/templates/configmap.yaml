@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openclaw.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+data:
+  openclaw.json: |
+{{- $config := deepCopy .Values.openclaw.config }}
+{{- if not (hasKey $config "gateway") }}
+{{- $_ := set $config "gateway" dict }}
+{{- end }}
+{{- if not (hasKey $config.gateway "auth") }}
+{{- $_ := set $config.gateway "auth" dict }}
+{{- end }}
+{{- $_ := set $config.gateway.auth "token" "${OPENCLAW_GATEWAY_TOKEN}" }}
+{{- toPrettyJson $config | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openclaw.fullname" . }}-ocp-injected-certs
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"

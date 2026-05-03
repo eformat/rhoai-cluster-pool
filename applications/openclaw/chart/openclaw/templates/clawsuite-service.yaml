@@ -1,0 +1,24 @@
+{{- if and .Values.clawsuite.enabled .Values.clawsuite.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "openclaw.fullname" . }}-clawsuite
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clawsuite
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: {{ include "openclaw.fullname" . }}-clawsuite-tls
+    {{- with .Values.clawsuite.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.clawsuite.service.type }}
+  ports:
+    - port: {{ .Values.clawsuite.oauthProxy.port }}
+      targetPort: {{ .Values.clawsuite.oauthProxy.port }}
+      protocol: TCP
+      name: https
+  selector:
+    {{- include "openclaw.selectorLabels" . | nindent 4 }}
+{{- end }}

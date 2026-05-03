@@ -1,0 +1,22 @@
+{{- if .Values.workspace.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "openclaw.fullname" . }}-workspace
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+  {{- with .Values.workspace.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ .Values.workspace.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.workspace.size }}
+  {{- if .Values.workspace.storageClass }}
+  storageClassName: {{ .Values.workspace.storageClass }}
+  {{- end }}
+{{- end }}

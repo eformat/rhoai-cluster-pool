@@ -1,0 +1,93 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }} in namespace {{ .Release.Namespace }}.
+
+{{- if .Values.route.enabled }}
+
+## Accessing OpenClaw
+
+The application is exposed via an OpenShift Route:
+
+{{- if .Values.route.host }}
+URL: https://{{ .Values.route.host }}
+{{- else }}
+Run the following command to get the route URL:
+
+  oc get route {{ include "openclaw.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.spec.host}'
+
+{{- end }}
+
+Authentication is handled by OpenShift OAuth. Access is controlled by the SAR:
+  {{ tpl .Values.oauthProxy.sar . }}
+{{- else }}
+
+## Accessing OpenClaw
+
+OpenShift Route is disabled. To access the application, you'll need to configure
+an alternative ingress method (port-forward, LoadBalancer, NodePort, etc.).
+{{- end }}
+
+
+## Storage
+
+{{- if .Values.persistence.enabled }}
+Persistent storage is enabled with PVC:
+  Name: {{ include "openclaw.fullname" . }}-data
+  Size: {{ .Values.persistence.size }}
+  StorageClass: {{ .Values.persistence.storageClass | default "(default)" }}
+{{- else }}
+Persistent storage is DISABLED. Data will be lost when pods restart!
+To enable persistence, set persistence.enabled=true in values.yaml.
+{{- end }}
+
+## Security
+
+- NetworkPolicy is {{ if .Values.networkPolicy.enabled }}enabled{{ else }}disabled{{ end }}
+- ServiceAccount has no RBAC bindings (read-only)
+- All containers run as non-root
+
+{{- if .Values.clawsuite.enabled }}
+{{- if not .Values.clawsuite.image.repository }}
+
+## Building ClawSuite
+
+ClawSuite will be built from source. To trigger the build:
+
+  oc start-build {{ include "openclaw.fullname" . }}-clawsuite -n {{ .Release.Namespace }}
+
+Or wait for the ImageChange trigger to fire automatically.
+
+WARNING: The first build takes approximately 10 minutes to complete.
+
+To watch build progress:
+
+  # List all builds to find the build name:
+  oc get builds -n {{ .Release.Namespace }}
+
+  # Watch logs of the specific build:
+  oc logs -f build/{{ include "openclaw.fullname" . }}-clawsuite-1 -n {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
+
+## Configuration
+
+The OpenClaw configuration is stored in a ConfigMap:
+
+  oc get configmap {{ include "openclaw.fullname" . }}-config -n {{ .Release.Namespace }} -o yaml
+
+To update the configuration, edit values.yaml and run helm upgrade, or:
+
+  oc edit configmap {{ include "openclaw.fullname" . }}-config -n {{ .Release.Namespace }}
+## Documentation
+
+- OpenClaw: https://docs.openclaw.ai
+{{- if .Values.clawsuite.enabled }}
+- ClawSuite: https://github.com/outsourc-e/clawsuite
+{{- end }}
+- OpenShift OAuth Proxy: https://docs.openshift.com/container-platform/latest/authentication/oauth-proxy.html
+
+## Support
+
+For issues or questions:
+- OpenClaw: https://github.com/openclaw/openclaw/issues
+- This Chart: Check the README.md in the chart directory
