@@ -27,7 +27,7 @@ spec:
         namespace: openshift-gitops
       source:
         repoURL: https://github.com/eformat/rhoai-cluster-pool.git
-        path: applications/gpu-rbac
+        path: applications/gpu-rbac/overlay
         plugin:
           name: argocd-novault-plugin-kustomize
         targetRevision: main
