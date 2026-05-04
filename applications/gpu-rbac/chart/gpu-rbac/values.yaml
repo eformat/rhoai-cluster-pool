@@ -115,7 +115,7 @@ hardwareProfiles:
       from the unreserved pool of resources (limited availability and first
       come, first served)
     cpu: 28
-    memory: 110Gi
+    mem: 110Gi
     gpu:
       identifier: nvidia.com/gpu
       displayName: H200 GPU
@@ -127,12 +127,12 @@ hardwareProfiles:
       This profile offers access to an 71GB MIG slice from GPU workers, drawing
       from the unreserved pool of resources (limited availability and first
       come, first served)
-    cpu: 0
-    memory: 0Gi
+    cpu: 14
+    mem: 71Gi
     gpu:
       identifier: nvidia.com/mig-3g.71gb
       displayName: 71GB MIG Slice
-      max: 0
+      max: 8
     localQueue: unreserved
   unreserved-mig-35gb:
     displayName: 35GB Slice (Unreserved)
@@ -140,12 +140,12 @@ hardwareProfiles:
       This profile offers access to an 35GB MIG slice from GPU workers, drawing
       from the unreserved pool of resources (limited availability and first
       come, first served)
-    cpu: 0
-    memory: 0Gi
+    cpu: 8
+    mem: 35Gi
     gpu:
       identifier: nvidia.com/mig-2g.35gb
       displayName: 35GB MIG Slice
-      max: 0
+      max: 1
     localQueue: unreserved
   unreserved-mig-18gb:
     displayName: 18GB Slice (Unreserved)
@@ -153,12 +153,12 @@ hardwareProfiles:
       This profile offers access to an 18GB MIG slice from GPU workers, drawing
       from the unreserved pool of resources (limited availability and first
       come, first served)
-    cpu: 0
-    memory: 0Gi
+    cpu: 4
+    mem: 18Gi
     gpu:
       identifier: nvidia.com/mig-1g.18gb
       displayName: 18GB MIG Slice
-      max: 0
+      max: 16
     localQueue: unreserved
 
 userNamespaces:
