@@ -27,6 +27,6 @@ policyDefaults:
 policies:
   - name: uwm
     placement:
-      placementName: placement-spokes-prelude-nightly-34
+      placementName: placement-spokes-prelude
     manifests:
       - path: input/
