@@ -17,7 +17,7 @@ policyDefaults:
   copyPolicyMetadata: false
   disabled: false
   namespace: openshift-gitops
-  pruneObjectBehavior: "None"
+  pruneObjectBehavior: "DeleteIfCreated"
   remediationAction: enforce
   severity: medium
   standards:
