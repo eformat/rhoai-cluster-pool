@@ -46,8 +46,36 @@ totalResources:
 
 
 clusterRoles:
+  - name: kueue-cluster-visibility
+    rules:
+      - apiGroups:
+          - kueue.x-k8s.io
+        resources:
+          - cohorts
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - kueue.x-k8s.io
+        resources:
+          - clusterqueues
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - kueue.x-k8s.io
+        resources:
+          - clusterqueues/status
+        verbs:
+          - get
 
 clusterRoleBindings:
+  - name: kueue-cluster-visibility
+    clusterRole: kueue-cluster-visibility
+    groups:
+      - users
 
 namespaces:
   - name: maas
