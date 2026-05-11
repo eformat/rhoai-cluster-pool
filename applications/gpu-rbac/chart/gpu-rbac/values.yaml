@@ -60,6 +60,7 @@ clusterRoles:
           - kueue.x-k8s.io
         resources:
           - clusterqueues
+          - localqueues
         verbs:
           - get
           - list
@@ -68,6 +69,7 @@ clusterRoles:
           - kueue.x-k8s.io
         resources:
           - clusterqueues/status
+          - localqueues/status
         verbs:
           - get
 
