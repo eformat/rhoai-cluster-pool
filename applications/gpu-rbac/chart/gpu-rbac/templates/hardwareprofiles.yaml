@@ -1,5 +1,7 @@
 {{- range $name, $profile := .Values.hardwareProfiles }}
+{{- if or (not $.Values.dynamicGpuConfig) (not (hasKey $profile "gpu")) }}
 {{- $_ := set $profile "name" $name }}
 ---
 {{ include "rbac.hardware-profile" $profile }}
+{{- end }}
 {{- end }}

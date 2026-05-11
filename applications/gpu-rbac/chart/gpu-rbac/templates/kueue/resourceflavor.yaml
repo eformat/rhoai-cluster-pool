@@ -1,4 +1,5 @@
 {{- range $name, $spec := .Values.resourceFlavors }}
+{{- if or (not $.Values.dynamicGpuConfig) (not $spec) (not (hasKey ($spec | default dict) "tolerations")) }}
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
@@ -17,5 +18,6 @@ spec:
   {{- with $spec.topologyName }}
   topologyName: {{ . }}
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
