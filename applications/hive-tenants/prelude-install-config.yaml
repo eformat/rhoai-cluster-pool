@@ -15,7 +15,6 @@ controlPlane:
       rootVolume:
         size: $ROOT_VOLUME_SIZE
         type: gp3
-fips: true
 metadata:
   name: hivec
 platform:
