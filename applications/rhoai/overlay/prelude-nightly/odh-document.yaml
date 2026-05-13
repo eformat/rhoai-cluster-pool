@@ -10,6 +10,8 @@ metadata:
     internal.config.kubernetes.io/previousNamespaces: default
     platform.opendatahub.io/version: 3.0.0
     platform.opendatahub.io/type: OpenShift AI Self-Managed
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "4"
   labels:
     app: rhods-dashboard
     app.kubernetes.io/part-of: rhods-dashboard
