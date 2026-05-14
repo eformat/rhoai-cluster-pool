@@ -1,0 +1,26 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: demo1-job
+  namespace: default
+  labels:
+    kueue.x-k8s.io/queue-name: "user-queue"
+spec:
+  parallelism: 1
+  completions: 1
+  suspend: true
+  template:
+    spec:
+      containers:
+      - name: dummy-job
+        image: gcr.io/k8s-staging-perf-tests/sleep:v0.1.0
+        args: ["10s"]
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "200Mi"
+          limits:
+            cpu: "500m"
+            memory: "200Mi"
+      restartPolicy: Never

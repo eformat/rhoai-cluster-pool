@@ -5,3 +5,4 @@ resources:
   - kuadrant-cr.yaml
   - authorino-cr.yaml
   - job-set-cr.yaml
+  - kueue-cr.yaml

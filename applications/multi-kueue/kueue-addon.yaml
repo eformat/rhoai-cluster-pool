@@ -1,0 +1,300 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: open-cluster-management-addon
+---
+# Source: kueue-addon/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kueue-allow-egress-cluster-proxy-dns
+  namespace: openshift-kueue-operator
+spec:
+  egress:
+  - ports:
+    - port: 80
+      protocol: TCP
+  - ports:
+    - port: 443
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: multicluster-engine
+  podSelector:
+    matchLabels:
+      app.openshift.io/name: kueue
+  policyTypes:
+  - Egress
+---
+# Source: kueue-addon/templates/deployment.yaml
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: kueue-addon-controller-sa
+  namespace: open-cluster-management-addon
+---
+# Source: kueue-addon/templates/cluster-role.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: open-cluster-management:kueue-addon:controller
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "nodes","configmaps", "pods", "events", "secrets"]
+    verbs: [ "get", "list", "watch", "create", "update", "delete", "deletecollection", "patch" ]
+  - apiGroups: [ "coordination.k8s.io" ]
+    resources: [ "leases" ]
+    verbs: [ "create", "get", "list", "update", "watch", "patch" ]
+  # Allow hub to managedclusters, placements, placementdecisions
+  - apiGroups: ["cluster.open-cluster-management.io"]
+    resources: ["managedclusters", "placements", "placementdecisions"]
+    verbs: ["get", "list", "watch"]
+  # Allow hub to clusterpermission
+  - apiGroups: ["rbac.open-cluster-management.io"]
+    resources: ["clusterpermissions"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow hub to managedserviceaccount
+  - apiGroups: ["authentication.open-cluster-management.io"]
+    resources: ["managedserviceaccounts"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow hub to manage multikueueconfig
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["multikueueconfigs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow hub to manage multikueueclusters
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["multikueueclusters"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow hub to manage admissionchecks
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["admissionchecks"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["admissionchecks/status"]
+    verbs: ["update", "patch"]
+---
+# Source: kueue-addon/templates/cluster-role.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: open-cluster-management:kueue-addon:controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: open-cluster-management:kueue-addon:controller
+subjects:
+  - kind: ServiceAccount
+    name: kueue-addon-controller-sa
+    namespace: open-cluster-management-addon
+---
+# Source: kueue-addon/templates/deployment.yaml
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kueue-addon-controller
+  namespace: open-cluster-management-addon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kueue-addon-controller
+  template:
+    metadata:
+      labels:
+        app: kueue-addon-controller
+    spec:
+      serviceAccount: kueue-addon-controller-sa
+      containers:
+        - name: kueue-addon-controller
+          image: quay.io/open-cluster-management/kueue-addon:v0.1.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - "/kueue-addon-controller"
+            - "hub"
+          env:
+            - name: KUEUE_NAMESPACE
+              value: openshift-kueue-operator
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: CLUSTER_PROXY_URL
+              value: https://cluster-proxy-user.apps.sno.sandbox1763.opentlc.com
+---
+# Source: kueue-addon/templates/addon-template.yaml
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: AddOnTemplate
+metadata:
+  name: kueue-addon-0.1.4
+spec:
+  addonName: multicluster-kueue-manager
+  agentSpec:
+    workload:
+      manifests:
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: kueue-resourceflavor-ocm-rolebinding
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: kueue-resourceflavor-editor-role
+          subjects:
+          - kind: ServiceAccount
+            name: klusterlet-work-sa
+            namespace: open-cluster-management-agent
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: kueue-clusterqueue-ocm-rolebinding
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: kueue-clusterqueue-editor-role
+          subjects:
+          - kind: ServiceAccount
+            name: klusterlet-work-sa
+            namespace: open-cluster-management-agent
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: kueue-localqueue-ocm-rolebinding
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: kueue-localqueue-editor-role
+          subjects:
+          - kind: ServiceAccount
+            name: klusterlet-work-sa
+            namespace: open-cluster-management-agent
+        # Supplement missing RBAC from kueue-addon v0.1.4 ClusterPermission
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRole
+          metadata:
+            name: multikueue-supplemental
+          rules:
+          - apiGroups: ["apps"]
+            resources: ["statefulsets"]
+            verbs: ["create", "delete", "get", "list", "watch"]
+          - apiGroups: ["apps"]
+            resources: ["statefulsets/status"]
+            verbs: ["get"]
+          - apiGroups: ["leaderworkerset.x-k8s.io"]
+            resources: ["leaderworkersets"]
+            verbs: ["create", "delete", "get", "list", "watch"]
+          - apiGroups: ["leaderworkerset.x-k8s.io"]
+            resources: ["leaderworkersets/status"]
+            verbs: ["get"]
+          - apiGroups: ["kubeflow.org"]
+            resources: ["jaxjobs"]
+            verbs: ["create", "delete", "get", "list", "watch"]
+          - apiGroups: ["kubeflow.org"]
+            resources: ["jaxjobs/status"]
+            verbs: ["get"]
+          - apiGroups: ["trainer.kubeflow.org"]
+            resources: ["trainjobs"]
+            verbs: ["create", "delete", "get", "list", "watch"]
+          - apiGroups: ["trainer.kubeflow.org"]
+            resources: ["trainjobs/status"]
+            verbs: ["get"]
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: multikueue-supplemental
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: multikueue-supplemental
+          subjects:
+          - kind: ServiceAccount
+            name: multikueue
+            namespace: open-cluster-management-agent-addon
+        - apiVersion: kueue.x-k8s.io/v1beta1
+          kind: ResourceFlavor
+          metadata:
+            name: default-flavor
+        - apiVersion: kueue.x-k8s.io/v1beta1
+          kind: ClusterQueue
+          metadata:
+            name: cluster-queue
+          spec:
+            namespaceSelector: {}
+            resourceGroups:
+            - coveredResources:
+              - cpu
+              - memory
+              - nvidia.com/gpu
+              flavors:
+              - name: default-flavor
+                resources:
+                - name: cpu
+                  nominalQuota: 9
+                - name: memory
+                  nominalQuota: 36Gi
+                - name: nvidia.com/gpu
+                  nominalQuota: 3
+        - apiVersion: kueue.x-k8s.io/v1beta1
+          kind: LocalQueue
+          metadata:
+            namespace: default
+            name: user-queue
+          spec:
+            clusterQueue: cluster-queue
+---
+# Source: kueue-addon/templates/cluster-management-addon.yaml
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: ClusterManagementAddOn
+metadata:
+  name: multicluster-kueue-manager
+spec:
+  addOnMeta:
+    displayName: Multicluster Kueue Manager
+    description: Provides an integration with Kueue to simplify MultiKueue setup, centraliz Kueue resource management and enhance multicluster scheduling capabilities.
+  supportedConfigs:
+  - group: addon.open-cluster-management.io
+    resource: addontemplates
+  installStrategy:
+    type: Placements
+    placements:
+    - name: default
+      namespace: openshift-kueue-operator
+      configs:
+      - name: kueue-addon-0.1.4
+        group: addon.open-cluster-management.io
+        resource: addontemplates
+---
+# Source: kueue-addon/templates/placement.yaml
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: global
+  namespace: openshift-kueue-operator
+spec:
+  clusterSet: global
+---
+# Source: kueue-addon/templates/placement.yaml
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: default
+  namespace: openshift-kueue-operator
+spec:
+  clusterSets:
+    - global
+  tolerations:
+  - key: cluster.open-cluster-management.io/unreachable
+    operator: Equal
+  - key: cluster.open-cluster-management.io/unavailable
+    operator: Equal
+  predicates:
+  - requiredClusterSelector:
+      labelSelector:
+        matchExpressions:
+          - key: local-cluster
+            operator: DoesNotExist
