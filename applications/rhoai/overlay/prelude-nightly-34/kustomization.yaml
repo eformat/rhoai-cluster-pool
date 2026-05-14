@@ -4,8 +4,8 @@ resources:
   - hardware-profile.yaml
   - odh-document.yaml
   - mlflow.yaml
-  - catalog-source.yaml
-  - icsp.yaml
+  # - catalog-source.yaml
+  # - icsp.yaml
   - evalhub.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -14,4 +14,4 @@ patches:
   - path: dsci-cr.yaml
   - path: dsc-cr.yaml
   - path: odh-dashboard.yaml
-  - path: subscription-rhods-operator.yaml
+  # - path: subscription-rhods-operator.yaml
