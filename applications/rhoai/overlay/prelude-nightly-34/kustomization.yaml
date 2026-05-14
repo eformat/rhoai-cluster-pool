@@ -15,4 +15,3 @@ patches:
   - path: dsc-cr.yaml
   - path: odh-dashboard.yaml
   - path: subscription-rhods-operator.yaml
-
