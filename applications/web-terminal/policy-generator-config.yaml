@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: web-terminal
 policyDefaults:
   placement:
-    placementName: all-clusters
+    placementName: placement-spokes-prelude
   categories:
     - CM Configuration Management
   complianceType: "musthave"
