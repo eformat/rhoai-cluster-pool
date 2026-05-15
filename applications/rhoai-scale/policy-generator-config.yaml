@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: rhoai-scale
 policyDefaults:
   placement:
-    placementName: placement-spokes-openshift
+    placementName: placement-spokes-prelude
   categories:
     - CM Configuration Management
   complianceType: "musthave"
