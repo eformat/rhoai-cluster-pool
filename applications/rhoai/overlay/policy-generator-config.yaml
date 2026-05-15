@@ -30,18 +30,13 @@ policies:
       placementName: placement-spokes-roadshow
     manifests:
       - path: roadshow/
-  - name: rhoai-prelude-nightly
+  - name: rhoai-prelude
     placement:
-      placementName: placement-spokes-prelude-nightly
+      placementName: placement-spokes-prelude
     manifests:
-      - path: prelude-nightly/
-#  - name: rhoai-prelude
-#    placement:
-#      placementName: placement-spokes-prelude
-#    manifests:
-#      - path: prelude/
-  - name: rhoai-prelude-nightly-34
-    placement:
-      placementName: placement-spokes-prelude-nightly-34
-    manifests:
-      - path: prelude-nightly-34/
+      - path: prelude/
+  # - name: rhoai-prelude-nightly-34
+  #   placement:
+  #     placementName: placement-spokes-prelude-nightly-34
+  #   manifests:
+  #     - path: prelude-nightly-34/
