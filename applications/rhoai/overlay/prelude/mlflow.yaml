@@ -4,12 +4,22 @@ kind: MLflow
 metadata:
   name: mlflow
 spec:
+  artifactsDestination: file:///mlflow/artifacts
+  backendStoreUri: sqlite:////mlflow/mlflow.db
+  replicas: 1
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  serveArtifacts: true
+  serviceAccountName: mlflow-sa
   storage:
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 10Gi
-  backendStoreUri: "sqlite:////mlflow/mlflow.db"
-  artifactsDestination: "file:///mlflow/artifacts"
-  serveArtifacts: true
+  workers: 1
