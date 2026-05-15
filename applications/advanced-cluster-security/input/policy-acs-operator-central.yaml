@@ -42,10 +42,10 @@ spec:
     db:
       resources:
         limits:
-          cpu: '2'
+          cpu: '1'
           memory: 2Gi
         requests:
-          cpu: '1'
+          cpu: '500m'
           memory: 2Gi
     declarativeConfiguration:
       configMaps:
@@ -63,10 +63,10 @@ spec:
         claimName: stackrox-db
     resources:
       limits:
-        cpu: 1
+        cpu: '1'
         memory: 2Gi
       requests:
-        cpu: 1
+        cpu: '500m'
         memory: 2Gi
   egress:
     connectivityPolicy: Online
@@ -81,7 +81,7 @@ spec:
           memory: 1Gi
       scaling:
         autoScaling: Enabled
-        maxReplicas: 2
+        maxReplicas: 1
         minReplicas: 1
         replicas: 1
     scannerComponent: Enabled
