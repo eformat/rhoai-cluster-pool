@@ -8,48 +8,54 @@ metadata:
   namespace: openshift-config
 ---
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: rhoai-scale
   namespace: openshift-config
 spec:
-  backoffLimit: 5
-  activeDeadlineSeconds: 1200
-  template:
-    metadata:
-      name: rhoai-scale
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
     spec:
-      containers:
-      - name: rhoai-scale
-        image: 'quay.io/eformat/toolbox:latest'
-        command:
-        - /bin/sh
-        - '-x'
-        - /tmp/rhoai-scale/rhoai-scale.sh
-        resources: {}
-        volumeMounts:
-        - name: rhoai-scale
-          mountPath: /tmp/rhoai-scale
-        - mountPath: /tmp
-          name: cert-tmp
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        imagePullPolicy: Always
-      serviceAccount: rhoai-scale
-      serviceAccountName: rhoai-scale
-      securityContext: {}
-      restartPolicy: OnFailure
-      volumes:
-      - name: rhoai-scale
-        configMap:
-          items:
-          - key: rhoai-scale.sh
-            mode: 509
-            path: rhoai-scale.sh
+      backoffLimit: 5
+      activeDeadlineSeconds: 1200
+      template:
+        metadata:
           name: rhoai-scale
-      - emptyDir: {}
-        name: cert-tmp
-      dnsPolicy: ClusterFirst
+        spec:
+          containers:
+          - name: rhoai-scale
+            image: 'quay.io/eformat/toolbox:latest'
+            command:
+            - /bin/sh
+            - '-x'
+            - /tmp/rhoai-scale/rhoai-scale.sh
+            resources: {}
+            volumeMounts:
+            - name: rhoai-scale
+              mountPath: /tmp/rhoai-scale
+            - mountPath: /tmp
+              name: cert-tmp
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            imagePullPolicy: Always
+          serviceAccount: rhoai-scale
+          serviceAccountName: rhoai-scale
+          securityContext: {}
+          restartPolicy: OnFailure
+          volumes:
+          - name: rhoai-scale
+            configMap:
+              items:
+              - key: rhoai-scale.sh
+                mode: 509
+                path: rhoai-scale.sh
+              name: rhoai-scale
+          - emptyDir: {}
+            name: cert-tmp
+          dnsPolicy: ClusterFirst
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
