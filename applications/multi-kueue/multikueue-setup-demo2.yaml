@@ -2,7 +2,7 @@
 # apiVersion: kueue.x-k8s.io/v1beta2
 # kind: ResourceFlavor
 # metadata:
-#   name: "default-flavor"
+#   name: "gpu-pool"
 ---
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: ClusterQueue
@@ -10,20 +10,27 @@ metadata:
   name: "cluster-queue"
 spec:
   namespaceSelector: {} # match all.
+  cohortName: unreserved
+  preemption:
+    borrowWithinCohort:
+      maxPriorityThreshold: 100
+      policy: LowerPriority
+    reclaimWithinCohort: Any
+    withinClusterQueue: Never
   resourceGroups:
   - coveredResources: ["cpu", "memory","nvidia.com/gpu"]
     flavors:
     - name: "gpu-pool"
       resources:
       - name: "cpu"
-        nominalQuota: 9
+        nominalQuota: 0
       - name: "memory"
-        nominalQuota: 36Gi
+        nominalQuota: 0
       - name: "nvidia.com/gpu"
-        nominalQuota: 3
+        nominalQuota: 0
   admissionChecksStrategy:
     admissionChecks:
-    - name: multikueue-demo1
+    - name: multikueue-demo2
 ---
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: LocalQueue
@@ -36,23 +43,23 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: AdmissionCheck
 metadata:
-  name: multikueue-demo1
+  name: multikueue-demo2
 spec:
   controllerName: kueue.x-k8s.io/multikueue
   parameters:
     apiGroup: kueue.x-k8s.io
     kind: MultiKueueConfig
-    name: default
+    name: multikueue-config-demo2
 ---
 # OCM implements an Admissioncheck controller to automate the MultiKueue setup process.
 # MultiKueueConfig is generated dynamically based on OCM placement decisions.
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: AdmissionCheck
 metadata:
-  name: multikueue-config-demo1
+  name: multikueue-config-demo2
 spec:
   controllerName: open-cluster-management.io/placement
   parameters:
     apiGroup: cluster.open-cluster-management.io
     kind: Placement
-    name: default
+    name: multikueue-config-demo2

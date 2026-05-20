@@ -215,31 +215,38 @@ spec:
           - kind: ServiceAccount
             name: multikueue
             namespace: open-cluster-management-agent-addon
-        - apiVersion: kueue.x-k8s.io/v1beta1
-          kind: ResourceFlavor
-          metadata:
-            name: default-flavor
-        - apiVersion: kueue.x-k8s.io/v1beta1
+        # - apiVersion: kueue.x-k8s.io/v1beta2
+        #   kind: ResourceFlavor
+        #   metadata:
+        #     name: default-flavor
+        - apiVersion: kueue.x-k8s.io/v1beta2
           kind: ClusterQueue
           metadata:
             name: cluster-queue
           spec:
             namespaceSelector: {}
+            cohortName: unreserved
+            preemption:
+              borrowWithinCohort:
+                maxPriorityThreshold: 100
+                policy: LowerPriority
+              reclaimWithinCohort: Any
+              withinClusterQueue: Never
             resourceGroups:
             - coveredResources:
               - cpu
               - memory
               - nvidia.com/gpu
               flavors:
-              - name: default-flavor
+              - name: gpu-pool
                 resources:
                 - name: cpu
-                  nominalQuota: 9
+                  nominalQuota: 0
                 - name: memory
-                  nominalQuota: 36Gi
+                  nominalQuota: 0
                 - name: nvidia.com/gpu
-                  nominalQuota: 3
-        - apiVersion: kueue.x-k8s.io/v1beta1
+                  nominalQuota: 0
+        - apiVersion: kueue.x-k8s.io/v1beta2
           kind: LocalQueue
           metadata:
             namespace: default
@@ -298,3 +305,22 @@ spec:
         matchExpressions:
           - key: local-cluster
             operator: DoesNotExist
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: multikueue-config-demo2
+  namespace: openshift-kueue-operator
+spec:
+  clusterSets:
+  - global
+  tolerations:
+  - key: cluster.open-cluster-management.io/unreachable
+    operator: Exists
+  - key: cluster.open-cluster-management.io/unavailable
+    operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            accelerator: nvidia-gpu

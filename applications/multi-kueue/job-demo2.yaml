@@ -2,10 +2,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: demo1-job
+  generateName: demo2-job
   namespace: default
   labels:
     kueue.x-k8s.io/queue-name: "user-queue"
+    kueue.x-k8s.io/priority-class: "high-priority"
 spec:
   parallelism: 1
   completions: 1
@@ -14,13 +15,23 @@ spec:
     spec:
       containers:
       - name: dummy-job
-        image: gcr.io/k8s-staging-perf-tests/sleep:v0.1.0
-        args: ["600s"]
+        image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        command:
+          - /bin/bash
+          - -c
+          - "sleep 600"
         resources:
           requests:
             cpu: "250m"
             memory: "200Mi"
+            nvidia.com/gpu: "1"
           limits:
             cpu: "500m"
             memory: "200Mi"
+            nvidia.com/gpu: "1"
       restartPolicy: Never
