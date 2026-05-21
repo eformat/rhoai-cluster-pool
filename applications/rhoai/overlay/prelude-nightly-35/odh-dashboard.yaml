@@ -49,14 +49,22 @@ spec:
     disableTracking: false
     disableTrustyBiasMetrics: false
     disableUserManagement: false
+    agentOps: true
     aiAssetCustomEndpoints: true
+    automl: true
+    autorag: true
+    deploymentWizardYAMLViewer: true
     enablement: true
     genAiStudio: true
     maasAuthPolicies: true
+    mcpCatalog: true
     mlflow: true
     modelAsService: true
-    trainingJobs: true
+    mySubscriptions: true
     observabilityDashboard: true
+    promptManagement: true
+    trainingJobs: true
+    vLLMDeploymentOnMaaS: true
   genAiStudioConfig:
     aiAssetCustomEndpoints:
       externalProviders: true
