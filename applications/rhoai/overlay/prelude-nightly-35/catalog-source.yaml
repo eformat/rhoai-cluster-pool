@@ -5,9 +5,11 @@ metadata:
   name: rhoai-catalog-nightly
   namespace: openshift-marketplace
 spec:
-  displayName: RHOAI 3.4 ea.2 Nightly
-  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.4-ea.2-nightly
-  publisher: RHOAI Dev
+  displayName: RHOAI 3.5 Nightly
+  grpcPodConfig:
+    securityContextConfig: restricted
+  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5
+  publisher: RHOAI Development Catalog
   sourceType: grpc
   updateStrategy:
     registryPoll:
