@@ -52,7 +52,7 @@ spec:
           permitCodeExecution: deny
           permitOnline: deny
       managementState: Managed
-      mcpGuardrailsMode: false
+      mcpGuardrailsMode: true
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks
