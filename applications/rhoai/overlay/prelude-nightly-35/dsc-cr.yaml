@@ -29,7 +29,7 @@ spec:
       defaultLocalQueueName: default
       managementState: Unmanaged
     llamastackoperator:
-      managementState: Managed
+      managementState: Removed
     mlflowoperator:
       managementState: Managed
     modelregistry:
