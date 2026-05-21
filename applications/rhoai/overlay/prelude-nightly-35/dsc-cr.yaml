@@ -22,6 +22,7 @@ spec:
       modelsAsService:
         managementState: Managed
       nim:
+        airGapped: false
         managementState: Managed
       rawDeploymentServiceConfig: Headed
     kueue:
@@ -35,8 +36,12 @@ spec:
     modelregistry:
       managementState: Managed
       registriesNamespace: rhoai-model-registries
+    ogx:
+      managementState: Removed
     ray:
       managementState: Managed
+    sparkoperator:
+      managementState: Removed
     trainer:
       managementState: Managed
     trainingoperator:
@@ -47,6 +52,7 @@ spec:
           permitCodeExecution: deny
           permitOnline: deny
       managementState: Managed
+      mcpGuardrailsMode: false
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks
