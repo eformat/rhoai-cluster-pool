@@ -37,7 +37,7 @@ spec:
       managementState: Managed
       registriesNamespace: rhoai-model-registries
     ogx:
-      managementState: Removed
+      managementState: Managed
     ray:
       managementState: Managed
     sparkoperator:
