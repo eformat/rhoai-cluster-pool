@@ -6,3 +6,5 @@ resources:
   - authorino-cr.yaml
   - job-set-cr.yaml
   - kueue-cr.yaml
+  - telemetry.yaml
+  - telemetrypolicy.yaml

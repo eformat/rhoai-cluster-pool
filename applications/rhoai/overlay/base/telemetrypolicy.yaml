@@ -2,20 +2,19 @@
 apiVersion: extensions.kuadrant.io/v1alpha1
 kind: TelemetryPolicy
 metadata:
-  annotations:
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "2"
+  name: maas-telemetry
+  namespace: openshift-ingress
   labels:
     app.kubernetes.io/part-of: maas-observability
-  name: user-group
-  namespace: openshift-ingress
 spec:
   metrics:
     default:
       labels:
         model: responseBodyJSON("/model")
-        tier: auth.identity.tier
         user: auth.identity.userid
+        subscription: auth.identity.selected_subscription
+        organization_id: auth.identity.subscription_info.organizationId
+        cost_center: auth.identity.subscription_info.costCenter
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway

@@ -69,6 +69,13 @@ spec:
                 spec:
                   gatewayClassName: openshift-ai-inference
                   listeners:
+                    - allowedRoutes:
+                        namespaces:
+                          from: All
+                      hostname: 'inference-gateway.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      name: http
+                      port: 80
+                      protocol: HTTP
                     # - allowedRoutes:
                     #     namespaces:
                     #       from: Selector
