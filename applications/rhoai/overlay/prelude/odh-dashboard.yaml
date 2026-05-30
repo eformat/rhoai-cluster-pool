@@ -50,6 +50,8 @@ spec:
     disableTrustyBiasMetrics: false
     disableUserManagement: false
     aiAssetCustomEndpoints: true
+    automl: true
+    autorag: true
     enablement: true
     genAiStudio: true
     maasAuthPolicies: true
