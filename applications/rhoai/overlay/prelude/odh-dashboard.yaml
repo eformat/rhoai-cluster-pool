@@ -53,6 +53,7 @@ spec:
     enablement: true
     genAiStudio: true
     maasAuthPolicies: true
+    mcpCatalog: true
     mlflow: true
     modelAsService: true
     trainingJobs: true
