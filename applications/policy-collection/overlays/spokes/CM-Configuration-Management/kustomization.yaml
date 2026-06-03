@@ -9,3 +9,4 @@ resources:
   - policy-cluster-autoscaler.yaml
   - policy-storage-quota.yaml
   - policy-acm-clean.yaml
+  - policy-ingresscontroller.yaml

@@ -20,6 +20,7 @@ spec:
     - sso-secret-spokes
     - remove-kubeadmin-spokes
     - acm-clean-spokes
+    - ingresscontroller-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
