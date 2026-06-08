@@ -7,3 +7,4 @@ resources:
   - keycloak.yaml
   - route.yaml
   - service.yaml
+  - theme-configmap.yaml

@@ -22,3 +22,15 @@ spec:
   href: https://vault-vault.apps.sno.$BASE_DOMAIN
   location: ApplicationMenu
   text: vault
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: keycloak
+spec:
+  applicationMenu:
+    imageURL: https://www.keycloak.org/resources/images/logo.svg
+    section: SRE
+  href: https://keycloak-keycloak.apps.sno.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: Keycloak
