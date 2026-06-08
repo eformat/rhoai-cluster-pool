@@ -10,7 +10,7 @@ mcp-gateway:
     create: true
     name: mcp-gateway
     namespace: openshift-ingress
-    publicHost: mcp.apps.roadshow-6kr2w.sandbox1763.opentlc.com
+    publicHost: mcp.apps.roadshow-6kr2w.sandbox1254.opentlc.com
     internalHostPattern: "*.mcp.local"
   httpRoute:
     create: true

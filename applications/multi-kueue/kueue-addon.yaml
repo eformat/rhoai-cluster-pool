@@ -125,7 +125,7 @@ spec:
                 fieldRef:
                   fieldPath: spec.serviceAccountName
             - name: CLUSTER_PROXY_URL
-              value: https://cluster-proxy-user.apps.sno.sandbox1763.opentlc.com
+              value: https://cluster-proxy-user.apps.sno.sandbox1254.opentlc.com
 ---
 # Source: kueue-addon/templates/addon-template.yaml
 apiVersion: addon.open-cluster-management.io/v1alpha1

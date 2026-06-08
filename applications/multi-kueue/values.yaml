@@ -1,6 +1,6 @@
 # Cluster proxy configuration
 clusterProxy:
-  url: "https://cluster-proxy-user.apps.sno.sandbox1763.opentlc.com"
+  url: "https://cluster-proxy-user.apps.sno.sandbox1254.opentlc.com"
   impersonation:
     enabled: false
 
