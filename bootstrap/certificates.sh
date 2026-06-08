@@ -323,6 +323,18 @@ check_done() {
     return 0
 }
 
+create_aws_secrets_openshift_config() {
+    echo "🌴 Running create_aws_secrets_openshift_config..."
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-config/' | oc -n openshift-config apply -f-
+    echo "🌴 create_aws_secrets_openshift_config ran OK"
+}
+
+create_aws_secrets_openshift_ingress() {
+    echo "🌴 Running create_aws_secrets_openshift_ingress..."
+    oc get secret aws-creds -n kube-system -o yaml | sed 's/namespace: .*/namespace: openshift-ingress/' | oc -n openshift-ingress apply -f-
+    echo "🌴 create_aws_secrets_openshift_ingress ran OK"
+}
+
 all() {
     echo "🌴 BASE_DOMAIN set to $BASE_DOMAIN"
 
@@ -330,6 +342,9 @@ all() {
 
     get_hosted_zone
     create_caa_route53
+
+    create_aws_secrets_openshift_config
+    create_aws_secrets_openshift_ingress
 
     update_cert_manager
 
