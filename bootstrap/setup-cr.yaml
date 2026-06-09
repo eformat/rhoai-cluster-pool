@@ -128,7 +128,7 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
-  name: placement-spokes-prelude-nightly-34
+  name: placement-spokes-prelude-nightly-35
   namespace: openshift-gitops
 spec:
   clusterSets:
@@ -141,7 +141,7 @@ spec:
             - {key: name, operator: NotIn, values: ["local-cluster"]}
         celSelector:
           celExpressions:
-            - managedCluster.metadata.name.matches('prelude-q8jzk-v72br|prelude-q8jzk-n5bmk')
+            - managedCluster.metadata.name.matches('prelude-m6wl4-g29zx')
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
