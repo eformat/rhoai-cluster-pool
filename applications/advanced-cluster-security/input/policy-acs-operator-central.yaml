@@ -86,6 +86,14 @@ spec:
         replicas: 1
     scannerComponent: Enabled
   scannerV4:
+    db:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 250m
+          memory: 1Gi
     indexer:
       scaling:
         autoScaling: Disabled
