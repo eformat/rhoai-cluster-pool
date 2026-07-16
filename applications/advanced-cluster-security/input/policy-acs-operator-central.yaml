@@ -89,11 +89,11 @@ spec:
     db:
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
+          cpu: 750m
+          memory: 2Gi
         requests:
           cpu: 250m
-          memory: 1Gi
+          memory: 2Gi
     indexer:
       scaling:
         autoScaling: Disabled
