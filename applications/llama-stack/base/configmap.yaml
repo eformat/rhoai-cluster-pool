@@ -14,7 +14,7 @@ data:
     - inference
     - safety
     - scoring
-    # - telemetry
+    - telemetry
     - tool_runtime
     - vector_io
     providers:
