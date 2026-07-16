@@ -90,7 +90,7 @@ spec:
     compliance:
       resources:
         limits:
-          cpu: '1'
+          cpu: '500m'
   scanner:
     analyzer:
       resources:
@@ -108,12 +108,12 @@ spec:
     db:
       resources:
         limits:
-          cpu: 1
+          cpu: 500m
   sensor:
     resources:
       limits:
-        cpu: '1'
+        cpu: '500m'
         memory: 2Gi
       requests:
-        cpu: '1'
+        cpu: '500m'
         memory: 1Gi
