@@ -4,7 +4,7 @@ operators:
   - name: agent-sandbox-operator
     namespace:
       name: agent-sandbox-system
-      create: true
+      create: false
       global: true
     channels: [preview-0.9] # v0,1
     version: "0.9.0" # v1
