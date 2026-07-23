@@ -7,7 +7,7 @@ placementBindingDefaults:
   name: rhoai-console-plugins
 policyDefaults:
   placement:
-    placementName: placement-spokes-prelude
+    placementName: placement-spokes-openshift
   categories:
     - CM Configuration Management
   complianceType: "musthave"
@@ -24,6 +24,13 @@ policyDefaults:
     - NIST SP 800-53
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
-  - name: rhoai-console-plugins
+  - name: rhoai-console-plugins-prelude
     manifests:
       - path: prelude/
+    placement:
+      placementName: placement-spokes-prelude
+  - name: rhoai-console-plugins-roadshow
+    manifests:
+      - path: roadshow/
+    placement:
+      placementName: placement-spokes-roadshow
