@@ -13,10 +13,3 @@ helmCharts:
     releaseName: rhai-code-demo-plugin
     valuesFile: values.yaml
     repo:  # we expand chart in folder
-
-  - name: rhai-workshop-plugin
-    namespace: rhai-workshop-plugin
-    includeCRDs: true
-    releaseName: rhai-workshop-plugin
-    valuesFile: values.yaml
-    repo:  # we expand chart in folder
