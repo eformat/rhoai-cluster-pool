@@ -7,6 +7,7 @@ resources:
   - policy-gateway.yaml
   - policy-aws-creds.yaml
   #- policy-cluster-autoscaler.yaml
+  - policy-user-namespace-label.yaml
   - policy-storage-quota.yaml
   - policy-acm-clean.yaml
   - policy-ingresscontroller.yaml

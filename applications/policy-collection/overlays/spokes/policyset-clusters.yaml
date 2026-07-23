@@ -21,6 +21,7 @@ spec:
     - remove-kubeadmin-spokes
     - acm-clean-spokes
     - ingresscontroller-spokes
+    - user-namespace-label-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

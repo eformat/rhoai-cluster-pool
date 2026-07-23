@@ -1,0 +1,66 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: user-namespace-label-spokes
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration, Rolling Restart - None
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: user-namespace-label
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "roadshow") }}
+            {{- $excluded := list
+              "cert-manager"
+              "cert-manager-operator"
+              "default"
+              "knative-eventing"
+              "knative-serving"
+              "knative-serving-ingress"
+              "kuadrant-system"
+              "kube-node-lease"
+              "kube-public"
+              "kube-system"
+              "minio"
+              "models-as-a-service"
+              "openshift"
+              "stackrox"
+              "vault"
+            }}
+            {{- range $ns := (lookup "v1" "Namespace" "" "").items }}
+            {{- $name := $ns.metadata.name }}
+            {{- if and
+              (not (has $name $excluded))
+              (not (hasPrefix "openshift-" $name))
+              (not (hasPrefix "kube-" $name))
+              (not (hasPrefix "open-cluster-management" $name))
+              (not (hasPrefix "redhat-ods-" $name))
+              (not (hasPrefix "redhat-" $name))
+              (not (hasPrefix "rhacs-" $name))
+              (not (hasPrefix "rhods-" $name))
+              (not (hasPrefix "rhoai-" $name))
+              (not (hasPrefix "roadshow-" $name))
+            }}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: {{ $name }}
+                  labels:
+                    rhai-tmm.dev/user-namespace: "true"
+            {{- end }}
+            {{- end }}
+            {{- end }}
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce
