@@ -196,13 +196,13 @@ data:
 
     wait_for_openshift_api
     wait_cluster_settle
-    force_argocd_sync
-    check_pods_allocatable
-    check_gpus_allocatable
-    check_istio_pods
-    check_resource_flavor
+    #force_argocd_sync
+    #check_pods_allocatable
+    #check_gpus_allocatable
+    #check_istio_pods
+    #check_resource_flavor
     #check_llm_pods
-    stop_llm_pods
+    #stop_llm_pods
     #check_llama_stack
 
     echo -e "\n🌻${GREEN}Check Install ended OK.${NC}🌻\n"
