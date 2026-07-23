@@ -10,18 +10,18 @@ spec:
   href: https://minio-minio.apps.$BASE_DOMAIN
   location: ApplicationMenu
   text: minio
----
-apiVersion: console.openshift.io/v1
-kind: ConsoleLink
-metadata:
-  name: milvus
-spec:
-  applicationMenu:
-    imageURL: https://raw.githubusercontent.com/milvus-io/artwork/refs/heads/master/icon/color/milvus-icon-color.svg
-    section: GenAI
-  href: https://milvus-console-milvus.apps.$BASE_DOMAIN/webui
-  location: ApplicationMenu
-  text: milvus
+# ---
+# apiVersion: console.openshift.io/v1
+# kind: ConsoleLink
+# metadata:
+#   name: milvus
+# spec:
+#   applicationMenu:
+#     imageURL: https://raw.githubusercontent.com/milvus-io/artwork/refs/heads/master/icon/color/milvus-icon-color.svg
+#     section: GenAI
+#   href: https://milvus-console-milvus.apps.$BASE_DOMAIN/webui
+#   location: ApplicationMenu
+#   text: milvus
 # ---
 # apiVersion: console.openshift.io/v1
 # kind: ConsoleLink
