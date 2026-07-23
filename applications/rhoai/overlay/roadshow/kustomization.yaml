@@ -1,12 +1,11 @@
 ---
 resources:
   - ../base
-  # - distributed-workloads.yaml # rhoai3 creates default queues and flavors
-  - namespace.yaml
-  - llama-cpp-runtime-template.yaml
-  - model-catalog-unmanaged-sources.yaml
   - hardware-profile.yaml
-  - mcp-configmap.yaml
+  - odh-document.yaml
+  - mlflow.yaml
+  - evalhub.yaml
+  - postgres-maas.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

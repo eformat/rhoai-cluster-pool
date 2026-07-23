@@ -21,12 +21,13 @@ spec:
     disableClusterManager: false
     disableCustomServingRuntimes: false
     disableDistributedWorkloads: true
+    disableFeatureStore: false
     disableFineTuning: false
     disableHome: false
     disableHardwareProfiles: false
     disableISVBadges: false
     disableInfo: false
-    disableKueue: false # redhat build of kueue https://docs.redhat.com/en/documentation/red_hat_build_of_kueue/1.0/html/quotas_and_workloads/managing-workloads
+    disableKueue: false
     disableKServe: false
     disableKServeAuth: false
     disableKServeMetrics: false
@@ -48,10 +49,20 @@ spec:
     disableTracking: false
     disableTrustyBiasMetrics: false
     disableUserManagement: false
+    aiAssetCustomEndpoints: true
+    automl: true
+    autorag: true
     enablement: true
     genAiStudio: true
+    maasAuthPolicies: true
+    mcpCatalog: true
+    mlflow: true
     modelAsService: true
     trainingJobs: true
+    observabilityDashboard: true
+  genAiStudioConfig:
+    aiAssetCustomEndpoints:
+      externalProviders: true
   groupsConfig:
     adminGroups: rhods-admins
     allowedGroups: system:authenticated
@@ -86,7 +97,7 @@ spec:
     notebookTolerationSettings:
       enabled: false
       key: NotebooksOnly
-    pvcSize: 100Gi
+    pvcSize: 20Gi
   notebookSizes:
   - name: Small
     resources:

@@ -25,7 +25,7 @@ policyDefaults:
     - NIST SP 800-53
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
-  - name: rhoai
+  - name: rhoai-roadshow
     placement:
       placementName: placement-spokes-roadshow
     manifests:
