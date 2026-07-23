@@ -57,6 +57,7 @@ spec:
                   name: {{ $name }}
                   labels:
                     rhai-tmm.dev/user-namespace: "true"
+                    tenant: "true"
             {{- end }}
             {{- end }}
             {{- end }}
