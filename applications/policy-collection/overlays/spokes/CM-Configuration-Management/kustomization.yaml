@@ -3,10 +3,10 @@ resources:
   - policy-operators.yaml
   - policy-argocd.yaml
   - policy-vault.yaml
-  - policy-gpu-node-label.yaml
+  #- policy-gpu-node-label.yaml
   - policy-gateway.yaml
   - policy-aws-creds.yaml
-  - policy-cluster-autoscaler.yaml
+  #- policy-cluster-autoscaler.yaml
   - policy-storage-quota.yaml
   - policy-acm-clean.yaml
   - policy-ingresscontroller.yaml

@@ -7,14 +7,14 @@ spec:
   description: "Policies for cluster configuration"
   policies:
     - cluster-admin-spokes
-    - oauth-htpasswd
+    #- oauth-htpasswd
     - operators-spokes
     - argocd-spokes
     - vault-spokes
-    - gpu-node-label-spokes
+    #- gpu-node-label-spokes
     - gateway-spokes
     - aws-creds-spokes
-    - cluster-autoscaler-spokes
+    #- cluster-autoscaler-spokes
     - storage-quota-spokes
     - oauth-sso-spokes
     - sso-secret-spokes

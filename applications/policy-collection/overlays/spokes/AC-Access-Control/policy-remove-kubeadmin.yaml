@@ -17,7 +17,6 @@ spec:
           name: remove-kubeadmin-spokes
         spec:
           object-templates-raw: |
-            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: mustnothave
               objectDefinition:
                 kind: Secret
@@ -26,7 +25,6 @@ spec:
                   name: kubeadmin
                   namespace: kube-system
                 type: Opaque
-            {{- end }}
           remediationAction: inform
           severity: low
   remediationAction: enforce

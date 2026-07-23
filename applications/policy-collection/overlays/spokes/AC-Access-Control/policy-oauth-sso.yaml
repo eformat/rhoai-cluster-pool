@@ -17,7 +17,6 @@ spec:
           name: oauth-sso-prelude
         spec:
           object-templates-raw: |
-            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: mustonlyhave
               recordDiff: InStatus
               objectDefinition:
@@ -45,7 +44,6 @@ spec:
                       extraScopes: []
                       issuer: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}/realms/{{hub .ManagedClusterLabels.name hub}}
                     type: OpenID
-            {{- end }}
           pruneObjectBehavior: None
           remediationAction: inform
           severity: high
@@ -56,7 +54,6 @@ spec:
           name: sso-logout-spokes
         spec:
           object-templates-raw: |
-            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: config.openshift.io/v1
@@ -66,7 +63,6 @@ spec:
                 spec:
                   authentication:
                     logoutRedirect: {{ (fromSecret "openshift-config" "openid-client-secret" "KEYCLOAK_URL") | base64dec }}/realms/{{hub .ManagedClusterLabels.name hub}}/protocol/openid-connect/logout?client_id={{ (fromSecret "openshift-config" "openid-client-secret" "CLIENT_ID") | base64dec }}
-            {{- end }}
           pruneObjectBehavior: None
           remediationAction: inform
           severity: high

@@ -17,7 +17,6 @@ spec:
           name: storage-quota
         spec:
           object-templates-raw: |
-            {{- if (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: quota.openshift.io/v1
@@ -34,7 +33,6 @@ spec:
                       efs-sc.storageclass.storage.k8s.io/requests.storage: 200Gi
                       gp2-csi.storageclass.storage.k8s.io/requests.storage: 0Gi
                       persistentvolumeclaims: 30
-            {{- end }}
           pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
           severity: high
