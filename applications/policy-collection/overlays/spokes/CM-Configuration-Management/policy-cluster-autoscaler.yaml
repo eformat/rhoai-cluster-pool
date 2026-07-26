@@ -20,7 +20,7 @@ spec:
           name: cluster-autoscaler-spokes
         spec:
           object-templates-raw: |
-            {{- if not (lookup "v1" "ConfigMap" "openshift-config" "prelude") }}
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "roadshow") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: autoscaling.openshift.io/v1
@@ -30,17 +30,44 @@ spec:
                 spec:
                   podPriorityThreshold: -10
                   resourceLimits:
-                    gpus:
-                      - max: 3
-                        min: 0
-                        type: nvidia.com/gpu
+                    maxNodesTotal: 12
                   scaleDown:
-                    delayAfterAdd: 30m
+                    delayAfterAdd: 10m
                     delayAfterDelete: 5m
                     delayAfterFailure: 30s
                     enabled: true
                     unneededTime: 15m
                     utilizationThreshold: '0.7'
             {{- end }}
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: machine-autoscaler-spokes
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "ConfigMap" "openshift-config" "roadshow") }}
+            {{- range $ms := (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items }}
+            {{- if contains "large" $ms.metadata.name }}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: autoscaling.openshift.io/v1beta1
+                kind: MachineAutoscaler
+                metadata:
+                  name: autoscale-{{ $ms.metadata.name }}
+                  namespace: openshift-machine-api
+                spec:
+                  minReplicas: 1
+                  maxReplicas: 3
+                  scaleTargetRef:
+                    apiVersion: machine.openshift.io/v1beta1
+                    kind: MachineSet
+                    name: {{ $ms.metadata.name }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+          pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
           severity: low
