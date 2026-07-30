@@ -59,7 +59,7 @@ spec:
                   name: autoscale-{{ $ms.metadata.name }}
                   namespace: openshift-machine-api
                 spec:
-                  minReplicas: 0
+                  minReplicas: 1
                   maxReplicas: 3
                   scaleTargetRef:
                     apiVersion: machine.openshift.io/v1beta1
