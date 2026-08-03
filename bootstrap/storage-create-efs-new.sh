@@ -14,7 +14,7 @@ echo "🌴 Create EFS storage..."
 IS_SNO=${IS_SNO:-}
 
 if [ -z "$AWS_PROFILE" ] && [ -z "$AWS_DEFAULT_REGION" ]; then
-    export AWS_DEFAULT_REGION=$(oc -n openshift-machine-api get $(oc get machines.machine.openshift.io -o name -A) -o json | jq -r '.spec.providerSpec.value.placement.region')
+    export AWS_DEFAULT_REGION=$(oc get machines.machine.openshift.io -A -o jsonpath='{.items[0].spec.providerSpec.value.placement.region}')
     if [ -z "$AWS_DEFAULT_REGION" ]; then
         echo -e "🚨${RED}Failed - to find AWS_DEFAULT_REGION ? ${NC}"
         exit 1
