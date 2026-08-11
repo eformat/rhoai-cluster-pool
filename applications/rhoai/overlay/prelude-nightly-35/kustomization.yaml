@@ -15,6 +15,7 @@ resources:
   - maas-controller-supplement.yaml
   - maas-controller-deployment.yaml
   - payload-processing-networkpolicy.yaml
+  - payload-pre-processing-deployment.yaml
   - payload-processing-plugins.yaml
   - payload-processing-deployment.yaml
 

@@ -33,3 +33,31 @@ subjects:
 - kind: ServiceAccount
   name: maas-controller
   namespace: redhat-ods-applications
+---
+# Allows the IPP (payload-processing SA) to patch HTTPRoutes in any namespace.
+# Required for the merge-patch approach to set parentRef without resourceVersion conflicts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ipp-httproute-patcher
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+rules:
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["httproutes"]
+  verbs: ["patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ipp-httproute-patcher
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ipp-httproute-patcher
+subjects:
+- kind: ServiceAccount
+  name: payload-processing
+  namespace: openshift-ingress

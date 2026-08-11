@@ -1,0 +1,27 @@
+---
+# Disable the ExternalModel/ExternalProvider controllers in payload-pre-processing.
+# Without DISABLE_EXTERNAL_MODEL_CONTROLLER, the pre-processing pod runs its own
+# ExternalModel controller with DefaultGatewayName="default-gateway" (hardcoded in
+# the EA2 image), which continuously reverts the HTTPRoute parentRef away from
+# maas-default-gateway at ~26 writes/sec, causing 404s from Envoy.
+# opendatahub.io/managed=false prevents TenantReconciler from reverting this.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payload-pre-processing
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    opendatahub.io/managed: "false"
+spec:
+  template:
+    spec:
+      containers:
+      - name: payload-pre-processing
+        env:
+        - name: DISABLE_EXTERNAL_MODEL_CONTROLLER
+          value: "true"
+        - name: GATEWAY_NAME
+          value: maas-default-gateway
+        - name: GATEWAY_NAMESPACE
+          value: openshift-ingress
