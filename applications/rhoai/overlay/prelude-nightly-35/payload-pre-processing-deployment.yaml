@@ -18,6 +18,7 @@ spec:
     spec:
       containers:
       - name: payload-pre-processing
+        image: quay.io/eformat/odh-ai-gateway-payload-processing:ea2-ssa-fix
         env:
         - name: DISABLE_EXTERNAL_MODEL_CONTROLLER
           value: "true"
