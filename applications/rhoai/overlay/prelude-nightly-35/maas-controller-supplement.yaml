@@ -1,0 +1,32 @@
+---
+# Supplementary RBAC for maas-controller EA2 build — adds MaasTenantConfig
+# and APIServer rules not present in the operator-managed ClusterRole.
+# Additive-only: does not touch the operator-owned maas-controller-role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maas-controller-ea2-supplement
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+rules:
+- apiGroups: ["maas.opendatahub.io"]
+  resources: ["maastenantconfigs","maastenantconfigs/status","maastenantconfigs/finalizers"]
+  verbs: ["get","list","watch","create","update","patch","delete"]
+- apiGroups: ["config.openshift.io"]
+  resources: ["apiservers"]
+  verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: maas-controller-ea2-supplement
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maas-controller-ea2-supplement
+subjects:
+- kind: ServiceAccount
+  name: maas-controller
+  namespace: redhat-ods-applications

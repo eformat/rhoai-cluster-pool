@@ -1,0 +1,18 @@
+---
+# Pin maas-controller to EA2 build with httpRouteName fallback fix.
+# opendatahub.io/managed=false tells the RHOAI operator's PostRender
+# to skip this resource so ArgoCD owns the image without fighting the operator.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maas-controller
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    opendatahub.io/managed: "false"
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        image: quay.io/eformat/maas-controller:ea2-httpRouteName-fix
