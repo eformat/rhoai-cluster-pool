@@ -8,6 +8,7 @@ resources:
   - icsp.yaml
   - evalhub.yaml
   - postgres-maas.yaml
+  - maas-tenant.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
