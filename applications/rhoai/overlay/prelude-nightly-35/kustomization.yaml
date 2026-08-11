@@ -10,6 +10,7 @@ resources:
   - postgres-maas.yaml
   - maas-tenant.yaml
   - maas-tenant-config.yaml
+  - payload-processing-plugins.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

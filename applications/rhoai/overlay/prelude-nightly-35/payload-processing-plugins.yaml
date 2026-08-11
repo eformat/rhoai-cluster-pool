@@ -1,0 +1,44 @@
+---
+# Patched IPP plugin config — removes stream-usage-enforcer which is not
+# registered in the EA2 payload-processing binary (v0.1.0-rc.2).
+# The controller stamps opendatahub.io/managed=false after first creation so
+# subsequent controller reconciles leave this ConfigMap alone; ArgoCD owns it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payload-processing-plugins
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  custom-pre-processing-ipp-config.yaml: |
+    apiVersion: llm-d.ai/v1alpha1
+    kind: PayloadProcessorConfig
+    plugins:
+    - type: body-field-to-header
+      name: model-extractor
+      parameters:
+        fieldName: model
+        headerName: X-Gateway-Model-Name
+    - type: model-provider-resolver
+    profiles:
+    - name: default
+      plugins:
+        request:
+        - pluginRef: model-extractor
+        - pluginRef: model-provider-resolver
+  custom-ipp-config.yaml: |
+    apiVersion: llm-d.ai/v1alpha1
+    kind: PayloadProcessorConfig
+    plugins:
+    - type: model-provider-resolver
+    - type: api-translation
+    - type: apikey-injection
+    profiles:
+    - name: default
+      plugins:
+        request:
+        - pluginRef: model-provider-resolver
+        - pluginRef: api-translation
+        - pluginRef: apikey-injection
+        response: []
