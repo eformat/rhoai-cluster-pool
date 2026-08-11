@@ -20,7 +20,7 @@ spec:
     kserve:
       managementState: Managed
       modelsAsService:
-        managementState: Removed
+        managementState: Managed
       nim:
         airGapped: false
         managementState: Managed
