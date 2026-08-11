@@ -9,7 +9,10 @@ resources:
   - evalhub.yaml
   - postgres-maas.yaml
   - maas-tenant.yaml
+  - ai-tenants-namespace.yaml
   - maas-tenant-config.yaml
+  - maas-controller-supplement.yaml
+  - maas-controller-deployment.yaml
   - payload-processing-plugins.yaml
   - payload-processing-deployment.yaml
 
