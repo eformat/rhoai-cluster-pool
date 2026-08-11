@@ -1,0 +1,18 @@
+---
+# Pin payload-processing to v3.5.0-ea.2 which writes status.httpRouteName (#356).
+# opendatahub.io/managed=false tells the Tenant reconciler's PostRender to skip
+# this resource so ArgoCD owns the image pin without fighting the controller.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payload-processing
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    opendatahub.io/managed: "false"
+spec:
+  template:
+    spec:
+      containers:
+      - name: payload-processing
+        image: registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:cb1b1816df5e30cd670066b48282b4965d6fa04287db159b8db2300cbab1789b
