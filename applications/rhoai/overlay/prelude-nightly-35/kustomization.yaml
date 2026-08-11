@@ -10,6 +10,7 @@ resources:
   - postgres-maas.yaml
   - maas-tenant.yaml
   - ai-tenants-namespace.yaml
+  - redhat-ai-gateway-infra-namespace.yaml
   - maas-tenant-config.yaml
   - maas-controller-supplement.yaml
   - maas-controller-deployment.yaml
