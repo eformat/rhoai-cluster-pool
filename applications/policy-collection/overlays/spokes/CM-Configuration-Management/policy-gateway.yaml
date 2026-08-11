@@ -158,3 +158,4 @@ spec:
                   namespace: redhat-ods-applications
                 data:
                   monitoring-namespace: redhat-ods-applications
+                  payload-processing-image: registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:cb1b1816df5e30cd670066b48282b4965d6fa04287db159b8db2300cbab1789b
