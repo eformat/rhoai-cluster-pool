@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: payload-processing
-        image: quay.io/eformat/odh-ai-gateway-payload-processing:ea2-apikey-fix
+        image: quay.io/eformat/odh-ai-gateway-payload-processing:ea2-ssa-fix
         env:
         - name: GATEWAY_NAME
           value: maas-default-gateway
