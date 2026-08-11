@@ -149,3 +149,12 @@ spec:
                   infrastructure:
                     labels:
                       serving.kserve.io/gateway: kserve-ingress-gateway
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: ConfigMap
+                metadata:
+                  name: maas-parameters
+                  namespace: redhat-ods-applications
+                data:
+                  monitoring-namespace: redhat-ods-applications
