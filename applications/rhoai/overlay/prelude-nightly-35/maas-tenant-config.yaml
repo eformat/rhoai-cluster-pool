@@ -1,0 +1,150 @@
+---
+# MaasTenantConfig CRD — required by maas-controller >= 3.5 EA2 current.
+# The RHOAI operator bundle for EA2 does not yet ship this CRD; apply it here
+# so the TenantReconciler can use MaasTenantConfig as its primary reconcile object.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: maastenantconfigs.maas.opendatahub.io
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: maas.opendatahub.io
+  names:
+    kind: MaasTenantConfig
+    listKind: MaasTenantConfigList
+    plural: maastenantconfigs
+    singular: maastenantconfig
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Ready
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - description: Reason
+      jsonPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Reason
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.infraNamespace
+      name: InfraNamespace
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MaasTenantConfig is the namespace-scoped singleton for MaaS-specific
+          tenant settings.
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              apiKeys:
+                properties:
+                  maxExpirationDays:
+                    format: int32
+                    maximum: 3650
+                    minimum: 1
+                    type: integer
+                type: object
+              telemetry:
+                properties:
+                  enabled:
+                    type: boolean
+                  metrics:
+                    properties:
+                      captureGroup:
+                        type: boolean
+                      captureModelUsage:
+                        type: boolean
+                      captureOrganization:
+                        type: boolean
+                      captureUser:
+                        type: boolean
+                    type: object
+                type: object
+            type: object
+          status:
+            properties:
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    message:
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              infraNamespace:
+                maxLength: 63
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                type: string
+              phase:
+                enum:
+                - Pending
+                - Active
+                - Degraded
+                - Failed
+                type: string
+            type: object
+        type: object
+        x-kubernetes-validations:
+        - message: MaasTenantConfig name must be default-tenant
+          rule: self.metadata.name == 'default-tenant'
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaasTenantConfig
+metadata:
+  name: default-tenant
+  namespace: models-as-a-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  apiKeys:
+    maxExpirationDays: 90
+  telemetry:
+    enabled: true
+    metrics:
+      captureOrganization: true
+      captureUser: true
+      captureGroup: true
+      captureModelUsage: true
