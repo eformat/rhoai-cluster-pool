@@ -10,11 +10,12 @@ spec:
   metrics:
     default:
       labels:
+        cost_center: 'has(auth.identity.subscription_info.costCenter) ? auth.identity.subscription_info.costCenter: ""'
+        group: auth.identity.groups_str
         model: responseBodyJSON("/model")
-        user: auth.identity.userid
+        organization_id: 'has(auth.identity.subscription_info.organizationId) ? auth.identity.subscription_info.organizationId: ""'
         subscription: auth.identity.selected_subscription
-        organization_id: auth.identity.subscription_info.organizationId
-        cost_center: auth.identity.subscription_info.costCenter
+        user: auth.identity.userid
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway

@@ -7,4 +7,4 @@ resources:
   - job-set-cr.yaml
   - kueue-cr.yaml
   - telemetry.yaml
-#  - telemetrypolicy.yaml
+  - telemetrypolicy.yaml
