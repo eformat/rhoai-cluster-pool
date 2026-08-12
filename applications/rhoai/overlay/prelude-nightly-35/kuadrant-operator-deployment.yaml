@@ -23,5 +23,5 @@ spec:
             spec:
               containers:
               - name: manager
-                image: quay.io/eformat/kuadrant-operator@sha256:283b8520973839edd96478b7d821575c6f0c410747db473b0175c2514e325123
+                image: quay.io/eformat/kuadrant-operator@sha256:b0e772c4eba84483c69712ebbb6224ac8900fcf406cc35756b5b56db2fb15f75
                 imagePullPolicy: Always
