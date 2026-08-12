@@ -59,7 +59,7 @@ spec:
                       gp3-csi.storageclass.storage.k8s.io/requests.storage: 1000Gi
                       efs-sc.storageclass.storage.k8s.io/requests.storage: 1000Gi
                       gp2-csi.storageclass.storage.k8s.io/requests.storage: 0Gi
-                      persistentvolumeclaims:100
+                      persistentvolumeclaims: 100
           pruneObjectBehavior: DeleteIfCreated
           remediationAction: inform
           severity: high
