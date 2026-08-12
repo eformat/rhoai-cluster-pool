@@ -3,6 +3,9 @@
 # Fixes self-perpetuating reconcile storm: resource.Update() → watch event
 # → reconcile → Update() loop that saturates etcd on SNO clusters.
 # Must patch the CSV — OLM reads the image from CSV and overwrites the Deployment.
+#
+# See: https://github.com/Kuadrant/kuadrant-operator/pull/2177
+#
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
