@@ -2,7 +2,7 @@
 # Pin kuadrant-operator to build with EnvoyFilter merge-patch fix.
 # Fixes self-perpetuating reconcile storm: resource.Update() → watch event
 # → reconcile → Update() loop that saturates etcd on SNO clusters.
-# managed=false prevents the RHCL CSV from reverting the image.
+# ArgoCD owns this — if RHCL CSV reverts the image, ArgoCD force-syncs it back.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,7 +10,7 @@ metadata:
   namespace: kuadrant-system
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-    managed: "false"
+    argocd.argoproj.io/sync-options: "Force=true"
 spec:
   template:
     spec:
