@@ -23,5 +23,5 @@ spec:
             spec:
               containers:
               - name: manager
-                image: quay.io/eformat/kuadrant-operator:rhcl-envoyfilter-merge-patch-fix
+                image: registry.redhat.io/rhcl-1/rhcl-rhel9-operator@sha256:8c2d9a84169e86454e4fb3df6f4846c5c5495d19b01137b6e78e113161981e47
                 imagePullPolicy: Always
