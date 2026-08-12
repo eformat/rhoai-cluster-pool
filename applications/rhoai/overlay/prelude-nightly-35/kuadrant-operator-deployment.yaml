@@ -2,19 +2,23 @@
 # Pin kuadrant-operator to build with EnvoyFilter merge-patch fix.
 # Fixes self-perpetuating reconcile storm: resource.Update() → watch event
 # → reconcile → Update() loop that saturates etcd on SNO clusters.
-# ArgoCD owns this — if RHCL CSV reverts the image, ArgoCD force-syncs it back.
-apiVersion: apps/v1
-kind: Deployment
+# Must patch the CSV — OLM reads the image from CSV and overwrites the Deployment.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
 metadata:
-  name: kuadrant-operator-controller-manager
+  name: rhcl-operator.v1.4.2
   namespace: kuadrant-system
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/sync-options: "Force=true"
 spec:
-  template:
+  install:
     spec:
-      containers:
-      - name: manager
-        image: quay.io/eformat/kuadrant-operator:envoyfilter-merge-patch-fix
-        imagePullPolicy: Always
+      deployments:
+      - name: kuadrant-operator-controller-manager
+        spec:
+          template:
+            spec:
+              containers:
+              - name: manager
+                image: quay.io/eformat/kuadrant-operator:envoyfilter-merge-patch-fix
+                imagePullPolicy: Always
