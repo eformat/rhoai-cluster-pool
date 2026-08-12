@@ -34,6 +34,23 @@ subjects:
   name: maas-controller
   namespace: redhat-ods-applications
 ---
+# Grants kuadrant-operator community build access to apiservers.config.openshift.io
+# (RHCL ClusterRole doesn't include it; community binary watches APIServer resources).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kuadrant-operator-apiserver-supplement
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maas-controller-ea2-supplement
+subjects:
+- kind: ServiceAccount
+  name: kuadrant-operator-controller-manager
+  namespace: kuadrant-system
+---
 # Allows the IPP (payload-processing SA) to patch HTTPRoutes in any namespace.
 # Required for the merge-patch approach to set parentRef without resourceVersion conflicts.
 apiVersion: rbac.authorization.k8s.io/v1
