@@ -7,7 +7,7 @@ data:
     uiEndpoint: central-stackrox.apps.sno.sandbox1254.opentlc.com:443
     groups:
         - key: groups
-          value: cluster-admin
+          value: admin
           role: Admin
     openshift:
         enable: true
