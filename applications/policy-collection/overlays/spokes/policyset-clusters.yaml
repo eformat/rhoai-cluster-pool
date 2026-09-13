@@ -22,6 +22,7 @@ spec:
     - acm-clean-spokes
     - ingresscontroller-spokes
     - user-namespace-label-spokes
+    - netpol-spokes
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

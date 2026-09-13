@@ -11,3 +11,4 @@ resources:
   - policy-storage-quota.yaml
   - policy-acm-clean.yaml
   - policy-ingresscontroller.yaml
+  - policy-netpol.yaml
