@@ -1,0 +1,13 @@
+---
+# Ensure redhat-ai-gateway-infra has Istio sidecar injection so the maas-api
+# pod gets an Istio proxy and the MaaS gateway can establish mTLS to it.
+# Without this label the gateway times out connecting to /maas-api/*.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: redhat-ai-gateway-infra
+  labels:
+    istio-injection: enabled
+    opendatahub.io/generated-namespace: "true"
+    app.kubernetes.io/managed-by: maas-controller
+    app.kubernetes.io/part-of: maas-controller

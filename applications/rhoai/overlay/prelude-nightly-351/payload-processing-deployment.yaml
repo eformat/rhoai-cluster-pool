@@ -1,0 +1,23 @@
+---
+# Pin payload-processing to v3.5.0-ea.2 which writes status.httpRouteName (#356).
+# opendatahub.io/managed=false tells the Tenant reconciler's PostRender to skip
+# this resource so ArgoCD owns the image pin without fighting the controller.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payload-processing
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    opendatahub.io/managed: "false"
+spec:
+  template:
+    spec:
+      containers:
+      - name: payload-processing
+        image: quay.io/eformat/odh-ai-gateway-payload-processing:ea2-ssa-fix
+        env:
+        - name: GATEWAY_NAME
+          value: maas-default-gateway
+        - name: GATEWAY_NAMESPACE
+          value: openshift-ingress

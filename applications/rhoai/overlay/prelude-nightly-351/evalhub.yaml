@@ -1,0 +1,87 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: evalhub-proxy-access
+  namespace: redhat-ods-applications
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: evalhub-proxy-all-users
+  namespace: redhat-ods-applications
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: evalhub-proxy-access
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aggregate-evalhub-permissions
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  - evaluations
+  - collections
+  - providers
+  - lmevaljobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - lmevaljobs/status
+  verbs:
+  - get
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: EvalHub
+metadata:
+  name: evalhub
+  namespace: redhat-ods-applications
+spec:
+  replicas: 1
+  env:
+    - name: MLFLOW_TRACKING_URI
+      value: "https://mlflow.redhat-ods-applications.svc.cluster.local:8443"
+  database:
+    type: sqlite
+  providers:
+    - lm-evaluation-harness
+    - garak
+    - garak-kfp
+    - guidellm
+    - lighteval
+    - ibm-clear
+  collections:
+    - leaderboard-v2
+    - safety-and-fairness-v1
+    - toxicity-and-ethical-principles
