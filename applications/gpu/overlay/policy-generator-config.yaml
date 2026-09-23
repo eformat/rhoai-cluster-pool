@@ -26,5 +26,12 @@ policyDefaults:
   policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
 policies:
   - name: gpu
+    placement:
+      placementName: placement-spokes-l4
     manifests:
       - path: sno/
+  - name: gpu
+    placement:
+      placementName: placement-spokes-l40s
+    manifests:
+      - path: l40s/
