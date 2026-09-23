@@ -13,7 +13,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: mc
-          image: minio/mc:latest
+          image: quay.io/minio/mc:latest
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
