@@ -30,7 +30,7 @@ policies:
       placementName: placement-spokes-l4
     manifests:
       - path: sno/
-  - name: gpu
+  - name: gpu-l40s
     placement:
       placementName: placement-spokes-l40s
     manifests:
