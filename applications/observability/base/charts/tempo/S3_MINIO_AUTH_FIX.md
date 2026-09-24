@@ -68,7 +68,7 @@ Update the MinIO deployment to automatically create the service account:
 # In minio-deployment.yaml, add an init container or post-start hook
 initContainers:
 - name: create-service-account
-  image: quay.io/minio/mc:latest
+  image: quay.io/eformat/mc:RELEASE.2025-08-13T08-35-41Z
   command:
     - /bin/sh
     - -c

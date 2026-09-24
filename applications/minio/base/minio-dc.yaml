@@ -39,7 +39,7 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 10
-          image: quay.io/minio/minio:latest
+          image: quay.io/eformat/minio:RELEASE.2025-09-07T16-13-09Z
           imagePullPolicy: IfNotPresent
           resources: {}
           args:

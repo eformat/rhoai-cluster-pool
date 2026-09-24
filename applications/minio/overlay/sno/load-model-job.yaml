@@ -13,7 +13,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: load
-          image: quay.io/minio/minio:latest
+          image: quay.io/eformat/minio:RELEASE.2025-09-07T16-13-09Z
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
