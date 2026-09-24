@@ -1,0 +1,18 @@
+---
+# MCPGatewayExtension CR — connects the MCP broker to the Gateway listener.
+# Replace <GATEWAY_PUBLIC_HOST> with the actual route hostname assigned to your Gateway,
+# e.g. mcp.apps.<cluster-domain>
+apiVersion: mcp.kuadrant.io/v1alpha1
+kind: MCPGatewayExtension
+metadata:
+  name: mcp-gateway-extension
+  namespace: mcp-system
+spec:
+  publicHost: <GATEWAY_PUBLIC_HOST>
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mcp-gateway
+    namespace: gateway-system
+    sectionName: mcp
+  httpRouteManagement: Enabled

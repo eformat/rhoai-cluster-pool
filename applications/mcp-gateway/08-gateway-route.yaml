@@ -1,0 +1,23 @@
+---
+# Exposes the gateway Service externally via the OpenShift router — same pattern as
+# the MaaS gateway ClusterIP mode (this cluster has no LoadBalancer provider, so the
+# gateway Service's external IP stays <pending> but it still gets a ClusterIP that
+# the Route can target).
+# The service name is derived by the gateway controller from
+# <gateway-name>-<gatewayclass-name>. install.sh substitutes <GATEWAY_PUBLIC_HOST>
+# (e.g. mcp.apps.<cluster-domain>); the host MUST match the HTTPRoute hostname so
+# the Envoy gateway routes the request to the MCP broker.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mcp-gateway-external
+  namespace: gateway-system
+spec:
+  host: "<GATEWAY_PUBLIC_HOST>"
+  to:
+    kind: Service
+    name: mcp-gateway-data-science-gateway-class
+    weight: 100
+  port:
+    targetPort: mcp
+  wildcardPolicy: None

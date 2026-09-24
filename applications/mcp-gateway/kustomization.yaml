@@ -1,24 +1,16 @@
-# https://github.com/Kuadrant/mcp-gateway/blob/main/config/openshift/deploy_openshift.sh
 ---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
-  - namespace.yaml
-  - gateway-class.yaml
-
-helmCharts:
-  # Install MCP Gateway Controller (cluster-wide, no broker)
-  - name: mcp-gateway
-    namespace: mcp-system
-    includeCRDs: true
-    valuesFile: charts/mcp-gateway/values.yaml
-    version: 0.5.0
-    releaseName: mcp-gateway
-    repo: # local chart
-
-  # Install MCP Gateway Instance (broker + gateway + routes)
-  - name: mcp-gateway-instance
-    namespace: mcp-system
-    includeCRDs: false
-    valuesFile: charts/mcp-gateway-instance/values.yaml
-    version: 0.5.0
-    releaseName: mcp-gateway-instance
-    repo: # local chart
+  - 00-namespaces.yaml
+  - 01-subscription.yaml
+  - 02-gateway.yaml
+  - 03-reference-grant.yaml
+  - 04-mcp-gateway-extension.yaml
+  # 08-gateway-route.yaml carries a <GATEWAY_PUBLIC_HOST> placeholder — it is
+  # rendered and applied by install.sh, not by kustomize.
+  # Test resources — remove for production
+  - 05-test-namespace.yaml
+  - 06-test-configmap.yaml
+  - 07-test-mcp-server.yaml
