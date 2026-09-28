@@ -92,7 +92,7 @@ spec:
                                   oc -n open-cluster-management-agent-addon delete pods -l app=governance-policy-framework
                                   #fi
                                   exit 0
-                              image: registry.redhat.io/openshift4/ose-cli:latest
+                              image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
                               imagePullPolicy: Always
                               name: acm-clean
                               resources: {}

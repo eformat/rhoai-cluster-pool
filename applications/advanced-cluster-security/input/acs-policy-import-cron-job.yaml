@@ -120,7 +120,7 @@ spec:
                       name: central-htpasswd
                 - name: POLICIES_URL
                   value: ""
-              image: registry.redhat.io/openshift4/ose-cli:latest
+              image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
               imagePullPolicy: Always
               name: update-service-deploy
               resources: {}

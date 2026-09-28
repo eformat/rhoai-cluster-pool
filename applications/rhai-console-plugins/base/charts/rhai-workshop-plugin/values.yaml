@@ -1,7 +1,7 @@
 namespace: rhai-workshop-plugin
 
 image: quay.io/eformat/rhai-workshop-plugin:latest
-initImage: registry.redhat.io/openshift4/ose-cli:latest
+initImage: registry.redhat.io/openshift4/ose-cli-rhel9:latest
 
 showTabs: "true"
 tutorialUrls:

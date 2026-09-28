@@ -101,7 +101,7 @@ spec:
                       serviceAccountName: gpu-node-label
                       containers:
                         - name: gpu-node-label
-                          image: registry.redhat.io/openshift4/ose-cli:latest
+                          image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
                           imagePullPolicy: Always
                           command:
                             - /bin/bash
