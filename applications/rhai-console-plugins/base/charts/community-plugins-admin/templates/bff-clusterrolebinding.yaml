@@ -1,0 +1,21 @@
+{{- if and .Values.bff.enabled .Values.bff.rbac.create }}
+{{- if and (not .Values.bff.serviceAccount.create) (not .Values.bff.serviceAccount.name) }}
+{{- fail "bff.rbac.create=true requires either bff.serviceAccount.create=true or bff.serviceAccount.name to be set" }}
+{{- end }}
+{{- $saName := include "community-plugins-admin.bffServiceAccountName" . }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "community-plugins-admin.fullname" . }}-bff
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "community-plugins-admin.fullname" . }}-bff
+subjects:
+  - kind: ServiceAccount
+    name: {{ $saName }}
+    namespace: {{ include "community-plugins-admin.namespace" . }}
+{{- end }}

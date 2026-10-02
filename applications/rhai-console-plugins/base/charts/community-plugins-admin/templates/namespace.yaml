@@ -1,0 +1,8 @@
+{{- if ne (include "community-plugins-admin.namespace" .) .Release.Namespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "community-plugins-admin.namespace" . }}
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+{{- end }}

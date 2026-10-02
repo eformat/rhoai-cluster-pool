@@ -1,0 +1,90 @@
+{{- if .Values.bff.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "community-plugins-admin.fullname" . }}-bff
+  namespace: {{ include "community-plugins-admin.namespace" . }}
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+spec:
+  replicas: {{ .Values.bff.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "community-plugins-admin.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: bff
+  template:
+    metadata:
+      labels:
+        {{- include "community-plugins-admin.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: bff
+    spec:
+      serviceAccountName: {{ include "community-plugins-admin.bffServiceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      volumes:
+        - name: kube-root-ca
+          configMap:
+            name: kube-root-ca.crt
+            items:
+              - key: ca.crt
+                path: ca.crt
+      containers:
+        - name: bff
+          image: "{{ .Values.bff.image.repository }}:{{ .Values.bff.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.bff.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: kube-root-ca
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+          ports:
+            - name: http
+              containerPort: {{ .Values.bff.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DASHBOARD_NAMESPACE
+              value: {{ .Values.bff.dashboardNamespace | quote }}
+            - name: DASHBOARD_DEPLOYMENT
+              value: {{ .Values.bff.dashboardDeployment | quote }}
+            - name: CHARTER_REGISTRY_URL
+              value: {{ .Values.bff.charterRegistryUrl | quote }}
+            - name: CHARTER_CACHE_TTL_MS
+              value: {{ .Values.bff.cache.charterTtlMs | quote }}
+            - name: PLUGIN_CACHE_TTL_MS
+              value: {{ .Values.bff.cache.pluginTtlMs | quote }}
+            - name: PLUGIN_FETCH_CONCURRENCY
+              value: {{ .Values.bff.pluginFetchConcurrency | quote }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          resources:
+            {{- toYaml .Values.bff.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}

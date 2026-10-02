@@ -20,3 +20,10 @@ helmCharts:
     releaseName: rhai-workshop-plugin
     valuesFile: values.yaml
     repo:  # we expand chart in folder
+
+  - name: community-plugins-admin
+    namespace: cp-plugins-admin
+    includeCRDs: true
+    releaseName: community-plugins-admin
+    valuesFile: community-plugins-admin-values.yaml
+    repo:  # we expand chart in folder

@@ -1,0 +1,106 @@
+# Default values for community-plugins-admin.
+# This is a YAML-formatted file.
+
+# -- Target namespace for all namespaced resources.
+# Override with --set namespace=<ns> to deploy elsewhere.
+namespace: cp-plugins-admin
+
+# Dashboard registration. The dashboard-operator rebuilds the federation-config
+# ConfigMap on every reconcile, so the communityPluginsAdmin entry is applied as
+# a literal MODULE_FEDERATION_CONFIG env value on the dashboard Deployment
+# (which the operator does not reconcile). The registration CronJob re-asserts
+# that entry idempotently, e.g. after RHOAI operator upgrades reset the
+# dashboard Deployment. It uses the BFF ServiceAccount, whose ClusterRole
+# (bff.rbac.create=true) authorizes read/patch on Deployments — so it requires
+# bff.enabled=true and bff.rbac.create=true.
+registration:
+  enabled: true
+  schedule: "*/15 * * * *"
+
+image:
+  repository: quay.io/rh-ai-community-plugins/community-plugins-admin
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Overrides .Chart.Name so deployed resources use the plugin name, not the
+# chart name (which has a -chart suffix to avoid OCI registry collisions).
+nameOverride: "community-plugins-admin"
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /community-plugins-admin
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+securityContext:
+  runAsNonRoot: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# BFF (Backend For Frontend) service
+bff:
+  enabled: true
+  image:
+    repository: quay.io/rh-ai-community-plugins/community-plugins-admin-bff
+    tag: ""
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # RBAC for plugin lifecycle operations (install, upgrade, remove)
+  rbac:
+    create: true
+  # Dashboard deployment coordinates (RHOAI defaults; use "opendatahub" / "odh-dashboard" for ODH)
+  dashboardNamespace: "redhat-ods-applications"
+  dashboardDeployment: "rhods-dashboard"
+  # Charter registry URL (source of available plugins)
+  charterRegistryUrl: "https://raw.githubusercontent.com/rh-ai-community-plugins/charter/main/plugins.yaml"
+  # Cache TTL settings (milliseconds)
+  cache:
+    charterTtlMs: 300000
+    pluginTtlMs: 300000
+  # Max concurrent plugin.yaml fetches
+  pluginFetchConcurrency: 5
