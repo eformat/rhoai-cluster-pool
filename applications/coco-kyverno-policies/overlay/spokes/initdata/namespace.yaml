@@ -1,0 +1,10 @@
+# The `imperative` namespace holds the initdata source ConfigMaps and the
+# KBS TLS certificate. Kyverno clones the initdata ConfigMaps into workload
+# namespaces (propagation-initdata.yaml).
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: imperative
+  labels:
+    openshift.io/cluster-monitoring: "true"

@@ -1,0 +1,15 @@
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  # /opt/openclaw: where the AIPCC OpenClaw image installs OpenClaw. Only that
+  # directory, not all of /opt.
+  read_only: [/usr, /lib, /proc, /dev/urandom, /app, /etc, /var/log, /opt/openclaw]
+  read_write: [/sandbox, /tmp, /dev/null]
+
+landlock:
+  compatibility: best_effort
+
+process:
+  run_as_user: sandbox
+  run_as_group: sandbox

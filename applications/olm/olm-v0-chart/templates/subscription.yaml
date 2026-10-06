@@ -15,7 +15,7 @@ metadata:
   namespace: {{ $namespace }}
 spec:
   channel: {{ (first $channels) }}
-  installPlanApproval: Automatic
+  installPlanApproval: {{ $app.installPlanApproval | default "Automatic" }}
   name: {{ $name }}
   source: {{ $source }}
   sourceNamespace: {{ $sourceNamespace }}

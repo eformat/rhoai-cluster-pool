@@ -1,0 +1,59 @@
+---
+resources:
+  - namespaces.yaml
+  - agent-deployment.yaml
+  - agent-svc.yaml
+  - interceptor-deployment.yaml
+  - interceptor-svc.yaml
+
+# Governance policy + profiles are needed in BOTH workload namespaces:
+# the interceptor runs in `openshell`, the CoCo agents in `coco-agents`.
+# disableNameSuffixHash keeps the deployment volume references stable.
+configMapGenerator:
+  - name: governance-interceptor-policy
+    namespace: openshell
+    options:
+      labels:
+        app.kubernetes.io/name: governance-policy
+      disableNameSuffixHash: true
+    files:
+      - governance-policy.yaml
+  - name: governance-interceptor-profiles
+    namespace: openshell
+    options:
+      labels:
+        app.kubernetes.io/name: governance-policy
+      disableNameSuffixHash: true
+    files:
+      - profiles/brave.yaml
+      - profiles/gemini.yaml
+      - profiles/github.yaml
+      - profiles/nvidia.yaml
+      - profiles/openai.yaml
+      - profiles/slack.yaml
+      - profiles/web-search.yaml
+  - name: governance-interceptor-policy
+    namespace: coco-agents
+    options:
+      labels:
+        app.kubernetes.io/name: governance-policy
+      disableNameSuffixHash: true
+    files:
+      - governance-policy.yaml
+  - name: governance-interceptor-profiles
+    namespace: coco-agents
+    options:
+      labels:
+        app.kubernetes.io/name: governance-policy
+      disableNameSuffixHash: true
+    files:
+      - profiles/brave.yaml
+      - profiles/gemini.yaml
+      - profiles/github.yaml
+      - profiles/nvidia.yaml
+      - profiles/openai.yaml
+      - profiles/slack.yaml
+      - profiles/web-search.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

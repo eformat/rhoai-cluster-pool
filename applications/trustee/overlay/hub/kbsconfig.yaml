@@ -1,0 +1,109 @@
+# KBS deployment driven by the trustee operator.
+# Ported from validatedpatterns/trustee-chart templates/kbs.yaml + kbs-config-map.yaml
+# + kbs-auth-dummy-secret.yaml.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kbs-config
+  namespace: trustee-operator-system
+data:
+  kbs-config.toml: |
+    [http_server]
+    sockets = ["0.0.0.0:8080"]
+    insecure_http = false
+    private_key = "/etc/https-key/tls.key"
+    certificate = "/etc/https-cert/tls.crt"
+
+    [admin]
+    authorization_mode = "DenyAll"
+
+    [attestation_token]
+    insecure_header_jwk = false
+    attestation_token_type = "CoCo"
+    trusted_certs_paths = ["/etc/attestation-cert/tls.crt"]
+
+    [attestation_service]
+    type = "coco_as_builtin"
+
+    [attestation_service.attestation_token_broker]
+
+    [attestation_service.attestation_token_broker.signer]
+    key_path = "/etc/attestation-cert/tls.key"
+    cert_path = "/etc/attestation-cert/tls.crt"
+
+    [attestation_service.attestation_token_config]
+    duration_min = 5
+
+    [attestation_service.rvps_config]
+    type = "BuiltIn"
+    storage_type = "LocalJson"
+    file_dir_path = "/opt/confidential-containers/storage/local_json"
+
+    [[plugins]]
+    name = "resource"
+    storage_backend_type = "kvstorage"
+
+    [storage_backend]
+    storage_type = "LocalFs"
+
+    [storage_backend.backends.local_fs]
+    dir_path = "/opt/confidential-containers/storage"
+
+    [storage_backend.backends.local_json]
+    dir_path = "/opt/confidential-containers/storage/local_json"
+---
+# Dummy secret required by Trustee 1.2 operator. Admin auth is disabled
+# (authorization_mode = "DenyAll"), so only existence matters. Value comes
+# from vault (seeded by secrets/vault-coco).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: kbs-auth-public-key-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: kbs-auth-public-key
+    creationPolicy: Owner
+  data:
+    - secretKey: publicKey
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/kbs-auth-public-key
+        property: publicKey
+---
+# Empty RVPS reference values (no TEE-specific values on AWS to start).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rvps-reference-values
+  namespace: trustee-operator-system
+data: {}
+---
+apiVersion: confidentialcontainers.org/v1alpha1
+kind: KbsConfig
+metadata:
+  name: kbsconfig
+  namespace: trustee-operator-system
+spec:
+  kbsConfigMapName: kbs-config
+  kbsAuthSecretName: kbs-auth-public-key
+  kbsDeploymentType: AllInOneDeployment
+  kbsRvpsRefValuesConfigMapName: rvps-reference-values
+  kbsSecretResources:
+    - "kbsres1"
+    - "passphrase"
+    - "security-policy"
+    - "attestation-status"
+  kbsHttpsKeySecretName: kbs-https-key
+  kbsHttpsCertSecretName: kbs-https-certificate
+  kbsResourcePolicyConfigMapName: resource-policy
+  kbsAttestationPolicyConfigMapName: attestation-policy
+  kbsAttestationCertSecretName: attestation-cert
+  kbsAttestationKeySecretName: attestation-cert
+  KbsEnvVars:
+    RUST_LOG: debug
+  kbsServiceType: ClusterIP

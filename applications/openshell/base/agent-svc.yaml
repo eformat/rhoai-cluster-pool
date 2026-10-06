@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openclaw-agent
+  namespace: coco-agents
+spec:
+  ports:
+    - name: dashboard
+      port: 18789
+      protocol: TCP
+      targetPort: dashboard
+  selector:
+    app: openclaw-agent
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: openclaw-agent
+  namespace: coco-agents
+spec:
+  port:
+    targetPort: dashboard
+  to:
+    kind: Service
+    name: openclaw-agent
+    weight: 100
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

@@ -1,0 +1,31 @@
+# Keycloak endpoint for per-spoke realm creation.
+# Values come from vault (seeded by secrets/vault-coco) — no URLs hardcoded
+# in git. KEYCLOAK_URL matches the policies vault entry pattern
+# (applications/policy-collection policy-sso-secret).
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: spoke-realms-config-eso
+  namespace: openshift-gitops
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: spoke-realms-config
+    creationPolicy: Owner
+  data:
+    - secretKey: KEYCLOAK_URL
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/config
+        property: KEYCLOAK_URL
+    - secretKey: REALM_PREFIX
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/config
+        property: REALM_PREFIX
+    - secretKey: AGENT_CLIENT_ID
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/config
+        property: AGENT_CLIENT_ID

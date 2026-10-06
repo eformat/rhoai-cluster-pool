@@ -1,0 +1,49 @@
+# KBS TLS certificate (self-signed, in `imperative`) + passthrough route.
+# The kbs-tls-self-signed secret is pushed to vault by push-secret.yaml so
+# that coco spokes can embed it in pod initdata.
+# Ported from validatedpatterns/trustee-chart templates/issuer.yaml,
+# certificate.yaml and kbs-route.yaml.
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: kbs-self-signed-issuer
+  namespace: imperative
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kbs-certificate
+  namespace: imperative
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: kbs-tls-self-signed
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days
+  commonName: kbs
+  dnsNames:
+    - kbs
+  issuerRef:
+    name: kbs-self-signed-issuer
+    kind: Issuer
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kbs
+  namespace: trustee-operator-system
+spec:
+  subdomain: kbs
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: kbs-service
+    weight: 100
+  tls:
+    termination: passthrough

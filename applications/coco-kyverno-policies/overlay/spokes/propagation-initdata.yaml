@@ -1,0 +1,60 @@
+---
+# Clone initdata ConfigMaps from the `imperative` namespace into workload
+# namespaces. Ported from coco-pattern charts/all/coco-kyverno-policies
+# (initdata-namespace-propagation.yaml) with the rhoai-cluster-pool
+# workload namespaces.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: propagate-initdata-to-openshell
+spec:
+  rules:
+    - name: copy-initdata
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              namespaces:
+                - imperative
+              selector:
+                matchLabels:
+                  coco.io/type: initdata
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: v1
+        kind: ConfigMap
+        name: "{{ request.object.metadata.name }}"
+        namespace: openshell
+        clone:
+          namespace: imperative
+          name: "{{ request.object.metadata.name }}"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: propagate-initdata-to-coco-agents
+spec:
+  rules:
+    - name: copy-initdata
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              namespaces:
+                - imperative
+              selector:
+                matchLabels:
+                  coco.io/type: initdata
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: v1
+        kind: ConfigMap
+        name: "{{ request.object.metadata.name }}"
+        namespace: coco-agents
+        clone:
+          namespace: imperative
+          name: "{{ request.object.metadata.name }}"

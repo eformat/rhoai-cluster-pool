@@ -1,0 +1,115 @@
+{{- include "coco-agents.validate" . -}}
+{{- range $user := .Values.users | default list }}
+---
+# Per-user CoCo agent — AIPCC OpenClaw in a kata-remote (peer pod)
+# confidential container with governance (Landlock) policy mounted.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-{{ $user.name }}
+  namespace: coco-agents
+  labels:
+    app: agent-{{ $user.name }}
+    {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: agent-{{ $user.name }}
+  template:
+    metadata:
+      labels:
+        app: agent-{{ $user.name }}
+        {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 8 }}
+      annotations:
+        peerpods: "true"
+        coco.io/initdata-configmap: initdata
+        io.katacontainers.config.runtime.create_container_timeout: "900"
+    spec:
+      runtimeClassName: kata-remote
+      containers:
+        - name: openclaw
+          image: {{ $.Values.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 18789
+              name: dashboard
+          env:
+            - name: OPENCLAW_DASHBOARD_PORT
+              value: "18789"
+            - name: SAW_USER
+              value: {{ $user.name }}
+            - name: SAW_PROFILE
+              value: {{ $user.profile | default "data-science" }}
+          envFrom:
+            - secretRef:
+                name: agent-{{ $user.name }}-secrets
+                optional: true
+          volumeMounts:
+            - name: sandbox
+              mountPath: /sandbox
+            - name: governance-policy
+              mountPath: /sandbox/governance/policy
+              readOnly: true
+            - name: governance-profiles
+              mountPath: /sandbox/governance/profiles
+              readOnly: true
+            - name: initdata
+              mountPath: /opt/confidential-containers/initdata
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: sandbox
+          emptyDir: {}
+        - name: governance-policy
+          configMap:
+            name: governance-interceptor-policy
+        - name: governance-profiles
+          configMap:
+            name: governance-interceptor-profiles
+        - name: initdata
+          configMap:
+            name: initdata
+            optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-{{ $user.name }}
+  namespace: coco-agents
+  labels:
+    {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 4 }}
+spec:
+  ports:
+    - name: dashboard
+      port: 18789
+      protocol: TCP
+      targetPort: dashboard
+  selector:
+    app: agent-{{ $user.name }}
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: agent-{{ $user.name }}
+  namespace: coco-agents
+  labels:
+    {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 4 }}
+spec:
+  port:
+    targetPort: dashboard
+  to:
+    kind: Service
+    name: agent-{{ $user.name }}
+    weight: 100
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}

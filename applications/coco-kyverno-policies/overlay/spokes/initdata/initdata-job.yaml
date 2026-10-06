@@ -1,0 +1,312 @@
+# Initdata generation Job — port of coco-pattern's ansible/init-data-gzipper
+# playbook. Renders the CoCo initdata TOML (aa.toml/cdh.toml pointing at the
+# hub KBS with the trustee TLS cert), gzip+base64 encodes it, computes the
+# PCR8 hash, and creates the `initdata` / `debug-initdata` source ConfigMaps
+# in `imperative`. Kyverno clones them into workload namespaces and injects
+# INITDATA into kata pods via cc_init_data.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: initdata-gzipper-script
+  namespace: imperative
+data:
+  gzipper.py: |
+    #!/usr/bin/env python3
+    """Generate CoCo initdata ConfigMaps (initdata + debug-initdata).
+
+    Port of coco-pattern ansible/init-data-gzipper.yaml to a stdlib-only
+    python script so it can run as a Job without extra dependencies.
+    """
+    import base64
+    import gzip
+    import hashlib
+    import io
+    import json
+    import os
+    import ssl
+    import urllib.error
+    import urllib.request
+
+    NAMESPACE = os.environ.get("NAMESPACE", "imperative")
+    KBS_URL = os.environ.get("KBS_URL", "").rstrip("/")
+    FLAVOUR = os.environ.get("SECURITY_POLICY_FLAVOUR", "insecure")
+
+    if not KBS_URL:
+        raise SystemExit("KBS_URL must be set (from coco-config ConfigMap)")
+
+    with open("/certs/tls.crt") as f:
+        CERT = f.read().strip()
+
+    # initdata TOML template — peer-pod (kata-remote) variant:
+    # registry auth is handled via imagePullSecrets on the workload SA, so
+    # authenticated_registry_credentials_uri is omitted.
+    TOML_TEMPLATE = '''algorithm = "sha256"
+    version = "0.1.0"
+
+    [data]
+    "aa.toml" = \'\'\'
+    [token_configs]
+    [token_configs.coco_as]
+    url = "@KBS_URL@"
+
+    [token_configs.kbs]
+    url = "@KBS_URL@"
+    cert = """@CERT@"""
+    \'\'\'
+
+    "cdh.toml"  = \'\'\'
+    socket = 'unix:///run/confidential-containers/cdh.sock'
+    credentials = []
+
+    [kbc]
+    name = "cc_kbc"
+    url = "@KBS_URL@"
+    kbs_cert = """@CERT@"""
+
+    [image]
+    image_security_policy_uri = 'kbs:///default/security-policy/@FLAVOUR@'
+    \'\'\'
+
+    "policy.rego" = \'\'\'
+    @POLICY@
+    \'\'\'
+    '''
+
+    # Kata agent policy — production default: block exec except the two
+    # whitelisted CDH status curl commands (port of initdata-default.toml.tpl).
+    POLICY_DEFAULT = '''package agent_policy
+
+    import future.keywords.in
+    import future.keywords.if
+    import future.keywords.every
+
+    default AddARPNeighborsRequest := true
+    default AddSwapRequest := true
+    default CloseStdinRequest := true
+    default CopyFileRequest := true
+    default CreateContainerRequest := true
+    default CreateSandboxRequest := true
+    default DestroySandboxRequest := true
+    default GetMetricsRequest := true
+    default GetOOMEventRequest := true
+    default GuestDetailsRequest := true
+    default ListInterfacesRequest := true
+    default ListRoutesRequest := true
+    default MemHotplugByProbeRequest := true
+    default OnlineCPUMemRequest := true
+    default PauseContainerRequest := true
+    default PullImageRequest := true
+    default ReadStreamRequest := false
+    default RemoveContainerRequest := true
+    default RemoveStaleVirtiofsShareMountsRequest := true
+    default ReseedRandomDevRequest := true
+    default ResumeContainerRequest := true
+    default SetGuestDateTimeRequest := true
+    default SignalProcessRequest := true
+    default StartContainerRequest := true
+    default StartTracingRequest := true
+    default StatsContainerRequest := true
+    default StopTracingRequest := true
+    default TtyWinResizeRequest := true
+    default UpdateContainerRequest := true
+    default UpdateEphemeralMountsRequest := true
+    default UpdateInterfaceRequest := true
+    default UpdateRoutesRequest := true
+    default WaitProcessRequest := true
+    default ExecProcessRequest := false
+    default SetPolicyRequest := true
+    default WriteStreamRequest := false
+
+    ExecProcessRequest if {
+        input_command = concat(" ", input.process.Args)
+        some allowed_command in policy_data.allowed_commands
+        input_command == allowed_command
+    }
+
+    policy_data := {
+      "allowed_commands": [
+            "curl http://127.0.0.1:8006/cdh/resource/default/attestation-status/status",
+            "curl http://127.0.0.1:8006/cdh/resource/default/attestation-status/random"
+      ]
+    }
+    '''
+
+    # Kata agent policy — debug: allow everything incl. exec
+    # (port of initdata-debug.toml.tpl).
+    POLICY_DEBUG = '''package agent_policy
+
+    import future.keywords.if
+
+    default AddARPNeighborsRequest := true
+    default AddSwapRequest := true
+    default CloseStdinRequest := true
+    default CopyFileRequest := true
+    default CreateContainerRequest := true
+    default CreateSandboxRequest := true
+    default DestroySandboxRequest := true
+    default ExecProcessRequest := true
+    default GetMetricsRequest := true
+    default GetOOMEventRequest := true
+    default GuestDetailsRequest := true
+    default ListInterfacesRequest := true
+    default ListRoutesRequest := true
+    default MemHotplugByProbeRequest := true
+    default OnlineCPUMemRequest := true
+    default PauseContainerRequest := true
+    default PullImageRequest := true
+    default ReadStreamRequest := true
+    default RemoveContainerRequest := true
+    default RemoveStaleVirtiofsShareMountsRequest := true
+    default ReseedRandomDevRequest := true
+    default ResumeContainerRequest := true
+    default SetGuestDateTimeRequest := true
+    default SetPolicyRequest := true
+    default SignalProcessRequest := true
+    default StartContainerRequest := true
+    default StartTracingRequest := true
+    default StatsContainerRequest := true
+    default StopTracingRequest := true
+    default TtyWinResizeRequest := true
+    default UpdateContainerRequest := true
+    default UpdateEphemeralMountsRequest := true
+    default UpdateInterfaceRequest := true
+    default UpdateRoutesRequest := true
+    default WaitProcessRequest := true
+    default WriteStreamRequest := true
+    '''
+
+    def render(policy_rego: str) -> str:
+        return (
+            TOML_TEMPLATE.replace("@KBS_URL@", KBS_URL)
+            .replace("@CERT@", CERT)
+            .replace("@FLAVOUR@", FLAVOUR)
+            .replace("@POLICY@", policy_rego)
+        )
+
+    def gzip_b64(content: str) -> str:
+        buf = io.BytesIO()
+        with gzip.GzipFile(fileobj=buf, mode="wb") as f:
+            f.write(content.encode())
+        return base64.b64encode(buf.getvalue()).decode()
+
+    def raw_hash(content: str) -> str:
+        return hashlib.sha256(content.encode()).hexdigest()
+
+    def pcr8_hash(content_hash: str) -> str:
+        # PCR8 = sha256(zeroPCR || sha256(initdata))
+        zero_pcr = "0" * 64
+        return hashlib.sha256(bytes.fromhex(zero_pcr + content_hash)).hexdigest()
+
+    def api(method: str, path: str, payload=None):
+        token = open(
+            "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        ).read().strip()
+        ctx = ssl.create_default_context(
+            cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+        )
+        req = urllib.request.Request(
+            f"https://kubernetes.default.svc{path}",
+            data=json.dumps(payload).encode() if payload else None,
+            method=method,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, context=ctx) as resp:
+                return resp.status, json.loads(resp.read() or b"{}")
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read() or b"{}")
+
+    def upsert_configmap(name: str, data: dict) -> None:
+        cm = {
+            "apiVersion": "v1",
+            "kind": "ConfigMap",
+            "metadata": {
+                "name": name,
+                "namespace": NAMESPACE,
+                "labels": {"coco.io/type": "initdata"},
+            },
+            "data": data,
+        }
+        status, _ = api(
+            "PATCH", f"/api/v1/namespaces/{NAMESPACE}/configmaps/{name}", cm
+        )
+        if status == 404:
+            status, _ = api(
+                "POST", f"/api/v1/namespaces/{NAMESPACE}/configmaps", cm
+            )
+        if status not in (200, 201):
+            raise SystemExit(f"Failed to upsert ConfigMap {name}: HTTP {status}")
+        print(f"upserted ConfigMap {NAMESPACE}/{name}")
+
+    def build(name: str, policy_rego: str) -> None:
+        rendered = render(policy_rego)
+        upsert_configmap(
+            name,
+            {
+                "INITDATA": gzip_b64(rendered),
+                "PCR8_HASH": pcr8_hash(raw_hash(rendered)),
+                "RAW_HASH": raw_hash(rendered),
+                "version": "0.1.0",
+                "algorithm": "sha256",
+                "aa.toml": rendered.split('"aa.toml" = \'\'\'\n')[1].split("\n\'\'\'")[0],
+                "cdh.toml": rendered.split('"cdh.toml"  = \'\'\'\n')[1].split("\n\'\'\'")[0],
+                "policy.rego": policy_rego,
+            },
+        )
+
+    build("initdata", POLICY_DEFAULT)
+    build("debug-initdata", POLICY_DEBUG)
+    print("initdata generation OK")
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: initdata-gzipper
+  namespace: imperative
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: initdata-gzipper
+    spec:
+      serviceAccountName: initdata-gzipper
+      restartPolicy: Never
+      containers:
+        - name: gzipper
+          image: registry.access.redhat.com/ubi9/python-312:latest
+          command: ["python3", "/scripts/gzipper.py"]
+          env:
+            - name: NAMESPACE
+              value: imperative
+            - name: KBS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: coco-config
+                  key: KBS_URL
+            - name: SECURITY_POLICY_FLAVOUR
+              valueFrom:
+                secretKeyRef:
+                  name: coco-config
+                  key: SECURITY_POLICY_FLAVOUR
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+              readOnly: true
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: initdata-gzipper-script
+        - name: certs
+          secret:
+            secretName: kbs-tls-self-signed
+            items:
+              - key: tls.crt
+                path: tls.crt

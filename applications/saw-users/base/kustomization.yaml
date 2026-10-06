@@ -1,0 +1,9 @@
+---
+helmGlobals:
+  chartHome: ../charts
+
+helmCharts:
+  - name: coco-agents
+    includeCRDs: false
+    releaseName: coco-agents
+    valuesFile: values.yaml

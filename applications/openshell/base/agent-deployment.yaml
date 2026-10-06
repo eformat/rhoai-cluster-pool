@@ -1,0 +1,67 @@
+# CoCo agent — AIPCC OpenClaw agent running in a kata-remote (peer pod)
+# confidential container with governance (Landlock) policy mounted.
+# The initdata ConfigMap (cloned from `imperative` by kyverno) is injected
+# into the pod VM via cc_init_data, pointing the guest at the hub KBS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw-agent
+  namespace: coco-agents
+  labels:
+    app: openclaw-agent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openclaw-agent
+  template:
+    metadata:
+      labels:
+        app: openclaw-agent
+      annotations:
+        peerpods: "true"
+        coco.io/initdata-configmap: initdata
+        io.katacontainers.config.runtime.create_container_timeout: "900"
+    spec:
+      runtimeClassName: kata-remote
+      containers:
+        - name: openclaw
+          image: quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65d1c758c8da777f441ed094e19f3bcf6d7445c61
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 18789
+              name: dashboard
+          env:
+            - name: OPENCLAW_DASHBOARD_PORT
+              value: "18789"
+          volumeMounts:
+            - name: sandbox
+              mountPath: /sandbox
+            - name: governance-policy
+              mountPath: /sandbox/governance/policy
+              readOnly: true
+            - name: governance-profiles
+              mountPath: /sandbox/governance/profiles
+              readOnly: true
+            - name: initdata
+              mountPath: /opt/confidential-containers/initdata
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: sandbox
+          emptyDir: {}
+        - name: governance-policy
+          configMap:
+            name: governance-interceptor-policy
+        - name: governance-profiles
+          configMap:
+            name: governance-interceptor-profiles
+        - name: initdata
+          configMap:
+            name: initdata
+            optional: false

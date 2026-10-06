@@ -1,0 +1,30 @@
+# Kyverno values — OpenShift SCC compatibility.
+# Ported from coco-pattern overrides/values-kyverno.yaml:
+# null all securityContext fields, disable reports controller and
+# wgpolicyk8s CRDs (not needed for CoCo initdata injection).
+admissionController:
+  container:
+    securityContext: null
+  initContainer:
+    securityContext: null
+backgroundController:
+  securityContext: null
+  rbac:
+    serviceAccount:
+      name: system:serviceaccount:kyverno:kyverno-background-controller
+cleanupController:
+  securityContext: null
+reportsController:
+  securityContext: null
+  enabled: false
+crds:
+  migration:
+    securityContext: null
+  groups:
+    wgpolicyk8s:
+      policyreports: false
+      clusterpolicyreports: false
+webhooksCleanup:
+  securityContext: null
+test:
+  securityContext: null

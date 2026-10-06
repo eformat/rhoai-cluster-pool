@@ -1,0 +1,59 @@
+---
+# Inject CoCo InitData — ported from coco-pattern
+# charts/all/coco-kyverno-policies (de-Helm'd).
+# Injects cc_init_data into pods with a kata runtime class by reading the
+# ConfigMap named via the coco.io/initdata-configmap annotation. Targets
+# Pods only so Deployments stay stable and a rollout restart picks up the
+# latest initdata.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: inject-coco-initdata
+  annotations:
+    policies.kyverno.io/title: Inject CoCo InitData
+    policies.kyverno.io/category: Confidential Computing
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Injects cc_init_data annotation into pods with a kata runtime class
+      by reading from a ConfigMap specified via the coco.io/initdata-configmap
+      annotation. Targets Pods only (not Deployments) so that Deployments
+      remain stable and a rollout restart resolves the latest initdata.
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  rules:
+    - name: inject-initdata
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  coco.io/skip-initdata: "true"
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.runtimeClassName || '' }}"
+            operator: AnyIn
+            value: ["kata", "kata-cc", "kata-remote", "kata-cc-nvidia-gpu"]
+          - key: "{{ request.object.metadata.annotations.\"coco.io/initdata-configmap\" || '' }}"
+            operator: NotEquals
+            value: ""
+          - key: "{{ request.object.metadata.annotations.\"io.katacontainers.config.hypervisor.cc_init_data\" || '' }}"
+            operator: Equals
+            value: ""
+      context:
+        - name: initdata
+          configMap:
+            name: "{{ request.object.metadata.annotations.\"coco.io/initdata-configmap\" }}"
+            namespace: "{{ request.namespace }}"
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              io.katacontainers.config.hypervisor.cc_init_data: "{{ initdata.data.INITDATA }}"

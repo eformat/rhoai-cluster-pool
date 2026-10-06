@@ -1,0 +1,26 @@
+# KBS endpoint + security policy flavour for initdata generation.
+# Values come from vault (seeded by secrets/vault-coco) — no URLs or config
+# hardcoded in git. The initdata Job reads this secret via secretKeyRef.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: coco-config-eso
+  namespace: imperative
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: coco-config
+    creationPolicy: Owner
+  data:
+    - secretKey: KBS_URL
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/config
+        property: KBS_URL
+    - secretKey: SECURITY_POLICY_FLAVOUR
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/config
+        property: SECURITY_POLICY_FLAVOUR

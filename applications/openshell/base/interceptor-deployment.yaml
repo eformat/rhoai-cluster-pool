@@ -1,0 +1,64 @@
+# Governance interceptor — gRPC service the OpenShell gateway calls to
+# enforce admin-controlled, cryptographically signed policies.
+# Ported from secure-agent-workspace charts/governance-interceptor.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-interceptor
+  namespace: openshell
+  labels:
+    app: governance-interceptor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: governance-interceptor
+  template:
+    metadata:
+      labels:
+        app: governance-interceptor
+    spec:
+      containers:
+        - name: interceptor
+          image: ghcr.io/validatedpatterns-sandbox/governance-interceptor:v0.1.2
+          imagePullPolicy: Always
+          args:
+            - --listen
+            - "0.0.0.0:18081"
+            - --policy
+            - /config/policy/policy.yaml
+            - --profiles
+            - /config/profiles
+            - --gateway-endpoint
+            - "https://127.0.0.1:17670"
+          ports:
+            - name: grpc
+              containerPort: 18081
+              protocol: TCP
+          startupProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 5
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 500m
+            requests:
+              memory: 128Mi
+              cpu: 100m
+          volumeMounts:
+            - name: policy
+              mountPath: /config/policy
+              readOnly: true
+            - name: profiles
+              mountPath: /config/profiles
+              readOnly: true
+      volumes:
+        - name: policy
+          configMap:
+            name: governance-interceptor-policy
+        - name: profiles
+          configMap:
+            name: governance-interceptor-profiles

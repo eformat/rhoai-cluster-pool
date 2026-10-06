@@ -1,0 +1,69 @@
+# KBS secrets pulled from vault (seeded by secrets/vault-coco).
+# Ported from validatedpatterns/trustee-chart templates/dynamic-eso.yaml and
+# attestation-status-eso.yaml, plus security-policy delivery.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: kbsres1-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: kbsres1
+  dataFrom:
+    - extract:
+        key: kv/data/ocp/sno/openshift-gitops/coco/kbsres1
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: passphrase-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: passphrase
+  dataFrom:
+    - extract:
+        key: kv/data/ocp/sno/openshift-gitops/coco/passphrase
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: attestation-status-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: attestation-status
+  dataFrom:
+    - extract:
+        key: kv/data/ocp/sno/openshift-gitops/coco/attestationStatus
+---
+# Image security policy served at kbs:///default/security-policy/<flavour>.
+# Keys: insecure | reject | signed (from bootstrap/seed-vault-coco.sh).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: security-policy-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: security-policy
+  dataFrom:
+    - extract:
+        key: kv/data/ocp/sno/openshift-gitops/coco/securityPolicyConfig

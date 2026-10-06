@@ -1,0 +1,9 @@
+---
+resources:
+  - ../../base
+  - kata-config.yaml
+  - peer-pods-cm.yaml
+  - peer-pods-secret-eso.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

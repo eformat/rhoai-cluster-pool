@@ -1,0 +1,64 @@
+# CoCo URL discovery — looks up the hub KBS and Keycloak routes with ACM
+# policy templates and publishes them to vault so spokes (initdata Job,
+# spoke-realms Job) read them via ESO.
+#
+# ACM ConfigurationPolicy templates support {{ (lookup ...) }} (evaluated
+# by the ACM policy controller on the cluster the policy targets — here
+# the HUB, where the trustee and keycloak routes live). A policy enforced
+# on a SPOKE cannot look up HUB routes (lookup is cluster-local), which is
+# why this runs on the hub and the URLs flow to spokes through vault.
+#
+# Pattern: applications/policy-collection (raw ACM Policy + PlacementBinding
+# to the existing placements).
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    requires-rolling-restart: none
+  name: coco-urls-hub
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: coco-urls-hub
+        spec:
+          object-templates-raw: |
+            {{- $kbs := lookup "route.openshift.io/v1" "Route" "trustee-operator-system" "kbs" }}
+            {{- $keycloak := lookup "route.openshift.io/v1" "Route" "keycloak" "keycloak" }}
+            {{- if and $kbs $keycloak }}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Secret
+                metadata:
+                  name: coco-config
+                  namespace: openshift-gitops
+                type: Opaque
+                stringData:
+                  KBS_URL: https://{{ $kbs.spec.host }}
+                  KEYCLOAK_URL: https://{{ $keycloak.spec.host }}
+            {{- end }}
+          pruneObjectBehavior: None
+          remediationAction: enforce
+          severity: low
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-coco-urls-hub
+placementRef:
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+  name: placement-hub-openshift
+subjects:
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: coco-urls-hub

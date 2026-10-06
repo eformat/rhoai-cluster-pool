@@ -1,0 +1,204 @@
+# Per-spoke Keycloak realm creation.
+# Discovers coco-* managed clusters on the hub and creates a realm per
+# spoke in the hub Keycloak, with a client for the spoke's OpenShell
+# agents. The spoke uses its realm for OIDC (OpenShift OAuth and agents).
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spoke-realms-script
+  namespace: openshift-gitops
+data:
+  realms.py: |
+    #!/usr/bin/env python3
+    """Create a Keycloak realm per coco-* managed cluster.
+
+    Runs on the hub. Discovers coco-* managed clusters via the ACM API and
+    ensures each has a realm (named <prefix>-<cluster>) with a client for
+    the spoke's OpenShell agents. Idempotent: existing realms/clients are
+    left alone (409 = OK).
+    """
+    import json
+    import os
+    import ssl
+    import sys
+    import urllib.error
+    import urllib.request
+
+    KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "").rstrip("/")
+    REALM_PREFIX = os.environ.get("REALM_PREFIX", "coco")
+    AGENT_CLIENT_ID = os.environ.get("AGENT_CLIENT_ID", "openshell-agents")
+    ADMIN_USER = os.environ.get("KEYCLOAK_ADMIN_USER", "")
+    ADMIN_PASSWORD = os.environ.get("KEYCLOAK_ADMIN_PASSWORD", "")
+
+    if not KEYCLOAK_URL or not ADMIN_USER or not ADMIN_PASSWORD:
+        raise SystemExit(
+            "KEYCLOAK_URL, KEYCLOAK_ADMIN_USER and KEYCLOAK_ADMIN_PASSWORD "
+            "must be set (from spoke-realms-config + keycloak-admin secret)"
+        )
+
+    K8S_CTX = ssl.create_default_context(
+        cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    )
+
+    def k8s_api(path):
+        token = open(
+            "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        ).read().strip()
+        req = urllib.request.Request(
+            f"https://kubernetes.default.svc{path}",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            },
+        )
+        with urllib.request.urlopen(req, context=K8S_CTX) as resp:
+            return json.loads(resp.read())
+
+    def kc_api(method, path, payload=None, token=None):
+        headers = {"Accept": "application/json"}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        data = json.dumps(payload).encode() if payload else None
+        if data:
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(
+            f"{KEYCLOAK_URL}{path}", data=data, method=method, headers=headers
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                body = resp.read()
+                return resp.status, json.loads(body) if body else None
+        except urllib.error.HTTPError as e:
+            return e.code, None
+
+    def admin_token():
+        from urllib.parse import urlencode
+        data = urlencode(
+            {
+                "grant_type": "password",
+                "client_id": "admin-cli",
+                "username": ADMIN_USER,
+                "password": ADMIN_PASSWORD,
+            }
+        ).encode()
+        req = urllib.request.Request(
+            f"{KEYCLOAK_URL}/realms/master/protocol/openid-connect/token",
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())["access_token"]
+
+    def coco_clusters():
+        items = k8s_api(
+            "/apis/cluster.open-cluster-management.io/v1/managedclusters"
+        )["items"]
+        return [
+            c["metadata"]["name"]
+            for c in items
+            if c["metadata"]["name"].startswith(f"{REALM_PREFIX}-")
+            and c["metadata"]["name"] != "local-cluster"
+        ]
+
+    def ensure_realm(token, realm):
+        status, _ = kc_api("POST", f"/admin/realms", {
+            "realm": realm,
+            "enabled": True,
+            "registrationAllowed": False,
+        }, token)
+        if status == 409:
+            print(f"realm {realm} already exists")
+        elif status not in (200, 201):
+            print(f"WARN: realm {realm} create returned HTTP {status}")
+            return
+        else:
+            print(f"created realm {realm}")
+
+        # Client for the spoke's OpenShell agents
+        status, _ = kc_api("POST", f"/admin/realms/{realm}/clients", {
+            "clientId": AGENT_CLIENT_ID,
+            "enabled": True,
+            "protocol": "openid-connect",
+            "publicClient": False,
+            "secret": None,
+            "redirectUris": [f"https://{realm}.*"],
+            "standardFlowEnabled": True,
+        }, token)
+        if status == 409:
+            print(f"client {AGENT_CLIENT_ID} already exists in realm {realm}")
+        elif status not in (200, 201):
+            print(
+                f"WARN: client {AGENT_CLIENT_ID} in realm {realm} "
+                f"returned HTTP {status}"
+            )
+        else:
+            print(f"created client {AGENT_CLIENT_ID} in realm {realm}")
+
+    def main():
+        token = admin_token()
+        clusters = coco_clusters()
+        if not clusters:
+            print(f"no {REALM_PREFIX}-* managed clusters found yet")
+            return
+        for cluster in clusters:
+            realm = f"{REALM_PREFIX}-{cluster}"
+            ensure_realm(token, realm)
+
+    main()
+    print("spoke realms OK")
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spoke-realms
+  namespace: openshift-gitops
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: spoke-realms
+    spec:
+      serviceAccountName: spoke-realms
+      restartPolicy: Never
+      containers:
+        - name: realms
+          image: registry.access.redhat.com/ubi9/python-312:latest
+          command: ["python3", "/scripts/realms.py"]
+          env:
+            - name: KEYCLOAK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: spoke-realms-config
+                  key: KEYCLOAK_URL
+            - name: REALM_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: spoke-realms-config
+                  key: REALM_PREFIX
+            - name: AGENT_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: spoke-realms-config
+                  key: AGENT_CLIENT_ID
+            - name: KEYCLOAK_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin
+                  key: username
+                  optional: true
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin
+                  key: password
+                  optional: true
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: spoke-realms-script

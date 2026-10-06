@@ -1,0 +1,15 @@
+# list of operators
+operators:
+  # OpenShift sandboxed containers operator (kata runtime)
+  # InstallPlanApproval Manual would require approving the CSV install plan;
+  # Automatic on the stable channel keeps pooled spokes self-configuring.
+  - name: sandboxed-containers-operator
+    namespace:
+      name: openshift-sandboxed-containers-operator
+      create: true
+      global: true
+    channels: [stable]
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

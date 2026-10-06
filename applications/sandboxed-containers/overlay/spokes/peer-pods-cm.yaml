@@ -1,0 +1,14 @@
+# Peer pods configuration for AWS.
+# The OSC operator reads this ConfigMap from its own namespace to learn how
+# to create pod VMs. AWS_REGION must match the cluster region.
+# PODVM_INSTANCE_TYPE can be tuned per spoke via a kustomize patch.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peer-pods-cm
+  namespace: openshift-sandboxed-containers-operator
+data:
+  CLOUD_PROVIDER: "aws"
+  AWS_REGION: "us-east-2"
+  # Default pod VM instance type (override per spoke if needed)
+  PODVM_INSTANCE_TYPE: "t3.large"
