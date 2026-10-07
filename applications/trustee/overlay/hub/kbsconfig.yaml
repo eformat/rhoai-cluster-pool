@@ -100,8 +100,8 @@ spec:
     - "attestation-status"
   kbsHttpsKeySecretName: kbs-https-key
   kbsHttpsCertSecretName: kbs-https-certificate
-  kbsResourcePolicyConfigMapName: resource-policy
-  kbsAttestationPolicyConfigMapName: attestation-policy
+  kbsResourcePolicyConfigMapName: resource-policy.v1.1
+  kbsAttestationPolicyConfigMapName: attestation-policy.v1.1
   kbsAttestationCertSecretName: attestation-cert
   kbsAttestationKeySecretName: attestation-cert
   KbsEnvVars:
