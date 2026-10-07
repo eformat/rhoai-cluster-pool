@@ -1,3 +1,5 @@
 ---
+resources:
+  - initdata-hub
 generators:
   - policy-generator-config.yaml

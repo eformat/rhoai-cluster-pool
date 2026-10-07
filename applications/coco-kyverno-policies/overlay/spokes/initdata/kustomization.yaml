@@ -2,8 +2,6 @@
 resources:
   - namespace.yaml
   - rbac.yaml
-  - kbs-tls-eso.yaml
-  - coco-config-eso.yaml
   - initdata-job.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1

@@ -1,3 +1,6 @@
 ---
+resources:
+  - peer-pods-secret-spokes-eso.yaml
+  - placement-binding.yaml
 generators:
   - policy-generator-config.yaml

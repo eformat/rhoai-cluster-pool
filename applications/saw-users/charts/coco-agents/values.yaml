@@ -12,4 +12,8 @@ image: quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba
 
 # Vault path prefix for per-user agent secrets
 # (kv/data/ocp/sno/openshift-gitops/coco/users/<name>).
+# Per-user secrets flow via pattern B (hub-trusted): hub-side ESOs read
+# vault and ACM copies the values to the spoke as plain Secrets
+# (agent-<name>-secrets in coco-agents). Add a hub-side ESO per user in
+# applications/saw-users/overlay when seeding vault users/.
 vaultPrefix: kv/data/ocp/sno/openshift-gitops/coco/users

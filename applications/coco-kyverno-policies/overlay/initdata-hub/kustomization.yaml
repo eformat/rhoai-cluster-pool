@@ -1,0 +1,5 @@
+---
+resources:
+  - coco-config-spokes-eso.yaml
+  - kbs-tls-spokes-eso.yaml
+  - placement-binding.yaml
