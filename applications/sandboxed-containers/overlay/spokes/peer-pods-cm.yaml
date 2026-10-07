@@ -16,9 +16,9 @@ metadata:
 data:
   CLOUD_PROVIDER: "aws"
   AWS_REGION: "us-east-2"
-  AWS_SUBNET_ID: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_SUBNET_ID" hub}}'
-  AWS_VPC_ID: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_VPC_ID" hub}}'
-  AWS_SG_IDS: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_SG_IDS" hub}}'
+  AWS_SUBNET_ID: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_SUBNET_ID" | base64dec hub}}'
+  AWS_VPC_ID: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_VPC_ID" | base64dec hub}}'
+  AWS_SG_IDS: '{{hub fromSecret "openshift-gitops" "coco-networking-hub" "AWS_SG_IDS" | base64dec hub}}'
   # Pod VM AMI built by the osc-podvm-image-creation job (per spoke). When
   # set, the OSC skips the image job. Rebuild: delete the job + remove this
   # key, and the OSC regenerates it.
