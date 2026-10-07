@@ -211,7 +211,11 @@ data:
             method=method,
             headers={
                 "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
+                "Content-Type": (
+                    "application/merge-patch+json"
+                    if method == "PATCH"
+                    else "application/json"
+                ),
                 "Accept": "application/json",
             },
         )

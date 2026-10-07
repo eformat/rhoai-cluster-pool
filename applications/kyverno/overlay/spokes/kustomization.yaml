@@ -1,6 +1,12 @@
 ---
+# Vendored kyverno chart 3.5.2 output, split across multiple policies —
+# a single Policy with the 15 kyverno CRDs exceeds the 3MB K8S API
+# request limit (Request entity too large). crds-a/ + crds-b/ are
+# balanced ~2MB each; workloads/ is the deployments/RBAC/config.
 resources:
-  - ../../base
+  - crds-a/crds.yaml
+  - crds-b/crds.yaml
+  - workloads/manifests.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
