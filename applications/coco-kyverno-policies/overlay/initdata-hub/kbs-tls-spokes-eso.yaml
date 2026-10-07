@@ -45,7 +45,7 @@ spec:
                       kind: Secret
                       apiVersion: v1
                       stringData:
-                        tls.crt: {{.tlsCrt}}
+                        tls.crt: {{ .tlsCrt | quote }}
                       metadata:
                         name: kbs-tls-self-signed
                         namespace: imperative
