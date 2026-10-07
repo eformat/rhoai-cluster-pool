@@ -26,7 +26,7 @@ spec:
             - --listen
             - "0.0.0.0:18081"
             - --policy
-            - /config/policy/policy.yaml
+            - /config/policy/governance-policy.yaml
             - --profiles
             - /config/profiles
             - --gateway-endpoint

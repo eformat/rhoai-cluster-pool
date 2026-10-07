@@ -5,7 +5,7 @@ operators:
     namespace:
       name: trustee-operator-system
       create: true
-      global: true
+      global: false
     channels: [stable]
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0

@@ -176,6 +176,12 @@ data:
     path "kv/data/ocp/${CLUSTER_NAME}/*" {
     capabilities=["read","list"]
     }
+    path "kv/data/ocp/${CLUSTER_NAME}/${PROJECT_NAME}/coco/*" {
+    capabilities=["read","list","create","update"]
+    }
+    path "kv/metadata/ocp/${CLUSTER_NAME}/${PROJECT_NAME}/coco/*" {
+    capabilities=["read","list"]
+    }
     EOF
 
     vault secrets enable -path=kv/ -version=2 kv
