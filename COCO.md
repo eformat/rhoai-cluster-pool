@@ -101,6 +101,25 @@ The `peer-pods` vault credentials need an IAM policy with:
 The spoke's IPI-created NAT gateway handles peer-pod egress (no extra
 config needed — unlike the Azure CoCo pattern).
 
+### AWS security group for peer pods (required ports)
+
+The SG in `peer-pods-cm` `AWS_SG_IDS` (attached to pod VMs) **must allow
+inbound TCP 15150 (kata agent proxy) and TCP 8000 (health probe) from the
+VPC CIDR** — the IPI-created cluster SG does NOT include these ports, and
+without them the CAA logs `failed to establish agent proxy connection to
+<podvm-ip>:15150: context deadline exceeded` and pods sit in
+ContainerCreating forever. One-time fix per cluster:
+
+```bash
+aws ec2 authorize-security-group-ingress --group-id sg-0780a5e32d8170563 \
+  --protocol tcp --port 15150 --cidr 10.0.0.0/16
+aws ec2 authorize-security-group-ingress --group-id sg-0780a5e32d8170563 \
+  --protocol tcp --port 8000 --cidr 10.0.0.0/16
+```
+
+(The CAA retries the agent proxy connection automatically — no restart
+needed after the SG rule lands.)
+
 ### AWS IAM for the pod VM image creation (OSC 1.13)
 
 The OSC 1.13 `osc-podvm-image-creation` job builds the pod VM AMI on AWS
