@@ -35,6 +35,11 @@ policies:
       placementName: placement-spoke-coco
     manifests:
       - path: spokes/crds-b/
+  - name: kyverno-coco-wgpolicy
+    placement:
+      placementName: placement-spoke-coco
+    manifests:
+      - path: spokes/wgpolicy/
   - name: kyverno-coco
     placement:
       placementName: placement-spoke-coco

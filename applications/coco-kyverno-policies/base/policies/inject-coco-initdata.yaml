@@ -38,22 +38,22 @@ spec:
                   coco.io/skip-initdata: "true"
       preconditions:
         all:
-          - key: "{{ request.object.spec.runtimeClassName || '' }}"
+          - key:  '{{ "{{" }} request.object.spec.runtimeClassName || '''' {{ "}}" }}'
             operator: AnyIn
             value: ["kata", "kata-cc", "kata-remote", "kata-cc-nvidia-gpu"]
-          - key: "{{ request.object.metadata.annotations.\"coco.io/initdata-configmap\" || '' }}"
+          - key:  '{{ "{{" }} request.object.metadata.annotations."coco.io/initdata-configmap" || '''' {{ "}}" }}'
             operator: NotEquals
             value: ""
-          - key: "{{ request.object.metadata.annotations.\"io.katacontainers.config.hypervisor.cc_init_data\" || '' }}"
+          - key:  '{{ "{{" }} request.object.metadata.annotations."io.katacontainers.config.hypervisor.cc_init_data" || '''' {{ "}}" }}'
             operator: Equals
             value: ""
       context:
         - name: initdata
           configMap:
-            name: "{{ request.object.metadata.annotations.\"coco.io/initdata-configmap\" }}"
-            namespace: "{{ request.namespace }}"
+            name:  '{{ "{{" }} request.object.metadata.annotations."coco.io/initdata-configmap" {{ "}}" }}'
+            namespace:  '{{ "{{" }} request.namespace {{ "}}" }}'
       mutate:
         patchStrategicMerge:
           metadata:
             annotations:
-              io.katacontainers.config.hypervisor.cc_init_data: "{{ initdata.data.INITDATA }}"
+              io.katacontainers.config.hypervisor.cc_init_data:  '{{ "{{" }} initdata.data.INITDATA {{ "}}" }}'

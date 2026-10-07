@@ -25,11 +25,11 @@ spec:
         synchronize: true
         apiVersion: v1
         kind: ConfigMap
-        name: "{{ request.object.metadata.name }}"
+        name:  '{{ "{{" }} request.object.metadata.name {{ "}}" }}'
         namespace: openshell
         clone:
           namespace: imperative
-          name: "{{ request.object.metadata.name }}"
+          name:  '{{ "{{" }} request.object.metadata.name {{ "}}" }}'
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -53,8 +53,8 @@ spec:
         synchronize: true
         apiVersion: v1
         kind: ConfigMap
-        name: "{{ request.object.metadata.name }}"
+        name:  '{{ "{{" }} request.object.metadata.name {{ "}}" }}'
         namespace: coco-agents
         clone:
           namespace: imperative
-          name: "{{ request.object.metadata.name }}"
+          name:  '{{ "{{" }} request.object.metadata.name {{ "}}" }}'
