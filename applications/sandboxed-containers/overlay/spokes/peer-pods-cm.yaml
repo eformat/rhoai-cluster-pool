@@ -19,5 +19,9 @@ data:
   AWS_SUBNET_ID: '{{fromSecret "openshift-sandboxed-containers-operator" "coco-networking" "AWS_SUBNET_ID"}}'
   AWS_VPC_ID: '{{fromSecret "openshift-sandboxed-containers-operator" "coco-networking" "AWS_VPC_ID"}}'
   AWS_SG_IDS: '{{fromSecret "openshift-sandboxed-containers-operator" "coco-networking" "AWS_SG_IDS"}}'
+  # Pod VM AMI built by the osc-podvm-image-creation job (per spoke). When
+  # set, the OSC skips the image job. Rebuild: delete the job + remove this
+  # key, and the OSC regenerates it.
+  PODVM_AMI_ID: "ami-056cc016bbe3cddc3"
   # Default pod VM instance type (override per spoke if needed)
   PODVM_INSTANCE_TYPE: "t3.large"
