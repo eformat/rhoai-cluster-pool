@@ -81,6 +81,7 @@ Seeded vault paths (read by the ESOs as
 | `attestationStatus` | status=attested, random |
 | `securityPolicyConfig` | insecure/reject/signed image policies |
 | `peer-pods` | AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY for peer-pod VM lifecycle |
+| `networking` | AWS_SUBNET_ID/AWS_VPC_ID/AWS_SG_IDS for peer pods (per spoke; OSC 1.13 requires them in peer-pods-cm) |
 | `keycloak-admin` | username/password for the spoke-realms Job |
 | `kbs-auth-public-key` | dummy publicKey (trustee 1.2 operator requirement) |
 
@@ -268,6 +269,25 @@ configuration:
 
 ## Notes and caveats
 
+- **PlacementBindings must set `metadata.namespace` explicitly in apps whose
+  destination is not `openshift-gitops`** (e.g. `sandboxed-containers` →
+  `openshift-sandboxed-containers-operator` with `CreateNamespace=true`): a
+  namespace-less binding silently lands in the app's **destination**
+  namespace instead of next to its Policy in `openshift-gitops`, the ACM
+  propagator never sees it, and the policy silently never distributes —
+  no status, no events, no errors. The ESO-created Policies and the
+  policy-generator output carry explicit namespaces; only hand-written
+  binding yamls lack one. (The `coco-kyverno-policies` app only gets away
+  with it because its destination IS `openshift-gitops`.)
+- **Per-spoke AWS networking for peer pods** flows: vault
+  `coco/networking` → `peer-pods-secret-spokes` ESO (hub) bakes all 5 keys
+  (creds + subnet/vpc/sg) into the ACM Policy via `templateFrom` →
+  `peer-pods-secret` Secret on the spoke (sticky distribution) →
+  peer-pods-cm reads them via `{{fromSecret ... "peer-pods-secret" ...}}`.
+  Do NOT use hub-side `{{hub fromSecret ... | base64dec hub}}` for these —
+  `base64dec` fails at policy distribution and ACM bakes the Go error text
+  into the value; without `base64dec` the raw base64 of the ESO Secret's
+  `.data` lands instead.
 - **TEE on AWS — is the attestation hassle worth it without TEE?** The
   pool's AWS instances are virtual (m6i/t3/g6); standard peer-pod VM
   instance types have **no TEE**, so hardware attestation cannot
