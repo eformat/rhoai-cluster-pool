@@ -151,6 +151,12 @@ oc -n imperative get job initdata-gzipper            # initdata generated
 oc -n imperative get cm initdata -o jsonpath='{.data.PCR8_HASH}'
 oc -n imperative get secret coco-config -o jsonpath='{.data.KBS_URL}' | base64 -d
 
+# Peer pods (OSC 1.13): networking ConfigMap + CAA DaemonSet on the node
+oc -n openshift-sandboxed-containers-operator get cm coco-networking          # subnet/vpc/sg (plain values)
+oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm             # PODVM_AMI_ID + resolved {{fromConfigMap}} values
+oc -n openshift-sandboxed-containers-operator get ds osc-caa-ds               # 1/1 on the node
+oc -n openshift-sandboxed-containers-operator logs -l name=osc-caa-ds | grep -i "server started"
+
 # The end-to-end test is a sandboxed agent (openshell/coco-agents):
 oc -n coco-agents get pods                           # agent pod Running on kata-remote
 oc -n coco-agents get route agent-alice              # agent dashboard route
