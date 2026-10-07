@@ -9,9 +9,6 @@ admissionController:
     securityContext: null
 backgroundController:
   securityContext: null
-  rbac:
-    serviceAccount:
-      name: system:serviceaccount:kyverno:kyverno-background-controller
 cleanupController:
   securityContext: null
 reportsController:

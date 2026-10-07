@@ -1,7 +1,7 @@
 ---
 # Validate InitData ConfigMap required fields — ported from coco-pattern
 # charts/all/coco-kyverno-policies.
-apiVersion: policies.kyverno.io/v1
+apiVersion: policies.kyverno.io/v1alpha1
 kind: ValidatingPolicy
 metadata:
   name: validate-initdata-configmap

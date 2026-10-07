@@ -23,6 +23,20 @@ automountServiceAccountToken: false
 kind: ServiceAccount
 metadata:
   labels:
+    app.kubernetes.io/component: background-controller
+    app.kubernetes.io/instance: kyverno
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: kyverno
+    app.kubernetes.io/version: 3.5.2
+    helm.sh/chart: kyverno-3.5.2
+  name: kyverno-background-controller
+  namespace: kyverno
+---
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  labels:
     app.kubernetes.io/component: cleanup-controller
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/managed-by: Helm
@@ -48,20 +62,6 @@ metadata:
     app.kubernetes.io/version: 3.5.2
     helm.sh/chart: kyverno-3.5.2
   name: kyverno-migrate-resources
-  namespace: kyverno
----
-apiVersion: v1
-automountServiceAccountToken: false
-kind: ServiceAccount
-metadata:
-  labels:
-    app.kubernetes.io/component: background-controller
-    app.kubernetes.io/instance: kyverno
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: 3.5.2
-    helm.sh/chart: kyverno-3.5.2
-  name: system:serviceaccount:kyverno:kyverno-background-controller
   namespace: kyverno
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1000,7 +1000,7 @@ roleRef:
   name: kyverno:background-controller
 subjects:
 - kind: ServiceAccount
-  name: system:serviceaccount:kyverno:kyverno-background-controller
+  name: kyverno-background-controller
   namespace: kyverno
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1081,7 +1081,7 @@ roleRef:
   name: kyverno:background-controller
 subjects:
 - kind: ServiceAccount
-  name: system:serviceaccount:kyverno:kyverno-background-controller
+  name: kyverno-background-controller
   namespace: kyverno
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1101,7 +1101,7 @@ roleRef:
   name: view
 subjects:
 - kind: ServiceAccount
-  name: system:serviceaccount:kyverno:kyverno-background-controller
+  name: kyverno-background-controller
   namespace: kyverno
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1167,8 +1167,7 @@ data:
     [ClusterRoleBinding,*,kyverno:admission-controller] [ClusterRoleBinding,*,kyverno:background-controller]
     [ClusterRoleBinding,*,kyverno:cleanup-controller] [ClusterRoleBinding,*,kyverno:reports-controller]
     [ServiceAccount,kyverno,kyverno-admission-controller] [ServiceAccount/?*,kyverno,kyverno-admission-controller]
-    [ServiceAccount,kyverno,system:serviceaccount:kyverno:kyverno-background-controller]
-    [ServiceAccount/?*,kyverno,system:serviceaccount:kyverno:kyverno-background-controller]
+    [ServiceAccount,kyverno,kyverno-background-controller] [ServiceAccount/?*,kyverno,kyverno-background-controller]
     [ServiceAccount,kyverno,kyverno-cleanup-controller] [ServiceAccount/?*,kyverno,kyverno-cleanup-controller]
     [ServiceAccount,kyverno,kyverno-reports-controller] [ServiceAccount/?*,kyverno,kyverno-reports-controller]
     [Role,kyverno,kyverno:admission-controller] [Role,kyverno,kyverno:background-controller]
@@ -1410,7 +1409,7 @@ spec:
       - args:
         - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
         - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
-        - --backgroundServiceAccountName=system:serviceaccount:kyverno:system:serviceaccount:kyverno:kyverno-background-controller
+        - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
         - --servicePort=443
         - --webhookServerPort=9443
         - --resyncPeriod=15m
@@ -1614,7 +1613,7 @@ spec:
         - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
         env:
         - name: KYVERNO_SERVICEACCOUNT_NAME
-          value: system:serviceaccount:kyverno:kyverno-background-controller
+          value: kyverno-background-controller
         - name: KYVERNO_DEPLOYMENT
           value: kyverno-background-controller
         - name: INIT_CONFIG
@@ -1646,7 +1645,7 @@ spec:
             cpu: 100m
             memory: 64Mi
       dnsPolicy: ClusterFirst
-      serviceAccountName: system:serviceaccount:kyverno:kyverno-background-controller
+      serviceAccountName: kyverno-background-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
