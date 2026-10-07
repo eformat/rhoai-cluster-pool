@@ -67,3 +67,43 @@ spec:
   dataFrom:
     - extract:
         key: kv/data/ocp/sno/openshift-gitops/coco/securityPolicyConfig
+---
+# KBS HTTPS termination secrets — the trustee operator's KbsConfig mounts
+# kbsHttpsKeySecretName/kbsHttpsCertSecretName for the KBS TLS endpoint.
+# Same cert the KBS serves to spokes (kbs-tls-self-signed, pushed to vault
+# by push-secret.yaml).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: kbs-https-key-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: kbs-https-key
+  data:
+    - secretKey: tls.key
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/kbs-tls-self-signed
+        property: tls.key
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: kbs-https-certificate-eso
+  namespace: trustee-operator-system
+spec:
+  refreshInterval: 15s
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: kbs-https-certificate
+  data:
+    - secretKey: tls.crt
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/kbs-tls-self-signed
+        property: tls.crt

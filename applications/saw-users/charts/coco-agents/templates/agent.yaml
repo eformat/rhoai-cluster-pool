@@ -28,7 +28,7 @@ spec:
         coco.io/initdata-configmap: initdata
         io.katacontainers.config.runtime.create_container_timeout: "900"
     spec:
-      runtimeClassName: kata-remote
+      runtimeClassName: kata
       containers:
         - name: openclaw
           image: {{ $.Values.image }}
