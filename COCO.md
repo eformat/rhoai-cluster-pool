@@ -280,14 +280,17 @@ configuration:
   binding yamls lack one. (The `coco-kyverno-policies` app only gets away
   with it because its destination IS `openshift-gitops`.)
 - **Per-spoke AWS networking for peer pods** flows: vault
-  `coco/networking` → `peer-pods-secret-spokes` ESO (hub) bakes all 5 keys
-  (creds + subnet/vpc/sg) into the ACM Policy via `templateFrom` →
-  `peer-pods-secret` Secret on the spoke (sticky distribution) →
-  peer-pods-cm reads them via `{{fromSecret ... "peer-pods-secret" ...}}`.
+  `coco/networking` → `peer-pods-secret-spokes` ESO (hub) bakes creds (into
+  the `peer-pods-secret` Secret) + networking keys (into the
+  `coco-networking` **ConfigMap**) into the ACM Policy via `templateFrom` →
+  both land on the spoke (sticky distribution) → peer-pods-cm reads the
+  networking via `{{fromConfigMap ... "coco-networking" ...}}`.
   Do NOT use hub-side `{{hub fromSecret ... | base64dec hub}}` for these —
   `base64dec` fails at policy distribution and ACM bakes the Go error text
-  into the value; without `base64dec` the raw base64 of the ESO Secret's
-  `.data` lands instead.
+  into the value; and note ACM's `fromSecret` (hub- AND spoke-side) returns
+  the base64-encoded Secret `.data` value, so Secret-backed values need
+  decoding — `fromConfigMap` returns plain data and is the safe choice for
+  non-credential identifiers.
 - **TEE on AWS — is the attestation hassle worth it without TEE?** The
   pool's AWS instances are virtual (m6i/t3/g6); standard peer-pod VM
   instance types have **no TEE**, so hardware attestation cannot

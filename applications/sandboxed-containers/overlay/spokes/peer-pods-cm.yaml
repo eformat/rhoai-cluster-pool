@@ -7,7 +7,8 @@
 # fails and the operator falls back to DaemonSet (local kata) mode.
 # Pattern B: the values flow from vault (coco/networking, seeded per spoke
 # by secrets/vault-coco) via the peer-pods-secret-spokes ESO → the plain
-# Secret peer-pods-secret on the spoke, read here via {{fromSecret}}.
+# ConfigMap coco-networking on the spoke, read here via {{fromConfigMap}}
+# (fromSecret would return base64-encoded Secret data).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,9 +17,9 @@ metadata:
 data:
   CLOUD_PROVIDER: "aws"
   AWS_REGION: "us-east-2"
-  AWS_SUBNET_ID: '{{fromSecret "openshift-sandboxed-containers-operator" "peer-pods-secret" "AWS_SUBNET_ID"}}'
-  AWS_VPC_ID: '{{fromSecret "openshift-sandboxed-containers-operator" "peer-pods-secret" "AWS_VPC_ID"}}'
-  AWS_SG_IDS: '{{fromSecret "openshift-sandboxed-containers-operator" "peer-pods-secret" "AWS_SG_IDS"}}'
+  AWS_SUBNET_ID: '{{fromConfigMap "openshift-sandboxed-containers-operator" "coco-networking" "AWS_SUBNET_ID"}}'
+  AWS_VPC_ID: '{{fromConfigMap "openshift-sandboxed-containers-operator" "coco-networking" "AWS_VPC_ID"}}'
+  AWS_SG_IDS: '{{fromConfigMap "openshift-sandboxed-containers-operator" "coco-networking" "AWS_SG_IDS"}}'
   # Pod VM AMI built by the osc-podvm-image-creation job (per spoke). When
   # set, the OSC skips the image job. Rebuild: delete the job + remove this
   # key, and the OSC regenerates it.
