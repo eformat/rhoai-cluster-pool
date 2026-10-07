@@ -105,26 +105,40 @@ config needed — unlike the Azure CoCo pattern).
 The OSC 1.13 `osc-podvm-image-creation` job builds the pod VM AMI on AWS
 (pull podvm image -> upload to S3 -> `ec2 import-snapshot` -> register
 AMI). Per the OSC 1.13 docs, the credentials additionally need the
-`OSC-ImageCreation-Policy` attached:
+`OSC-ImageCreation-Policy` attached. The policy JSON is kept at
+`applications/sandboxed-containers/osc-image-creation-policy.json`
+(the docs' extended policy **plus `iam:PassRole`**, which the docs omit
+but `ec2 import-snapshot` requires).
 
-- **VMImportRoleManagement**: `iam:CreateRole`, `iam:PutRolePolicy`,
-  `iam:GetRole`, `iam:ListRolePolicies`, `iam:DeleteRole`,
-  `iam:DeleteRolePolicy` on `arn:aws:iam::<ACCOUNT>:role/vmimport`
-  (the job creates/manages the `vmimport` role itself)
-- **S3BucketManagement**: `s3:CreateBucket`, `s3:DeleteBucket`,
-  `s3:GetBucketLocation`, `s3:ListBucket`, `s3:GetBucketAcl` on
-  `arn:aws:s3:::podvm-*`
-- **S3ObjectManagement**: `s3:PutObject`, `s3:GetObject`,
-  `s3:DeleteObject` on `arn:aws:s3:::podvm-*/*`
-- **S3ListAllBuckets**: `s3:ListAllMyBuckets`
-- **`iam:PassRole`** on `arn:aws:iam::<ACCOUNT>:role/vmimport` — NOT in
-  the docs' policy but required: `ec2 import-snapshot` fails with
-  "not authorized to perform iam:PassRole" without it (observed).
+```bash
+export AWS_DEFAULT_REGION=us-east-2
+export AWS_ACCESS_KEY_ID=<peer-pods key>     # open-environment-m6wl4-admin
+export AWS_SECRET_ACCESS_KEY=<peer-pods secret>
 
-Without this policy the image job fails, the OSC `deploymentMode` feature
-gate falls back to `DaemonSet` (local kata — no /dev/kvm on virtual EC2
-instances) and CoCo pods fail with *"failed to add any hypervisor device
-to devices cgroup"*.
+# create the policy (file in this repo) and attach it to the peer-pods user
+aws iam create-policy \
+  --policy-name OSC-ImageCreation-Policy \
+  --policy-document file://applications/sandboxed-containers/osc-image-creation-policy.json
+
+aws iam attach-user-policy \
+  --user-name open-environment-m6wl4-admin \
+  --policy-arn arn:aws:iam::130164124975:policy/OSC-ImageCreation-Policy
+
+# then force a retry:
+oc -n openshift-sandboxed-containers-operator delete job osc-podvm-image-creation
+```
+
+Notes:
+- The `vmimport` role is created/managed **by the job itself** (the
+  VMImportRoleManagement permissions) — no manual role setup needed.
+- The OSC 1.13 docs' variant uses an IAM **role** with IRSA trust
+  (`AmazonEC2FullAccess` + the same extended policy attached to the role);
+  our setup uses the `open-environment-m6wl4-admin` **user** with static
+  credentials, so the policies attach to the user.
+- Without this policy the image job fails, the OSC `deploymentMode` feature
+  gate falls back to `DaemonSet` (local kata — no /dev/kvm on virtual EC2
+  instances) and CoCo pods fail with *"failed to add any hypervisor device
+  to devices cgroup"*.
 
 ## Verification
 
