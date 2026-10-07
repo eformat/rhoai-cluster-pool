@@ -2,6 +2,10 @@
 # The OSC operator reads this ConfigMap from its own namespace to learn how
 # to create pod VMs. AWS_REGION must match the cluster region.
 # PODVM_INSTANCE_TYPE can be tuned per spoke via a kustomize patch.
+# OSC 1.13 requires the AWS networking keys (AWS_SUBNET_ID/AWS_VPC_ID/
+# AWS_SG_IDS) to be present and non-empty or the image-generator validation
+# fails and the operator falls back to DaemonSet (local kata) mode. The
+# values below are the coco-m6wl4 spoke's VPC/subnet/SG — update per spoke.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,5 +14,8 @@ metadata:
 data:
   CLOUD_PROVIDER: "aws"
   AWS_REGION: "us-east-2"
+  AWS_SUBNET_ID: "subnet-084b1966becacb7e1"
+  AWS_VPC_ID: "vpc-0405196c4d6454c3c"
+  AWS_SG_IDS: "sg-0780a5e32d8170563"
   # Default pod VM instance type (override per spoke if needed)
   PODVM_INSTANCE_TYPE: "t3.large"
