@@ -3,6 +3,13 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
   name: binding-peer-pods-secret-spokes
+  # MUST be explicit: the sandboxed-containers app's destination namespace is
+  # openshift-sandboxed-containers-operator (CreateNamespace=true), so a
+  # namespace-less binding lands THERE instead of openshift-gitops where the
+  # Policy lives — the propagator then never sees it. (The coco-kyverno-policies
+  # app gets away without a namespace only because its destination IS
+  # openshift-gitops.)
+  namespace: openshift-gitops
 placementRef:
   apiGroup: cluster.open-cluster-management.io
   kind: Placement
