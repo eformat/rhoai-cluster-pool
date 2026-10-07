@@ -2,5 +2,7 @@
 resources:
   - peer-pods-secret-spokes-eso.yaml
   - placement-binding.yaml
+  - coco-networking-spokes-eso.yaml
+  - coco-networking-placement-binding.yaml
 generators:
   - policy-generator-config.yaml

@@ -100,6 +100,32 @@ The `peer-pods` vault credentials need an IAM policy with:
 The spoke's IPI-created NAT gateway handles peer-pod egress (no extra
 config needed — unlike the Azure CoCo pattern).
 
+### AWS IAM for the pod VM image creation (OSC 1.13)
+
+The OSC 1.13 `osc-podvm-image-creation` job builds the pod VM AMI on AWS
+(pull podvm image -> upload to S3 -> `ec2 import-snapshot` -> register
+AMI). Per the OSC 1.13 docs, the credentials additionally need the
+`OSC-ImageCreation-Policy` attached:
+
+- **VMImportRoleManagement**: `iam:CreateRole`, `iam:PutRolePolicy`,
+  `iam:GetRole`, `iam:ListRolePolicies`, `iam:DeleteRole`,
+  `iam:DeleteRolePolicy` on `arn:aws:iam::<ACCOUNT>:role/vmimport`
+  (the job creates/manages the `vmimport` role itself)
+- **S3BucketManagement**: `s3:CreateBucket`, `s3:DeleteBucket`,
+  `s3:GetBucketLocation`, `s3:ListBucket`, `s3:GetBucketAcl` on
+  `arn:aws:s3:::podvm-*`
+- **S3ObjectManagement**: `s3:PutObject`, `s3:GetObject`,
+  `s3:DeleteObject` on `arn:aws:s3:::podvm-*/*`
+- **S3ListAllBuckets**: `s3:ListAllMyBuckets`
+- **`iam:PassRole`** on `arn:aws:iam::<ACCOUNT>:role/vmimport` — NOT in
+  the docs' policy but required: `ec2 import-snapshot` fails with
+  "not authorized to perform iam:PassRole" without it (observed).
+
+Without this policy the image job fails, the OSC `deploymentMode` feature
+gate falls back to `DaemonSet` (local kata — no /dev/kvm on virtual EC2
+instances) and CoCo pods fail with *"failed to add any hypervisor device
+to devices cgroup"*.
+
 ## Verification
 
 ```bash
