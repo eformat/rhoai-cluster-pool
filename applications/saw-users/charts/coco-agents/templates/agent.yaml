@@ -28,7 +28,9 @@ spec:
         coco.io/initdata-configmap: initdata
         io.katacontainers.config.runtime.create_container_timeout: "900"
     spec:
-      runtimeClassName: kata
+      # kata-remote = kata peer pods (OSC CAA creates the pod VM remotely);
+      # local `kata` needs /dev/kvm which virtual EC2 instances don't have.
+      runtimeClassName: kata-remote
       containers:
         - name: openclaw
           image: {{ $.Values.image }}
