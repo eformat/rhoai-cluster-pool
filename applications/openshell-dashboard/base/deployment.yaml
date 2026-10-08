@@ -1,0 +1,124 @@
+# OpenShell dashboard — Go BFF (token relay) + oauth2-proxy sidecar.
+#
+# Auth model (dashboard ADR 0002, relay-only BFF behind a fronting proxy):
+# oauth2-proxy owns login/sessions against the hub Keycloak and forwards the
+# ID token as the Authorization bearer to the BFF; the BFF relays it to the
+# gateway on every gRPC call; the gateway validates the JWT against its
+# JWKS and makes all RBAC decisions. The Service/Route point ONLY at
+# oauth2-proxy :4180 — the BFF port stays pod-internal, so nothing can
+# present a forged x-forwarded-* header.
+#
+# The gateway runs with allow_unauthenticated_users=false, so every request
+# through the dashboard carries a real JWT with the gateway's audience
+# (openshell-dashboard) and a flat `roles` claim (realm roles via the
+# keycloak mapper created by the spoke-realms job).
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openshell-dashboard
+  namespace: openshell
+  labels:
+    app: openshell-dashboard
+    app.kubernetes.io/name: openshell-dashboard
+    app.kubernetes.io/component: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openshell-dashboard
+  template:
+    metadata:
+      labels:
+        app: openshell-dashboard
+        app.kubernetes.io/name: openshell-dashboard
+        app.kubernetes.io/component: dashboard
+    spec:
+      containers:
+        # BFF — talks to the openshell gateway through the pinned Go SDK.
+        # Gateway range for dashboard 1.2.0: >=0.1.0 <=0.1.2.
+        - name: bff
+          image: quay.io/gkrumbach07/openshell-dashboard:1.2.0
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            # The gateway serves gRPC on the service port (h2c, plaintext
+            # while the gateway runs disableTls).
+            - name: OPENSHELL_GATEWAY_URL
+              value: openshell.openshell.svc.cluster.local:8080
+            # oauth2-proxy injects the ID token as Authorization: Bearer.
+            - name: AUTH_TOKEN_HEADER
+              value: authorization
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            # restricted-v2 SCC: must be inside the openshell ns range.
+            runAsUser: 1000860000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        # oauth2-proxy — the fronting auth proxy (OIDC against the hub
+        # Keycloak realm the gateway trusts). Confidential client
+        # `openshell-dashboard`; its client_id MUST match the gateway's
+        # OIDC audience.
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.5
+          args:
+            - --provider=oidc
+            - --oidc-issuer-url=https://keycloak-keycloak.apps.sno.sandbox1254.opentlc.com/realms/coco-coco-m6wl4-gfqch
+            - --client-id=openshell-dashboard
+            - --redirect-url=https://openshell-dashboard.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com/oauth2/callback
+            - --upstream=http://127.0.0.1:8080/
+            - --http-address=0.0.0.0:4180
+            - --scope=openid profile email
+            - --pass-authorization-header=true
+            - --pass-user-headers=true
+            - --email-domain=*
+            - --reverse-proxy=true
+            - --insecure-oidc-allow-unverified-email
+            - --cookie-secure=true
+            - --cookie-samesite=lax
+          env:
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: openshell-dashboard-oauth2proxy
+                  key: CLIENT_SECRET
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: openshell-dashboard-oauth2proxy
+                  key: COOKIE_SECRET
+          ports:
+            - containerPort: 4180
+              name: oauth2
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 1000860000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault

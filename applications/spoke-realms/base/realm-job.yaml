@@ -15,7 +15,9 @@ data:
 
     Runs on the hub. Discovers coco-* managed clusters via the ACM API and
     ensures each has a realm (named <prefix>-<cluster>) with a client for
-    the spoke's OpenShell agents. Idempotent: existing realms/clients are
+    the spoke's OpenShell agents, gateway-RBAC realm roles, and a
+    confidential openshell-dashboard client (oauth2-proxy) with a
+    realm-roles mapper. Idempotent: existing realms/clients/roles are
     left alone (409 = OK).
     """
     import json
@@ -28,6 +30,19 @@ data:
     KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "").rstrip("/")
     REALM_PREFIX = os.environ.get("REALM_PREFIX", "coco")
     AGENT_CLIENT_ID = os.environ.get("AGENT_CLIENT_ID", "openshell-agents")
+    # Dashboard oauth2-proxy client (confidential). The secret comes from
+    # vault (spoke-realms-config ESO); without it the dashboard client is
+    # skipped so the job stays green until vault is seeded.
+    DASHBOARD_CLIENT_ID = os.environ.get("DASHBOARD_CLIENT_ID", "openshell-dashboard")
+    DASHBOARD_CLIENT_SECRET = os.environ.get("DASHBOARD_CLIENT_SECRET", "")
+    DASHBOARD_REDIRECT_URI = os.environ.get(
+        "DASHBOARD_REDIRECT_URI", "https://openshell-dashboard.apps.*"
+    )
+    # Gateway OIDC RBAC roles (realm roles, surfaced in a flat `roles` claim
+    # by the protocol mapper below).
+    ADMIN_ROLE = os.environ.get("DASHBOARD_ADMIN_ROLE", "openshell-admin")
+    USER_ROLE = os.environ.get("DASHBOARD_USER_ROLE", "openshell-user")
+    CLI_CLIENT_ID = os.environ.get("CLI_CLIENT_ID", "openshell-cli")
     ADMIN_USER = os.environ.get("KEYCLOAK_ADMIN_USER", "")
     ADMIN_PASSWORD = os.environ.get("KEYCLOAK_ADMIN_PASSWORD", "")
 
@@ -136,6 +151,133 @@ data:
         else:
             print(f"created client {AGENT_CLIENT_ID} in realm {realm}")
 
+        # Realm roles for the gateway's OIDC RBAC (admin/user). Users are
+        # assigned in the Keycloak console.
+        for role in (ADMIN_ROLE, USER_ROLE):
+            status, _ = kc_api("POST", f"/admin/realms/{realm}/roles", {
+                "name": role,
+            }, token)
+            if status == 409:
+                print(f"role {role} already exists in realm {realm}")
+            elif status not in (200, 201):
+                print(f"WARN: role {role} in realm {realm} returned HTTP {status}")
+            else:
+                print(f"created role {role} in realm {realm}")
+
+        # Public client for the OpenShell CLI (browser login, localhost
+        # loopback redirect, PKCE).
+        status, _ = kc_api("POST", f"/admin/realms/{realm}/clients", {
+            "clientId": CLI_CLIENT_ID,
+            "enabled": True,
+            "protocol": "openid-connect",
+            "publicClient": True,
+            "redirectUris": ["http://localhost:*"],
+            "standardFlowEnabled": True,
+            "attributes": {"pkce.code.challenge.method": "S256"},
+        }, token)
+        if status == 409:
+            print(f"client {CLI_CLIENT_ID} already exists in realm {realm}")
+        elif status not in (200, 201):
+            print(f"WARN: client {CLI_CLIENT_ID} in realm {realm} returned HTTP {status}")
+        else:
+            print(f"created client {CLI_CLIENT_ID} in realm {realm}")
+
+        # Confidential client for the openshell-dashboard's oauth2-proxy.
+        # Registered with the SAME issuer the gateway trusts; its client_id
+        # must match the gateway's OIDC audience.
+        if not DASHBOARD_CLIENT_SECRET:
+            print(
+                f"SKIP: dashboard client {DASHBOARD_CLIENT_ID} in realm "
+                f"{realm}: DASHBOARD_CLIENT_SECRET not seeded in vault"
+            )
+            return
+
+        status, _ = kc_api("POST", f"/admin/realms/{realm}/clients", {
+            "clientId": DASHBOARD_CLIENT_ID,
+            "enabled": True,
+            "protocol": "openid-connect",
+            "publicClient": False,
+            "secret": DASHBOARD_CLIENT_SECRET,
+            "redirectUris": [DASHBOARD_REDIRECT_URI],
+            "standardFlowEnabled": True,
+        }, token)
+        if status == 409:
+            print(f"client {DASHBOARD_CLIENT_ID} already exists in realm {realm}")
+        elif status not in (200, 201):
+            print(
+                f"WARN: client {DASHBOARD_CLIENT_ID} in realm {realm} "
+                f"returned HTTP {status}"
+            )
+            return
+        else:
+            print(f"created client {DASHBOARD_CLIENT_ID} in realm {realm}")
+
+        status, clients = kc_api(
+            "GET",
+            f"/admin/realms/{realm}/clients?clientId={DASHBOARD_CLIENT_ID}",
+            token=token,
+        )
+        if status != 200 or not clients:
+            print(f"WARN: could not resolve {DASHBOARD_CLIENT_ID} uuid in {realm}")
+            return
+        client_uuid = clients[0]["id"]
+
+        # Vault is the source of truth: sync the client secret if it drifted
+        # (e.g. after a rotation in vault).
+        status, cur = kc_api(
+            "GET", f"/admin/realms/{realm}/clients/{client_uuid}/secret",
+            token=token,
+        )
+        if status == 200 and cur and cur.get("value") != DASHBOARD_CLIENT_SECRET:
+            status, rep = kc_api(
+                "GET", f"/admin/realms/{realm}/clients/{client_uuid}", token=token
+            )
+            if status == 200 and rep:
+                rep["secret"] = DASHBOARD_CLIENT_SECRET
+                status, _ = kc_api(
+                    "PUT", f"/admin/realms/{realm}/clients/{client_uuid}", rep, token
+                )
+                if status in (200, 204):
+                    print("synced dashboard client secret from vault")
+                else:
+                    print(f"WARN: secret sync returned HTTP {status}")
+
+        # Realm-roles mapper: emits the user's realm roles in a flat
+        # `roles` claim (id token + access token + userinfo) so the gateway
+        # can read RBAC roles from `rolesClaim: roles`.
+        status, existing = kc_api(
+            "GET",
+            f"/admin/realms/{realm}/clients/{client_uuid}/protocol-mappers/models",
+            token=token,
+        )
+        names = [m.get("name") for m in (existing or [])]
+        if "realm-roles" in names:
+            print("mapper realm-roles already exists on " + DASHBOARD_CLIENT_ID)
+            return
+        status, _ = kc_api(
+            "POST",
+            f"/admin/realms/{realm}/clients/{client_uuid}/protocol-mappers/models",
+            {
+                "name": "realm-roles",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                "consentRequired": False,
+                "config": {
+                    "multivalued": "true",
+                    "id.token.claim": "true",
+                    "access.token.claim": "true",
+                    "userinfo.token.claim": "true",
+                    "claim.name": "roles",
+                    "jsonType.label": "String",
+                },
+            },
+            token,
+        )
+        if status in (200, 201):
+            print(f"created mapper realm-roles on {DASHBOARD_CLIENT_ID} in {realm}")
+        else:
+            print(f"WARN: mapper create in realm {realm} returned HTTP {status}")
+
     def main():
         token = admin_token()
         clusters = coco_clusters()
@@ -182,6 +324,18 @@ spec:
                 secretKeyRef:
                   name: spoke-realms-config
                   key: AGENT_CLIENT_ID
+            - name: DASHBOARD_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: spoke-realms-config
+                  key: DASHBOARD_CLIENT_ID
+                  optional: true
+            - name: DASHBOARD_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: spoke-realms-config
+                  key: DASHBOARD_CLIENT_SECRET
+                  optional: true
             - name: KEYCLOAK_ADMIN_USER
               valueFrom:
                 secretKeyRef:

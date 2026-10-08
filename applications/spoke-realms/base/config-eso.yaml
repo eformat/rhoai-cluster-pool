@@ -31,3 +31,14 @@ spec:
       remoteRef:
         key: kv/data/ocp/sno/openshift-gitops/coco/config
         property: AGENT_CLIENT_ID
+    # Dashboard oauth2-proxy client (seeded by secrets/vault-coco in
+    # coco/dashboard). Until seeded the ESO keeps the previous secret
+    # values and the realm job skips the dashboard client with a SKIP log.
+    - secretKey: DASHBOARD_CLIENT_ID
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/dashboard
+        property: DASHBOARD_CLIENT_ID
+    - secretKey: DASHBOARD_CLIENT_SECRET
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/dashboard
+        property: DASHBOARD_CLIENT_SECRET

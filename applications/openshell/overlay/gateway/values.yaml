@@ -26,5 +26,17 @@ server:
   sandboxNamespace: openshell
   disableTls: true
   auth:
-    allowUnauthenticatedUsers: true
+    allowUnauthenticatedUsers: false
+  # OIDC JWT auth: the gateway validates every request's bearer against the
+  # hub Keycloak realm's JWKS and enforces RBAC. Realm roles surface in a
+  # flat `roles` claim via the spoke-realms protocol mapper; the dashboard's
+  # oauth2-proxy forwards ID tokens with audience = openshell-dashboard.
+  # The CLI logs in with `openshell gateway login` (public openshell-cli
+  # client).
+  oidc:
+    issuer: https://keycloak-keycloak.apps.sno.sandbox1254.opentlc.com/realms/coco-coco-m6wl4-gfqch
+    audience: openshell-dashboard
+    rolesClaim: roles
+    adminRole: openshell-admin
+    userRole: openshell-user
   sandboxImage: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e

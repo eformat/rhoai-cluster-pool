@@ -1,0 +1,45 @@
+# OpenShell dashboard — Go BFF + oauth2-proxy, deployed on the coco spoke
+# via the ACM policy pattern (same as openshell-agents/saw-users: app on
+# hub -> PolicyGenerator -> policy -> ACM applies operands on the spoke).
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: openshell-dashboard
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            # Same pattern as ALL existing apps: generated from the HUB
+            # decision; the app deploys a PolicyGenerator on the hub and
+            # the ACM policy applies the dashboard on the coco spoke.
+            cluster.open-cluster-management.io/placement: placement-hub-openshift
+        requeueAfterSeconds: 180
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  template:
+    metadata:
+      name: openshell-dashboard-{{.name}}
+      annotations:
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+    spec:
+      project: default
+      destination:
+        server: "{{.server}}"
+        namespace: openshell
+      source:
+        repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+        path: applications/openshell-dashboard/overlay
+        plugin:
+          name: argocd-novault-plugin-kustomize
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

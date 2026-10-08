@@ -1,0 +1,7 @@
+---
+resources:
+  - eso-oauth2proxy.yaml
+  - placement-binding.yaml
+
+generators:
+  - policy-generator-config.yaml

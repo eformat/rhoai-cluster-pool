@@ -420,6 +420,68 @@ configuration:
   Documented as a future track if TEE-hardened agents in enclaves become
   a requirement.
 
+## CoCo + OpenShell dual sandbox research (2026-10-08)
+
+**Verdict: supported end-to-end — one values line enables it.** An OpenShell
+sandbox (application-layer policy: egress proxy, Landlock, seccomp) can run
+INSIDE a CoCo pod VM (guest-kernel/host isolation), giving both layers
+simultaneously. Red Hat validated exactly this "dual" mode on OCP 4.21
+("Layered sandboxing for AI agents" 2026-07-16 + "Why your AI agent needs
+two sandboxes" benchmark 2026-07-23):
+
+| Attack | Kata only | OpenShell only | Both |
+|---|---|---|---|
+| Prompt injection exfiltration | DATA LEAKED | BLOCKED | BLOCKED |
+| Container escape (CVE-2026-31431) | BLOCKED | HOST COMPROMISED | BLOCKED |
+
+- **OpenShell native support (verified in the `~/git/OpenShell` source)**:
+  the k8s driver sets `runtimeClassName` on the AgentSandbox pod template
+  with precedence sandbox-template `platform_config.runtime_class_name` →
+  per-sandbox `driver_config` → **gateway default
+  `default_runtime_class_name`** (`driver.rs`, unit-tested; feature landed
+  2026-06-03, PR #1729 — included in the deployed gateway 0.1.2). The CLI
+  `openshell sandbox create` sends no runtime class, so the gateway default
+  applies to every new sandbox.
+- **The enablement change is one line** in
+  `applications/openshell/overlay/gateway/values.yaml` under the existing
+  `server:` block: `defaultRuntimeClassName: kata-remote`. The gateway chart
+  already renders it (`templates/gateway-config.yaml` →
+  `default_runtime_class_name` in `[openshell.drivers.kubernetes]` of
+  `gateway.toml`; documented in the chart values). Rollout path: commit →
+  ArgoCD → ACM policy → spoke; the gateway config checksum annotation
+  forces a pod rollout; new sandboxes then boot as kata-remote pod VMs.
+- **CoCo integration points already in place**: (1) global INITDATA on the
+  spoke (`peer-pods-cm` `INITDATA: {{fromConfigMap "imperative" "initdata"
+  "INITDATA"}}`) applies to ALL kata-remote pods regardless of namespace,
+  so sandbox pods in the `openshell` ns get the same AA→KBS attestation
+  chain automatically; (2) the `propagate-initdata-to-openshell` Kyverno
+  policy (`applications/coco-kyverno-policies/overlay/spokes/propagation-initdata.yaml`)
+  already clones the imperative initdata CMs into the `openshell` ns; (3)
+  the initdata `policy.rego` is permissive for this workload (`default
+  CreateContainerRequest := true`, no image restrictions) and the image
+  security policy is `insecure`, so the sandbox base + supervisor images
+  pull inside the pod VM; (4) OpenShell does NOT use kube exec for its
+  control channel (mTLS to the supervisor boundary port 5500 via the paired
+  supervisor pod), so the kata agent policy's exec whitelist (the two CDH
+  status curls) does not block gateway management of the sandbox.
+- **Caveats**: (1) the peer-pods webhook strips container resources, so
+  each sandbox is one DEFAULT pod VM (`m6a.large`) counting against
+  `PEERPODS_LIMIT_PER_NODE` — per-sandbox resource requests have no effect;
+  (2) OpenShell's supervisor needs Landlock in the GUEST kernel (≥5.13) —
+  verify the podvm image kernel before relying on filesystem isolation
+  (`ami-056cc016bbe3cddc3`); (3) the KBS TLS cert SAN fix (below) is a hard
+  prerequisite — a SAN miss kills kata-remote sandboxes with the same
+  `CreateContainerError` as the coco-agents pods; (4) mixed mode works — a
+  per-sandbox `driver_config`/`platform_config` runtime class overrides the
+  gateway default, so some sandboxes can stay on runc.
+- **Verification after enable**: create a sandbox (`openshell sandbox
+  create -g <gateway> --name coco-test ...`), then
+  `oc get pods -n openshell -o json | jq -r '.items[] |
+  select(.spec.runtimeClassName=="kata-remote") | .metadata.name'` shows
+  the sandbox workload pod, a pod VM appears (CAA DS logs on the node / the
+  pod VM EC2 instance), and the KBS logs the attestation round-trip (same
+  SUCCESS signature as Verification).
+
 ## Notes and caveats
 
 - **PlacementBindings must set `metadata.namespace` explicitly in apps whose
