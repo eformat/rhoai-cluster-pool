@@ -47,9 +47,11 @@ spec:
             # while the gateway runs disableTls).
             - name: OPENSHELL_GATEWAY_URL
               value: openshell.openshell.svc.cluster.local:8080
-            # oauth2-proxy injects the ID token as Authorization: Bearer.
-            - name: AUTH_TOKEN_HEADER
-              value: authorization
+            # AUTH_TOKEN_HEADER stays at its default (x-forwarded-access-
+            # token): the proxy middleware falls back to the Authorization
+            # header, strips the "Bearer " prefix, and forwards the raw ID
+            # token. Setting it to "authorization" forwards the raw header
+            # value INCLUDING the prefix and the gateway rejects the token.
           resources:
             requests:
               cpu: 50m
@@ -91,6 +93,8 @@ spec:
             - --email-domain=*
             - --reverse-proxy=true
             - --insecure-oidc-allow-unverified-email
+            - --skip-provider-button
+            - --code-challenge-method=S256
             - --cookie-secure=true
             - --cookie-samesite=lax
           env:
