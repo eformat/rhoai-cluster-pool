@@ -1,0 +1,30 @@
+---
+# Keeps the shared approval label on the OSC-created kata-remote
+# RuntimeClass so the openshell gateway's resource-admission gate
+# ([openshell.drivers.kubernetes.resource_admission]) admits it for
+# sandboxes in ANY workspace. Kyverno mutates the existing RuntimeClass
+# when the policy is created and re-enforces the label on drift.
+#
+# The openshell-dashboard/sandbox-policy agents and the dashboard's
+# Create-sandbox flow both attach sandboxes to this RuntimeClass (the
+# gateway config sets resourceAdmission.requiredLabels to just this label
+# — see applications/openshell/overlay/gateway/values.yaml).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: label-kata-remote-attachable
+spec:
+  rules:
+    - name: label-runtimeclass-attachable
+      match:
+        any:
+          - resources:
+              kinds:
+                - RuntimeClass
+              names:
+                - kata-remote
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              openshell.ai/sandbox-attachable: "true"
