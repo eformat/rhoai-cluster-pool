@@ -12,7 +12,13 @@ metadata:
     app: agent-{{ $user.name }}
     {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 4 }}
 spec:
-  replicas: {{ $user.replicas | default 1 }}
+  {{- /* sprig `default` treats 0 as empty, so it can never render 0 — use an
+     explicit key check to allow `replicas: 0` (scale down). */}}
+  {{- if hasKey $user "replicas" }}
+  replicas: {{ $user.replicas }}
+  {{- else }}
+  replicas: 1
+  {{- end }}
   strategy:
     type: Recreate
   selector:

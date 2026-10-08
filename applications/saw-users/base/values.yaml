@@ -4,6 +4,7 @@
 users:
   - name: alice
     profile: data-science
+    replicas: 0
 
 # AIPCC OpenClaw agent image (confidential-containers agent base image).
 image: quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65d1c758c8da777f441ed094e19f3bcf6d7445c61
