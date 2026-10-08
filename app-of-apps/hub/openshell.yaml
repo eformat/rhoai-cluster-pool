@@ -32,7 +32,9 @@ spec:
       sources:
         - repoURL: oci://ghcr.io/nvidia/openshell
           chart: helm-chart
-          targetRevision: 0.0.103
+          # 0.0.103 never existed (ArgoCD app stuck Unknown); 0.1.2 is the
+          # real latest — verified via `helm show chart`.
+          targetRevision: 0.1.2
           helm:
             valuesObject:
               pkiInitJob:
