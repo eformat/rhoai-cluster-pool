@@ -30,11 +30,12 @@ policies:
       placementName: placement-spokes-prelude
     manifests:
       - path: prelude/
-  # The OpenShell gateway on the HUB needs the Agent Sandbox API
-  # (agents.x-k8s.io) served cluster-locally — the gateway crashes with
-  # "no supported Agent Sandbox API version is available" without it.
-  - name: agent-sandbox-hub
+  # The OpenShell gateway runs on the COCO SPOKE and needs the Agent
+  # Sandbox API (agents.x-k8s.io) served cluster-locally — the gateway
+  # crashes with "no supported Agent Sandbox API version is available"
+  # without it. (NOT the hub — the gateway + agents belong on the spoke.)
+  - name: agent-sandbox-coco
     placement:
-      placementName: placement-hub-openshift
+      placementName: placement-spoke-coco
     manifests:
-      - path: hub/
+      - path: coco/
