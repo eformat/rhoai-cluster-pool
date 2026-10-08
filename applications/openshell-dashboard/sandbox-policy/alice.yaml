@@ -1,0 +1,47 @@
+# Alice's agent sandbox security policy (OpenShell).
+#
+# The egress proxy allows ONLY the named endpoints below and denies
+# everything else (the prompt-injection-exfiltration layer). The KBS
+# endpoint is included so in-guest attestation traffic is never blocked if
+# it traverses the proxy. Binaries are NOT restricted initially — tighten
+# per-binary once the agent's entrypoints are known.
+#
+# Consumed by: `openshell sandbox create --policy ...` (CLI) or the
+# openshell-dashboard Sandboxes create flow.
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  read_only:
+  - /usr
+  - /lib
+  - /etc
+  - /app
+  - /var/log
+  - /proc/self
+  - /dev/urandom
+  read_write:
+  - /sandbox
+  - /tmp
+  - /dev/null
+
+landlock:
+  compatibility: best_effort
+
+network_policies:
+  maas:
+    name: RHOAI MaaS (LLM inference)
+    endpoints:
+      - { host: maas.apps.ocp.cloud.rhai-tmm.dev, port: 443 }
+  keycloak:
+    name: Hub Keycloak
+    endpoints:
+      - { host: keycloak-keycloak.apps.sno.sandbox1254.opentlc.com, port: 443 }
+  kbs:
+    name: Trustee KBS (attestation)
+    endpoints:
+      - { host: kbs.apps.sno.sandbox1254.opentlc.com, port: 443 }
+  gateway:
+    name: OpenShell gateway (sandbox callback)
+    endpoints:
+      - { host: openshell.openshell.svc.cluster.local, port: 8080 }
