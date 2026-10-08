@@ -30,11 +30,12 @@ spec:
         server: "{{.server}}"
         namespace: openshell
       sources:
-        - repoURL: oci://ghcr.io/nvidia/openshell
-          chart: helm-chart
-          # 0.0.103 never existed (ArgoCD app stuck Unknown); 0.1.2 is the
-          # real latest — verified via `helm show chart`.
-          targetRevision: 0.1.2
+        # Chart vendored locally: ghcr.io 403s anonymous token requests for
+        # nvidia/openshell from the hub (ArgoCD has no ghcr.io credentials),
+        # so the OCI source can't resolve. Chart 0.1.2 extracted verbatim.
+        - repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+          targetRevision: main
+          path: applications/openshell/gateway-chart
           helm:
             valuesObject:
               pkiInitJob:
