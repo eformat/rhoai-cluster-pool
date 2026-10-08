@@ -176,9 +176,23 @@ oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm             # 
 oc -n openshift-sandboxed-containers-operator get ds osc-caa-ds               # 1/1 on the node
 oc -n openshift-sandboxed-containers-operator logs -l name=osc-caa-ds | grep -i "server started"
 
+# CoCo feature gate + initdata (REQUIRED for the KBS round-trip):
+oc -n openshift-sandboxed-containers-operator get cm osc-feature-gates \
+  -o jsonpath='{.data.confidential}'      # "true" -> OSC sets DISABLECVM=false + preserves our INITDATA
+oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm \
+  -o jsonpath='{.data.DISABLECVM}'        # "false" -> CAA launches SNP CVM pod VMs
+oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm \
+  -o jsonpath='{.data.PODVM_INSTANCE_TYPE}'  # m6a.large (must support SEV-SNP)
+oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm \
+  -o jsonpath='{.data.INITDATA}' | base64 -d | zcat | grep -c kbs  # >0: KBS URL present
+
 # The end-to-end test is a sandboxed agent (openshell/coco-agents):
 oc -n coco-agents get pods                           # agent pod Running on kata-remote
 oc -n coco-agents get route agent-alice              # agent dashboard route
+
+# Attestation round-trip: the pod VM's CDH/AA must hit the KBS (hub):
+oc -n trustee-operator-system logs deploy/trustee-deployment -c kbs \
+  | grep -E "auth|attest|resource" | grep -v /live
 ```
 
 ## Cluster naming and pools
@@ -267,6 +281,18 @@ configuration:
 | AMD SEV-SNP, kata-cc (`kata-snp` handler) | `m6a.metal-48xl` (192 vCPU/768 GiB, Milan) | No PCCS — cert-chain (VCEK from AMD KDS) |
 | Nitro Enclaves (different runtime model — not Kata) | parent `m5.2xlarge` (8 vCPU) | NSM attestation |
 
+- **Peer pods (CAA) DO support TEE pod VMs without any TEE on the node**:
+  the pod VM is a separate EC2 instance, so the worker node's CPU family
+  is irrelevant. With the CoCo feature gate enabled the OSC sets
+  `DISABLECVM=false` in peer-pods-cm and the CAA launches pod VMs as
+  **AMD SEV-SNP CVMs** — `PODVM_INSTANCE_TYPE` must support SNP
+  (`m6a.*`/`c6a.*`/`r6a.*` Milan+; verified available in us-east-2; this
+  deployment uses `m6a.large`, the same 2 vCPU/8 GiB spec and ~same cost
+  as `t3.large`). `t3.*` fails with "The specified instance type does not
+  support AMD SEV-SNP". Attestation goes to the Trustee KBS
+  `coco_as_builtin` service (verifies hardware evidence by TEE type). The
+  kata-cc `kata-snp` handler / bare-metal rows below are the in-node Kata
+  path and are NOT used here.
 - **No smaller bare-metal TEE instance exists on AWS**: SEV-SNP requires
   Milan+ (all AMD `6a`/`7a` metals are 48xl; Naples `m5a` metals lack
   SNP); Intel TDX only on `m7i` metals (smallest = 24xl). Both require
@@ -316,22 +342,32 @@ configuration:
   the base64-encoded Secret `.data` value, so Secret-backed values need
   decoding — `fromConfigMap` returns plain data and is the safe choice for
   non-credential identifiers.
-- **TEE on AWS — is the attestation hassle worth it without TEE?** The
-  pool's AWS instances are virtual (m6i/t3/g6); standard peer-pod VM
-  instance types have **no TEE**, so hardware attestation cannot
-  cryptographically prove anything. What the pipeline still gives:
-  pod-VM isolation (image pulled inside the pod VM, invisible to the
-  node), initdata binding (KBS cert + agent policy in the guest), secrets
-  delivered only via the KBS round-trip, kata agent rego policy, and
-  governance/Landlock. What it cannot give: hardware-rooted trust.
-  - The KBS **resource policy is permissive by default** for this reason
-    (non-TEE EAR claims default to failing values — enforcing them would
-    deny all resource delivery). Resources stay token-gated. To enforce
-    claims, use TEE pod VMs: AWS SEV-SNP is available on 7th-gen AMD
-    instances (`m7a.*`/`c7a.*`/`r7a.*` via `PODVM_INSTANCE_TYPE`), then
-    enable the claim rules in
-    `applications/trustee/overlay/hub/resource-policy.yaml` and add SNP
-    reference values to the KBS.
+- **TEE on AWS — round-18 decision: full TEE CoCo**. This deployment now
+  uses the OSC's native CVM path: feature gate on → `DISABLECVM=false` →
+  SNP CVM pod VMs (`PODVM_INSTANCE_TYPE: m6a.large`). Hardware-rooted
+  attestation (AA in the guest → SNP evidence → KBS `coco_as_builtin`) is
+  in play; once it is verified end-to-end, the claim rules in
+  `applications/trustee/overlay/hub/resource-policy.yaml` can be enabled
+  and SNP reference values added to the KBS. (The pre-round-18 setup used
+  `t3.large` pod VMs, which have no TEE — that caveat is historical.)
+- **CAA rollouts sever existing kata-remote pod shims** (`dial unix
+  /run/containernd/...: no such file`): after ANY CAA restart, delete the
+  coco-agents pods for fresh sandboxes. Pods stuck in `Terminating` for a
+  long time have **no finalizers and no kubelet progress** (the shim was
+  severed) — force-delete them
+  (`oc -n coco-agents delete pods --all --force --grace-period=0`) and
+  terminate orphaned pod VMs left behind by the dead sandchains
+  (`aws ec2 terminate-instances` for stray t3/m6a instances).
+- **peer-pods-cm is ACM-managed and OSC-rendered — two drift traps**: (1) ACM
+  policy enforcement continuously re-applies the committed value, so live CM
+  patches revert within minutes — durable changes go through git (commit →
+  ArgoCD → ACM → spoke). (2) The OSC renders the CM values into the
+  osc-caa-ds **env template** and the CAA reads its config ONCE at startup
+  from that env, so changing the CM alone does NOT reach the CAA: trigger a
+  KataConfig reconcile (annotate the KataConfig or restart the OSC operator)
+  to re-render the DS — then delete the coco-agents pods (shim severing,
+  above). Emergency override without a reconcile: `oc set env ds/osc-caa-ds
+  PODVM_INSTANCE_TYPE=m6a.large` (rolls the CAA with the explicit env).
 - **Keycloak realms**: the per-spoke realm created by `spoke-realms` is
   **for agents only** (client `openshell-agents`). OCP on the spoke still
   validates against the HUB Keycloak via the existing
