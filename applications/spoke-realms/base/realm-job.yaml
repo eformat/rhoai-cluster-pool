@@ -165,13 +165,22 @@ data:
                 print(f"created role {role} in realm {realm}")
 
         # Public client for the OpenShell CLI (browser login, localhost
-        # loopback redirect, PKCE).
+        # loopback redirect, PKCE). The CLI's PKCE login redirects to
+        # http://127.0.0.1:<ephemeral-port>/callback (oidc_auth.rs) —
+        # 127.0.0.1 with a /callback path, NOT localhost:*. Loopback
+        # patterns without a port match any ephemeral port (RFC 8252); the
+        # :* patterns cover Keycloak builds without that flexibility.
         status, _ = kc_api("POST", f"/admin/realms/{realm}/clients", {
             "clientId": CLI_CLIENT_ID,
             "enabled": True,
             "protocol": "openid-connect",
             "publicClient": True,
-            "redirectUris": ["http://localhost:*"],
+            "redirectUris": [
+                "http://127.0.0.1/callback",
+                "http://127.0.0.1:*/callback",
+                "http://localhost/callback",
+                "http://localhost:*/callback",
+            ],
             "standardFlowEnabled": True,
             "attributes": {"pkce.code.challenge.method": "S256"},
         }, token)
@@ -199,6 +208,29 @@ data:
             print(f"WARN: could not resolve {CLI_CLIENT_ID} uuid in {realm}")
         else:
             cli_uuid = cli_clients[0]["id"]
+
+            # Sync the CLI client's redirectUris if drifted: the job only
+            # creates clients, so an existing CLI client would keep the old
+            # (broken) http://localhost:* pattern forever otherwise.
+            wanted_uris = [
+                "http://127.0.0.1/callback",
+                "http://127.0.0.1:*/callback",
+                "http://localhost/callback",
+                "http://localhost:*/callback",
+            ]
+            if cli_clients[0].get("redirectUris") != wanted_uris:
+                cli_clients[0]["redirectUris"] = wanted_uris
+                status, _ = kc_api(
+                    "PUT",
+                    f"/admin/realms/{realm}/clients/{cli_uuid}",
+                    cli_clients[0],
+                    token,
+                )
+                if status in (200, 204):
+                    print(f"synced {CLI_CLIENT_ID} redirectUris in {realm}")
+                else:
+                    print(f"WARN: redirectUris sync in {realm} returned HTTP {status}")
+
             status, existing = kc_api(
                 "GET",
                 f"/admin/realms/{realm}/clients/{cli_uuid}/protocol-mappers/models",
