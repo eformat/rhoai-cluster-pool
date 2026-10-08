@@ -180,6 +180,73 @@ Notes:
   instances) and CoCo pods fail with *"failed to add any hypervisor device
   to devices cgroup"*.
 
+## Topology
+
+```text
+┌─────────────────────────── HUB SNO (sno.sandbox1254.opentlc.com) ───────────────────────────┐
+│                                                                                             │
+│  ┌──────────────┐   ┌──────────────────┐   ┌──────────────┐   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐      │
+│  │   Keycloak   │   │  trustee / KBS   │   │ vault + ESO  │   │  OpenShell gateway │      │
+│  │  (SSO/realms)│   │  ClusterIP :8080 │   │ (hub-trusted)│   │  ✗ NOT DEPLOYED    │      │
+│  └──────────────┘   └────────▲─────────┘   └──────┬───────┘   │  (OCI chart rev    │      │
+│                              │                    │           │   0.0.103 missing) │      │
+│                              │ route: kbs         │           └ ─ ─ ─ ─ ┬ ─ ─ ─ ─ ┘      │
+│                              │ .apps.sno...       │ seeds secrets       │                │
+└──────────────────────────────┼────────────────────┼─────────────────────┼────────────────┘
+                               │ ① ATTESTATION      │ ② SEEDS             │
+                               │  (pod VM dials IN) │  (Pattern B)        │ ③ openshell CLI
+                               │                    ▼                     │    (would connect
+┌──────────────────────────────┼───────────────────────────────────────────┼── here; gateway
+│  SPOKE (coco-m6wl4-gfqch)    │                                           │    not deployed)
+│                              │              ┌──────────────────────┐    ▼
+│  ┌────────────────────┐      │              │ openshift-gitops     │  ┌──────────────┐
+│  │ coco-agents ns     │      │              │ (ACM PolicyGenerator)│  │    USER      │
+│  │                    │      │              └──────────▲───────────┘  └──────┬───────┘
+│  │  Deployment:       │      │                         │                     │
+│  │   openclaw-agent   │      │            commit ──────┘                     │ a) browser
+│  │   agent-alice      │      │            (git = source of truth)            │    → spoke route
+│  │        │           │      │                                               │    (edge/Redirect)
+│  │        ▼           │      │                                               │ b) oc port-forward
+│  │  ┌────────────────────────────────────┐  ClusterIP svcs :18789          │    svc → pod VM
+│  │  │ CoCo Pod (kata-remote)             │◄─────────────────────────────────┤ c) in-cluster svc
+│  │  │  ┌──────────────────────────────┐  │   agent-alice  172.30.50.185    │
+│  │  │  │ SNP CVM pod VM (m6a.large)   │  │   openclaw-agent 172.30.15.83   │
+│  │  │  │  openclaw gateway run :18789 │  │                                 │
+│  │  │  │  /sandbox/.openclaw (config) │  │   Route: agent-alice-coco-agents│
+│  │  │  │  Landlock governance mounted │  │   .apps.coco-m6wl4-gfqch...     │
+│  │  │  │  initdata → aa.toml/cdh.toml │──┼──► tunnel to node (pod IP)      │
+│  │  │  └──────────────────────────────┘  │                                 │
+│  │  └────────────────────────────────────┘                                 │
+│  │  Node: kata shim + CAA only (no workload)                               │
+│  └──────────────────────────────────────────────────────────────────────── ┘
+└─────────────────────────────────────────────────────────────────────────────
+```
+
+**Glossary:**
+
+- **CAA — Cloud API Adaptor**: the CoCo project component behind the
+  `osc-caa-ds` DaemonSet on the spoke node. The kata shim asks the CAA to
+  create a pod sandbox; instead of running a pod VM on the node (virtual EC2
+  instances have no `/dev/kvm`), the CAA calls the AWS EC2 API to launch a
+  **remote** micro-VM running the same pod spec, then tunnels the pod
+  network back to the node so the pod gets a normal pod IP and Services /
+  Routes work unchanged.
+- **CVM — Confidential Virtual Machine**: a VM whose memory is encrypted and
+  measured by hardware. Here: AMD **SEV-SNP** on `m6a.large` — the guest
+  memory is encrypted, the hypervisor (AWS) cannot read it, and the guest
+  can prove its identity/measurement to the KBS via attestation. The OSC's
+  CoCo flavour forces `DISABLECVM=false`, so every pod VM boots as an SNP
+  CVM.
+
+**Connection paths:**
+
+| Path | How | Status |
+|---|---|---|
+| a) Browser → dashboard | `https://agent-alice-coco-agents.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com` → edge route → svc → pod VM `:18789` | works |
+| b) oc port-forward | `oc -n coco-agents port-forward svc/agent-alice 18789:18789` (API server → kubelet → shim → CVM) | works |
+| c) in-cluster | ClusterIP services (`agent-alice:18789`, `openclaw-agent:18789`) | works |
+| d) openshell CLI → gateway | CLI → OpenShell gateway (hub) → sandbox CRDs (agent-sandbox operator) | **gateway undeployed** — bump `targetRevision` in `app-of-apps/hub/openshell.yaml` |
+
 ## Verification
 
 ```bash
