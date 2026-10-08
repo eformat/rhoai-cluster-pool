@@ -12,7 +12,7 @@ metadata:
     app: agent-{{ $user.name }}
     {{- include "coco-agents.labels" (dict "root" $ "name" $user.name) | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   strategy:
     type: Recreate
   selector:
