@@ -30,3 +30,11 @@ policies:
       placementName: placement-spokes-prelude
     manifests:
       - path: prelude/
+  # The OpenShell gateway on the HUB needs the Agent Sandbox API
+  # (agents.x-k8s.io) served cluster-locally — the gateway crashes with
+  # "no supported Agent Sandbox API version is available" without it.
+  - name: agent-sandbox-hub
+    placement:
+      placementName: placement-hub-openshift
+    manifests:
+      - path: hub/
