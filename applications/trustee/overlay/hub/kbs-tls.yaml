@@ -42,7 +42,11 @@ metadata:
   name: kbs
   namespace: trustee-operator-system
 spec:
-  subdomain: kbs
+  # spec.host (not subdomain) — applications/coco-discovery's
+  # coco-urls-hub policy looks up $kbs.spec.host to publish KBS_URL to
+  # vault; with subdomain-only spec.host is empty and the URL renders as
+  # https://<no value>, breaking the initdata rendered by the spokes.
+  host: kbs.apps.sno.sandbox1254.opentlc.com
   port:
     targetPort: 8080
   to:
