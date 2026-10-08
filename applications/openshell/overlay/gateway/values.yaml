@@ -20,6 +20,10 @@ agentSandbox:
   preflight:
     enabled: false
 server:
+  # Explicit sandbox namespace — .Release.Namespace resolved to
+  # openshift-gitops through the kustomize helm inflate, so pin it to the
+  # spoke's openshell ns where the gateway + sandboxes belong.
+  sandboxNamespace: openshell
   disableTls: true
   auth:
     allowUnauthenticatedUsers: true
