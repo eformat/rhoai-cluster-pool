@@ -28,6 +28,10 @@ spec:
   commonName: kbs
   dnsNames:
     - kbs
+    # Route hostname — the AA in the pod VM connects via the hub route, so the
+    # serving cert SAN must cover it or rustls hostname verification fails
+    # (CreateContainerError in CoCo pods).
+    - kbs.apps.sno.sandbox1254.opentlc.com
   issuerRef:
     name: kbs-self-signed-issuer
     kind: Issuer
