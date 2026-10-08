@@ -13,14 +13,16 @@ spec:
       argoWorkflowsControllers:
         managementState: Managed
       managementState: Managed
+    aigateway:
+      managementState: Managed
+      modelsAsAService:
+        managementState: Managed
     dashboard:
       managementState: Managed
     feastoperator:
       managementState: Managed
     kserve:
       managementState: Managed
-      modelsAsService:
-        managementState: Managed
       nim:
         airGapped: false
         managementState: Managed
