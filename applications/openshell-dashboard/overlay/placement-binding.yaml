@@ -1,11 +1,16 @@
 ---
 # Binds the ESO-rendered dashboard secret Policy to the coco spoke
 # placement (same pattern as the coco-kyverno-policies initdata-hub ESOs).
+# metadata.namespace MUST be explicit: a namespace-less binding silently
+# lands in the ArgoCD app's destination namespace (openshell on the hub)
+# and the ACM propagator never sees it — the policy never distributes,
+# with no status, events, or errors.
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
   name: binding-openshell-dashboard-secret
+  namespace: openshift-gitops
 placementRef:
   apiGroup: cluster.open-cluster-management.io
   kind: Placement
