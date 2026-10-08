@@ -16,5 +16,8 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "openshell.serviceAccountName" . }}
-    namespace: {{ .Release.Namespace }}
+    # Same namespace resolution as the sandbox namespace (sandboxNamespace
+    # helper) — .Release.Namespace leaks the ACM app's namespace through the
+    # kustomize helm inflate, so bind the gateway's real ServiceAccount.
+    namespace: {{ .Values.server.sandboxNamespace | default .Release.Namespace }}
 {{- end }}
