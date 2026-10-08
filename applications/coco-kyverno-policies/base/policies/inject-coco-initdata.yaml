@@ -21,6 +21,22 @@ metadata:
       remain stable and a rollout restart resolves the latest initdata.
     pod-policies.kyverno.io/autogen-controllers: none
 spec:
+  # Ignore, not the default Fail: the rule's configMap context entry is named
+  # from the pod's coco.io/initdata-configmap annotation, and Kyverno evaluates
+  # context entries BEFORE rule-level preconditions. Pods without the
+  # annotation (openshell sandbox workloads — they boot via the global
+  # peer-pods INITDATA, not a per-namespace ConfigMap) made the context lookup
+  # fail, and with Fail the webhook DENIED pod creation entirely — the
+  # agent-sandbox controller could never materialize the workload pod, so the
+  # gateway suspended every new sandbox ("stale boundary") and dashboard Start
+  # failed with "persisted runtime identity is missing". With Ignore the
+  # lookup failure is skipped: unannotated pods are admitted unmutated
+  # (desired), annotated pods still get the injection.
+  # NOTE: ACM's governance-policy-framework validates ClusterPolicies with
+  # strict decoding against an older schema — newer fields like
+  # spec.rules[].match.preconditions are rejected as "unknown field", so this
+  # policy must stick to long-standing fields only.
+  failurePolicy: Ignore
   rules:
     - name: inject-initdata
       match:
@@ -30,20 +46,6 @@ spec:
                 - Pod
               operations:
                 - CREATE
-        # Match-level preconditions are evaluated BEFORE context entries;
-        # rule-level preconditions are not. The initdata context below reads
-        # the coco.io/initdata-configmap annotation, so pods without it (e.g.
-        # openshell sandbox workloads, which boot via global peer-pods
-        # INITDATA instead of a per-namespace initdata ConfigMap) made the
-        # context lookup fail and the Fail webhook deny pod creation — the
-        # agent-sandbox controller could never materialize the workload pod.
-        # Checking the annotation in match skips the rule before the context
-        # is ever fetched.
-        preconditions:
-          all:
-            - key:  '{{ "{{" }} request.object.metadata.annotations."coco.io/initdata-configmap" || '''' {{ "}}" }}'
-              operator: NotEquals
-              value: ""
       exclude:
         any:
           - resources:
