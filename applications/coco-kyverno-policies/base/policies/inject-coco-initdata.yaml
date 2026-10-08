@@ -30,6 +30,20 @@ spec:
                 - Pod
               operations:
                 - CREATE
+        # Match-level preconditions are evaluated BEFORE context entries;
+        # rule-level preconditions are not. The initdata context below reads
+        # the coco.io/initdata-configmap annotation, so pods without it (e.g.
+        # openshell sandbox workloads, which boot via global peer-pods
+        # INITDATA instead of a per-namespace initdata ConfigMap) made the
+        # context lookup fail and the Fail webhook deny pod creation — the
+        # agent-sandbox controller could never materialize the workload pod.
+        # Checking the annotation in match skips the rule before the context
+        # is ever fetched.
+        preconditions:
+          all:
+            - key:  '{{ "{{" }} request.object.metadata.annotations."coco.io/initdata-configmap" || '''' {{ "}}" }}'
+              operator: NotEquals
+              value: ""
       exclude:
         any:
           - resources:
