@@ -40,8 +40,8 @@ policies:
       placementName: placement-spokes-prelude-nightly-35
     manifests:
       - path: prelude-nightly-35/
-  - name: rhoai-prelude-nightly-351
+  - name: rhoai-prelude-nightly-36
     placement:
-      placementName: placement-spokes-prelude-nightly-351
+      placementName: placement-spokes-prelude-nightly-36
     manifests:
-      - path: prelude-nightly-351/
+      - path: prelude-nightly-36/
