@@ -49,20 +49,39 @@ spec:
     disableTracking: false
     disableTrustyBiasMetrics: false
     disableUserManagement: false
+    agentConfigManagement: true
     agentOps: true
+    agentOpsDeploy: true
+    agentsCatalog: true
     aiAssetCustomEndpoints: true
     automl: true
     autorag: true
     deploymentWizardYAMLViewer: true
     enablement: true
+    externalVectorStores: true
+    featureStoreAdmin: true
+    genAiAgentDeployment: true
+    genAiMcpRegistryServers: true
     genAiStudio: true
+    genAiTracing: true
+    globalProjectPrompts: true
+    gpuaas: true
+    guardrails: true
+    llmGatewayField: true
     maasAuthPolicies: true
     mcpCatalog: true
+    mcpRegistry: true
     mlflow: true
     modelAsService: true
+    modelCapabilities: true
     mySubscriptions: true
+    nimWizard: true
     observabilityDashboard: true
+    projectRBAC: true
     promptManagement: true
+    roleManagement: true
+    runtimeCatalog: true
+    toolCalling: true
     trainingJobs: true
     vLLMDeploymentOnMaaS: true
   genAiStudioConfig:
