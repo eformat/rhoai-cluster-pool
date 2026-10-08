@@ -55,6 +55,26 @@ through vault.
 
 Test with sandboxed agents after the infrastructure deploys.
 
+### Agent deployment (openshell / openshell-agents / saw-users)
+
+All ArgoCD-driven from this repo — no manual commands; commit → app-of-apps
+→ ApplicationSet → ACM PolicyGenerator → spoke:
+
+| App | Source | What it deploys |
+|---|---|---|
+| `app-of-apps/hub/openshell.yaml` | NVIDIA OCI helm chart | OpenShell **gateway** (hub) |
+| `app-of-apps/hub/openshell-agents.yaml` | `applications/openshell/overlay` (PolicyGenerator `placement-spoke-coco`) | CoCo **agent pods** (`openclaw-agent` in `coco-agents` ns, kata-remote) |
+| `app-of-apps/hub/saw-users.yaml` | `applications/saw-users` (helm chart `coco-agents`) | per-user agents (`agent-<user>`, env `SAW_USER`/`SAW_PROFILE`) |
+
+Agent container contract (both `applications/openshell/base/agent-deployment.yaml`
+and `applications/saw-users/charts/coco-agents/templates/agent.yaml`):
+
+- `command: sh -c 'openclaw onboard --non-interactive --accept-risk --skip-health || true; exec openclaw gateway run'` — the image default Cmd is bare `openclaw`, which is NOT the gateway; without onboarding it exits with "Onboarding needs an interactive TTY".
+- Pod annotations: `peerpods: "true"`, `coco.io/initdata-configmap: initdata`, `io.katacontainers.config.runtime.create_container_timeout: "900"`.
+- Volumes: `sandbox` emptyDir at `/sandbox` (agent home — persists for the pod's lifetime), governance policy/profiles CMs at `/sandbox/governance/` (generated into BOTH `openshell` and `coco-agents` namespaces by `applications/openshell/base/kustomization.yaml`), namespace-local `initdata` CM at `/opt/confidential-containers/initdata`.
+- Do NOT set `fsGroup` outside the namespace SCC range — restricted-v2 rejects it; the emptyDir is world-writable anyway.
+- Per-user agents read `agent-<user>-secrets` via `envFrom` (vault-backed).
+
 ## Vault secrets
 
 All values are seeded from **`secrets/vault-coco`** (same pattern as
@@ -190,9 +210,24 @@ oc -n openshift-sandboxed-containers-operator get cm peer-pods-cm \
 oc -n coco-agents get pods                           # agent pod Running on kata-remote
 oc -n coco-agents get route agent-alice              # agent dashboard route
 
+# Workload-namespace initdata CM — read by Kyverno on Pod CREATE, so it must
+# match the imperative copy (a stale copy boots pod VMs with the old cert):
+oc -n coco-agents get cm initdata -o jsonpath='{.data.RAW_HASH}'
+oc -n imperative get cm initdata -o jsonpath='{.data.RAW_HASH}'   # must match
+
+# KBS serving cert SAN — must cover the route hostname (the AA's rustls
+# does hostname verification; a SAN miss = CreateContainerError):
+openssl s_client -connect kbs.apps.sno.sandbox1254.opentlc.com:443 \
+  -servername kbs.apps.sno.sandbox1254.opentlc.com </dev/null 2>/dev/null \
+  | openssl x509 -noout -ext subjectAltName        # needs DNS:kbs.apps.sno.<domain>
+
 # Attestation round-trip: the pod VM's CDH/AA must hit the KBS (hub):
 oc -n trustee-operator-system logs deploy/trustee-deployment -c kbs \
   | grep -E "auth|attest|resource" | grep -v /live
+# SUCCESS looks like (all 200, UA=attestation-agent-kbs-client):
+#   "POST /kbs/v0/auth HTTP/1.1" 200
+#   "POST /kbs/v0/attest HTTP/1.1" 200
+#   "GET /kbs/v0/resource/default/security-policy/insecure HTTP/1.1" 200
 ```
 
 ## Cluster naming and pools
@@ -386,3 +421,56 @@ configuration:
   vault (see `applications/policy-collection` for the pattern). Never
   commit secret values or placeholder base64 blobs — values live in
   vault, seeded by the `secrets/vault-*` scripts.
+- **KBS TLS cert SAN must cover the route hostname** (2026-10-08 fix): the
+  cert-manager Certificate in `applications/trustee/overlay/hub/kbs-tls.yaml`
+  originally had `dnsNames: [kbs]` only, so the KBS served a cert the AA's
+  rustls hostname verification rejects (`kbs.apps.<domain>` != `kbs`) —
+  every CoCo pod died with `CreateContainerError: ttrpc request error` and
+  the KBS logged **zero** requests. Fix: the Certificate's `dnsNames`
+  include `kbs.apps.<domain>`; cert-manager rotates → the cert is pushed to
+  vault (`coco/kbs-tls-self-signed`) by `secrets/vault-coco` → the trustee
+  ESOs pull it into `kbs-https-certificate/key` → the initdata pins the same
+  cert, so client and server always match.
+- **KBS route must set `spec.host`, not `subdomain`** (2026-10-08 fix):
+  `applications/coco-discovery` `coco-urls-hub` policy publishes
+  `KBS_URL: https://{{ $kbs.spec.host }}` to vault; with a subdomain-only
+  route `spec.host` is empty and the URL rendered as `https://<no value>`,
+  poisoning the whole chain (hub coco-config → vault `coco/urls` → spoke
+  `coco-config` → initdata). Keycloak is unaffected (its route sets
+  `spec.host`).
+- **Vault write path is ONLY `secrets/vault-coco`**: never write to vault
+  directly (vault CLI, pod exec, API). Add the needed `vault kv put` to the
+  script and stop — vault is hydrated by running the script (same pattern as
+  git: Mike is vault master). The PushSecret path
+  (`push-kbs-certs`/`push-coco-urls`) also cannot update vault: the ESO
+  vault role lacks `kv/metadata/*` (403 on the Replace existence check), so
+  the scripts are the only write mechanism.
+- **Workload-namespace initdata CM is namespace-local** (2026-10-08 trap):
+  the Kyverno `inject-coco-initdata` policy reads the ConfigMap named by the
+  pod's `coco.io/initdata-configmap` annotation **from the pod's own
+  namespace** on Pod CREATE — there is no automated sync from
+  `imperative/initdata` to workload namespaces. When `imperative/initdata`
+  changes, update the workload copies (e.g. `oc -n <ns> get cm initdata -o
+  yaml` from imperative → apply), then delete the workload pods (the policy
+  targets Pods, so pod deletion picks up the latest initdata). Verify with
+  the RAW_HASH comparison in Verification.
+- **CoCo pod rollout ordering**: pod VMs provisioned BEFORE a CAA
+  DaemonSet restart (or a peer-pods-cm change that re-renders it) boot with
+  the OLD initdata/instance type — after any CAA/CM change, delete the
+  coco-agents pods so the new CAA provisions them. CAA restarts also sever
+  existing kata-remote shims (above).
+- **openclaw/agent-alice images need onboarding + the gateway command**
+  (2026-10-08 fix): two app-level issues, independent of CoCo (verified on
+  non-kata pods). (1) The images exit 1 + empty logs until onboarded — run
+  `openclaw onboard --non-interactive --accept-risk --skip-health` before
+  start (idempotent; the config lives at `/sandbox/.openclaw/` on the pod's
+  `sandbox` emptyDir, so it persists for the pod's lifetime). (2) The image
+  default Cmd is bare `openclaw`, which is NOT the gateway — it exits after
+  ~20s; the gateway is `openclaw gateway run`. The coco-agents deployments
+  set `command: sh -c 'openclaw onboard --non-interactive --accept-risk
+  --skip-health || true; exec openclaw gateway run'`. NOTE: do NOT set
+  `fsGroup: 1000` on these pods — OpenShift restricted-v2 SCC rejects any
+  fsGroup outside the namespace range (`coco-agents`:
+  `1000870000/10000`) and the emptyDir is world-writable anyway. Exec into
+  the CoCo containers is blocked by the kata agent policy (by design), so
+  debug such containers via a throwaway non-kata pod with the same image.

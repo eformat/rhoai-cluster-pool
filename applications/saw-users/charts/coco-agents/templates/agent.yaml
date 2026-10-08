@@ -35,6 +35,16 @@ spec:
         - name: openclaw
           image: {{ $.Values.image }}
           imagePullPolicy: IfNotPresent
+          # Onboard once (config lives at /sandbox/.openclaw on the pod's
+          # emptyDir, so it persists for the pod's lifetime), then run the
+          # gateway — the image default Cmd is bare `openclaw`, which is NOT
+          # the gateway and exits after ~20s.
+          command:
+            - sh
+            - -c
+            - |
+              openclaw onboard --non-interactive --accept-risk --skip-health || true
+              exec openclaw gateway run
           ports:
             - containerPort: 18789
               name: dashboard
