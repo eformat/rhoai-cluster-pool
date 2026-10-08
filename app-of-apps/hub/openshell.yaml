@@ -40,6 +40,14 @@ spec:
             valuesObject:
               pkiInitJob:
                 enabled: false
+              # ArgoCD renders with offline `helm template`, which cannot
+              # query the live cluster — the preflight's lookup always comes
+              # back empty. The Agent Sandbox CRDs ARE served on the hub
+              # (agent-sandbox operator deployed), so the preflight is
+              # redundant here.
+              agentSandbox:
+                preflight:
+                  enabled: false
               server:
                 disableTls: true
                 auth:
