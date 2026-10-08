@@ -38,8 +38,12 @@ spec:
           path: applications/openshell/gateway-chart
           helm:
             valuesObject:
+              # 0.1.2: the pkiInitJob pre-install hook generates the sandbox
+              # JWT keys (sandbox-jwt volume) — required even with
+              # disableTls. Disabling it caused FailedMount
+              # "openshell-local-cluster-jwt-keys not found".
               pkiInitJob:
-                enabled: false
+                enabled: true
               # ArgoCD renders with offline `helm template`, which cannot
               # query the live cluster — the preflight's lookup always comes
               # back empty. The Agent Sandbox CRDs ARE served on the hub
