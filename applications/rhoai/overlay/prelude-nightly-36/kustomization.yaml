@@ -1,4 +1,10 @@
 ---
+# RHOAI 3.6 EA evaluation overlay.
+# MaaS is delivered by the DSC submodule (dsc-cr.yaml: kserve.modelsAsService
+# Managed) — the RHOAI operator deploys maas-controller and payload-processing
+# itself with the operator-bundled images and RBAC. No fork deployments, no
+# shipped CRDs, no image pins. Reference for the canonical MaaS flow:
+#   ~/git/ph-deploy-configure-rhoai/manifests/05-maas/
 resources:
   - ../base
   - hardware-profile.yaml
@@ -6,18 +12,7 @@ resources:
   - mlflow.yaml
   - catalog-source.yaml
   - icsp.yaml
-  - evalhub.yaml
   - postgres-maas.yaml
-  - maas-tenant.yaml
-  - ai-tenants-namespace.yaml
-  - redhat-ai-gateway-infra-namespace.yaml
-  - maas-tenant-config.yaml
-  - maas-controller-supplement.yaml
-  - maas-controller-deployment.yaml
-  - payload-processing-networkpolicy.yaml
-  - payload-pre-processing-deployment.yaml
-  - payload-processing-plugins.yaml
-  - payload-processing-deployment.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
