@@ -264,21 +264,38 @@ data:
                 else:
                     print(f"WARN: cli realm-roles mapper in {realm} returned HTTP {status}")
             aud_mapper = f"aud-{DASHBOARD_CLIENT_ID}"
-            if aud_mapper in names:
+            aud_cfg = {
+                "name": aud_mapper,
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-audience-resolve-mapper",
+                "consentRequired": False,
+                "config": {
+                    "included.client.audience": DASHBOARD_CLIENT_ID,
+                    # Without the access-token claim the audience lands only
+                    # in the ID token and the gateway rejects the CLI bearer
+                    # ("InvalidAudience") — the access token is what the CLI
+                    # sends.
+                    "access.token.claim": "true",
+                    "id.token.claim": "true",
+                },
+            }
+            existing_aud = next(
+                (m for m in (existing or []) if m.get("name") == aud_mapper), None
+            )
+            if existing_aud and existing_aud.get("config", {}).get("access.token.claim") == "true":
                 print(f"mapper {aud_mapper} already exists on " + CLI_CLIENT_ID)
             else:
+                if existing_aud:
+                    # Stale config (audience never reached the access token).
+                    kc_api(
+                        "DELETE",
+                        f"/admin/realms/{realm}/clients/{cli_uuid}/protocol-mappers/models/{existing_aud.get('id')}",
+                        token=token,
+                    )
                 status, _ = kc_api(
                     "POST",
                     f"/admin/realms/{realm}/clients/{cli_uuid}/protocol-mappers/models",
-                    {
-                        "name": aud_mapper,
-                        "protocol": "openid-connect",
-                        "protocolMapper": "oidc-audience-resolve-mapper",
-                        "consentRequired": False,
-                        "config": {
-                            "included.client.audience": DASHBOARD_CLIENT_ID,
-                        },
-                    },
+                    aud_cfg,
                     token,
                 )
                 if status in (200, 201):
