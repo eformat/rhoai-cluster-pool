@@ -88,7 +88,7 @@ spec:
             - --upstream=http://127.0.0.1:8080/
             - --http-address=0.0.0.0:4180
             - --scope=openid profile email offline_access
-            - --refresh-interval=1m
+            - --cookie-refresh=1m
             - --pass-authorization-header=true
             - --pass-user-headers=true
             - --email-domain=*
