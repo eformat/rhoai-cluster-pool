@@ -1,0 +1,10 @@
+---
+namespace: openshell
+helmGlobals:
+  # Contains the vendored gateway-chart/ (OpenShell helm chart 0.1.2).
+  chartHome: ../../
+helmCharts:
+  - name: gateway-chart
+    includeCRDs: true
+    releaseName: openshell
+    valuesFile: values.yaml

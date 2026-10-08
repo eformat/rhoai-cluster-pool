@@ -30,3 +30,10 @@ policies:
       placementName: placement-spoke-coco
     manifests:
       - path: spokes/
+  # The OpenShell gateway on the coco spoke — the helmChart (vendored chart
+  # 0.1.2) renders to the policy's object-templates at kustomize build time.
+  - name: openshell-gateway
+    placement:
+      placementName: placement-spoke-coco
+    manifests:
+      - path: gateway/

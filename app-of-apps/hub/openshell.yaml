@@ -15,7 +15,10 @@ spec:
         configMapRef: acm-placement
         labelSelector:
           matchLabels:
-            cluster.open-cluster-management.io/placement: placement-spoke-coco
+            # Same pattern as ALL existing apps: generated from the HUB
+            # decision; the app deploys a PolicyGenerator on the hub and
+            # the ACM policy applies the gateway on the coco spoke.
+            cluster.open-cluster-management.io/placement: placement-hub-openshift
         requeueAfterSeconds: 180
   syncPolicy:
     preserveResourcesOnDeletion: false
