@@ -87,7 +87,8 @@ spec:
             - --redirect-url=https://openshell-dashboard.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com/oauth2/callback
             - --upstream=http://127.0.0.1:8080/
             - --http-address=0.0.0.0:4180
-            - --scope=openid profile email
+            - --scope=openid profile email offline_access
+            - --refresh-interval=1m
             - --pass-authorization-header=true
             - --pass-user-headers=true
             - --email-domain=*
