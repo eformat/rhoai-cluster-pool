@@ -64,6 +64,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS
+          value: {{ int (.Values.gateway.provisioningRepairWindowMs | default 300000) | quote }}
         {{- if eq (include "openshell.workloadKind" .) "deployment" }}
         - name: OPENSHELL_POD_IP
           valueFrom:

@@ -39,6 +39,12 @@ gateway:
     tag: ""
     # -- Gateway image digest. When set, this takes precedence over tag.
     digest: ""
+    # -- Provisioning repair window in milliseconds
+    # (OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS). Overridable for
+    # slow-provisioning runtimes: peer-pods CoCo pod VMs take ~4-5 minutes
+    # to provision, which leaves the supervisor no time to deliver its
+    # first configuration report inside the default 5-minute window.
+    provisioningRepairWindowMs: 300000
 
 # Trusted workload-side runtime image.
 sandboxRuntime:
