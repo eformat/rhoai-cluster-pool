@@ -45,6 +45,11 @@ gateway:
     # to provision, which leaves the supervisor no time to deliver its
     # first configuration report inside the default 5-minute window.
     provisioningRepairWindowMs: 300000
+    # -- Sandbox-runtime bootstrap grace in milliseconds
+    # (OPENSHELL_RUNTIME_BOOTSTRAP_GRACE_MS). The reconcile rolls a stale
+    # fail-closed bootstrap back (deleting the Sandbox CR) after this grace;
+    # overridable for the same slow-runtime reason.
+    bootstrapGraceMs: 300000
 
 # Trusted workload-side runtime image.
 sandboxRuntime:

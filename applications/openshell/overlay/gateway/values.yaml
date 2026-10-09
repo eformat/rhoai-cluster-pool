@@ -27,7 +27,7 @@ gateway:
     # using deploy/docker/Dockerfile.gateway-patched.
     registry: quay.io
     repository: eformat/openshell-gateway
-    tag: 0.1.2-deadline
+    tag: 0.1.2-deadline.2
     # The tag is mutated per build; Always makes every pod roll pull the
     # current digest instead of the node's cached image.
     pullPolicy: Always
@@ -36,6 +36,9 @@ gateway:
   # the default 5-minute window — the gateway stopped the sandbox right as
   # it finished booting (provisioning_deadline.rs).
   provisioningRepairWindowMs: 900000
+  # The reconcile also deletes a sandbox whose bootstrap is stale after the
+  # grace (SANDBOX_RUNTIME_BOOTSTRAP_GRACE in driver.rs) — same 15 minutes.
+  bootstrapGraceMs: 900000
 server:
   # Explicit sandbox namespace — .Release.Namespace resolved to
   # openshift-gitops through the kustomize helm inflate, so pin it to the
