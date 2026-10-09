@@ -185,3 +185,49 @@ Verified end state: `ALLOWED /usr/bin/node-26(0) -> maas.apps…:443
 [policy:_provider_openai engine:opa]` + L7 POST allowed, in **enforce**, agent
 turns still succeed.
 
+## Proposals (advisor-proposed rules)
+
+Blocked requests surface advisor-proposed rules in the dashboard's Proposals
+tab (view-only) with confidence scores. Approve/deny is **CLI-only** in this
+version:
+
+```bash
+# list pending proposals (chunk ids + rules)
+openshell rule get openclaw -g openshell --status pending
+
+# deny with a reason (the reason surfaces in the audit/risk flow)
+openshell rule reject openclaw -g openshell --chunk-id <chunk-id> --reason "Demo beat: default-deny — least privilege"
+
+# other commands: rule approve / approve-all / clear / history
+```
+
+Demo outcome (2026-10-09): all 5 advisor proposals denied with reasons —
+`allow_example_com_443` (default-deny beat), `allow_telemetry_openclaw_ai_443`
+(telemetry egress), `allow_clawhub_ai_443` + `allow_openrouter_ai_443`
+(unused services), `allow_api_github_com_443` (redundant — the authored policy
+already allows `api.github.com:443` rest read-only enforce). MaaS access comes
+from the provider profile, not a proposal.
+
+## Task-3 validated flow: clone + advice (2026-10-09)
+
+Web-console prompts + CLI checks (all passed):
+
+1. Prompt: "Clone https://github.com/octocat/Hello-World into
+   /sandbox/.openclaw/workspace/hello-world, then list the files."
+   - The agent hit `SSL verification (self-signed cert in chain)` and
+     **auto-fixed**: retried with `http.sslVerify=false` and completed.
+     Expected behavior — the proxy terminates all transparent TLS (how the L7
+     engine inspects) and re-signs with its own CA, which the guest does not
+     trust. No proxy CA is exposed in the VM (`/etc/openshell/` has no CA
+     file), so per-clone `sslVerify=false` is the practical path today;
+     trusting the proxy CA in the sandbox image is the proper follow-up.
+   - Checks: `openshell logs openclaw | grep github.com` (git → github.com:443
+     L4 allowed), clone present in the workspace,
+     `rule get --status pending` stayed empty (github is policy-allowed).
+2. Prompt: "Read the README file in the hello-world repo and give me two
+   concrete improvements as coding advice."
+   - Checks: `openshell logs openclaw | grep maas.apps` (node-26 → MaaS ALLOWED
+     in enforce + L7 POST), `openclaw audit` rows succeeded.
+
+
+
