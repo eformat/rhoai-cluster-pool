@@ -40,6 +40,12 @@ gateway:
   # grace (SANDBOX_RUNTIME_BOOTSTRAP_GRACE in driver.rs) — same 15 minutes.
   bootstrapGraceMs: 900000
 server:
+  # Where the gateway itself runs — the supervisor pods compose their
+  # OPENSHELL_ENDPOINT as openshell.<gateway_namespace>.svc.cluster.local:8080.
+  # The kustomize helm inflate resolves .Release.Namespace to the ArgoCD app
+  # namespace (openshift-gitops), which has no openshell service — pin the
+  # gateway's real namespace.
+  gatewayNamespace: openshell
   # Explicit sandbox namespace — .Release.Namespace resolved to
   # openshift-gitops through the kustomize helm inflate, so pin it to the
   # spoke's openshell ns where the gateway + sandboxes belong.

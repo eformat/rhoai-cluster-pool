@@ -229,7 +229,7 @@ data:
 
     [openshell.drivers.kubernetes.managed_ssh_ingress]
     enabled                       = {{ .Values.networkPolicy.enabled }}
-    gateway_namespace             = {{ .Release.Namespace | quote }}
+    gateway_namespace             = {{ .Values.server.gatewayNamespace | default .Release.Namespace | quote }}
     gateway_pod_selector          = { "app.kubernetes.io/name" = {{ include "openshell.name" . | quote }}, "app.kubernetes.io/instance" = {{ .Release.Name | quote }} }
 
     [openshell.drivers.kubernetes.sandbox_runtime]
