@@ -40,12 +40,16 @@ gateway:
   # grace (SANDBOX_RUNTIME_BOOTSTRAP_GRACE in driver.rs) — same 15 minutes.
   bootstrapGraceMs: 900000
 server:
-  # Where the gateway itself runs — the supervisor pods compose their
-  # OPENSHELL_ENDPOINT as openshell.<gateway_namespace>.svc.cluster.local:8080.
-  # The kustomize helm inflate resolves .Release.Namespace to the ArgoCD app
-  # namespace (openshift-gitops), which has no openshell service — pin the
-  # gateway's real namespace.
+  # gateway_namespace is only used for managed-SSH ingress isolation, but the
+  # kustomize helm inflate resolves .Release.Namespace to the ArgoCD app
+  # namespace (openshift-gitops), so pin it to the gateway's real namespace.
   gatewayNamespace: openshell
+  # The supervisor pods' OPENSHELL_ENDPOINT. The chart helper's default composes
+  # http://<fullname>.<Release.Namespace>.svc.cluster.local:<port>, which
+  # resolves to openshift-gitops — where no openshell service exists, so the
+  # supervisor dies with "Startup configuration fetch failed after 5 attempts".
+  # Pin the gateway's real service endpoint.
+  grpcEndpoint: http://openshell.openshell.svc.cluster.local:8080
   # Explicit sandbox namespace — .Release.Namespace resolved to
   # openshift-gitops through the kustomize helm inflate, so pin it to the
   # spoke's openshell ns where the gateway + sandboxes belong.
