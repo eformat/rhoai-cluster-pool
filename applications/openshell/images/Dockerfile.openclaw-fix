@@ -11,6 +11,14 @@
 #
 # chmod -R a+rX adds read (and traverse) for group+others without weakening
 # write perms, matching the community sandboxes/base image (755).
+#
+# ALSO: this image sets TMPDIR/SQLITE_TMPDIR=/sandbox/.openclaw/state. The
+# OpenShell runtime resolves its temp dir from TMPDIR at bootstrap, and
+# /sandbox/.openclaw/state in the seeded PVC is not writable by the pod UID at
+# that point — so the Landlock probe ("create Landlock probe root") fails with
+# EACCES and the runtime dies instantly, before the boundary opens. Point both
+# at /tmp (world-writable, 1777), which the community sandboxes/base image
+# proves works with the default policy.
 # Build:  podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.2 .
 # Push:   podman push quay.io/eformat/openshell-openclaw:0.1.2  (make public)
 # Use as the sandbox workload image in the dashboard's Create sandbox modal.
@@ -18,3 +26,5 @@ FROM quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65
 USER root
 RUN chmod -R a+rX /sandbox
 USER sandbox:sandbox
+ENV TMPDIR=/tmp
+ENV SQLITE_TMPDIR=/tmp

@@ -1,0 +1,20 @@
+# OpenAI-compatible provider profile for RHOAI MaaS (glm-5.3-flash)
+id: openai
+display_name: OpenAI-compatible (RHOAI MaaS)
+description: OpenAI-compatible chat completions API served by RHOAI MaaS
+category: other
+credentials:
+  - name: OPENAI_API_KEY
+    description: API key for the OpenAI-compatible endpoint
+    required: true
+    auth_style: bearer
+    header_name: Authorization
+endpoints:
+  - host: maas.apps.ocp.cloud.rhai-tmm.dev
+    port: 443
+    protocol: rest
+    access: read-write
+    enforcement: enforce
+binaries:
+  - /usr/bin/node
+  - /usr/bin/node-26
