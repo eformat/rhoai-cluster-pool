@@ -22,11 +22,12 @@ agentSandbox:
 gateway:
   image:
     # Custom gateway build: exposes the provisioning repair window via
-    # OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS (the base branch + the patch,
-    # built with deploy/docker/Dockerfile.gateway-patched).
+    # OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS. Built from the v0.1.2 base
+    # (which parses the 0.1.2 chart's gateway.toml) + the deadline patch,
+    # using deploy/docker/Dockerfile.gateway-patched.
     registry: quay.io
     repository: eformat/openshell-gateway
-    tag: 0.1.3-pre.6-deadline
+    tag: 0.1.2-deadline
   # 15 minutes: peer-pods CoCo pod VMs take ~4-5 min to provision, which
   # left the supervisor no time to deliver its first config report inside
   # the default 5-minute window — the gateway stopped the sandbox right as
