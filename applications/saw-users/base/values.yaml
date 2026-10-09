@@ -1,11 +1,3 @@
-# Per-user agent values for the coco-agents chart.
-# Kept in sync with charts/coco-agents/values.yaml — override the user list
-# here (or via kustomize patches) to fan out agents per user.
-users:
-  - name: alice
-    profile: data-science
-    replicas: 1
-
 # AIPCC OpenClaw agent image (confidential-containers agent base image).
 image: quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65d1c758c8da777f441ed094e19f3bcf6d7445c61
 
