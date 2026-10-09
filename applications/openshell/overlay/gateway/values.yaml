@@ -28,6 +28,9 @@ gateway:
     registry: quay.io
     repository: eformat/openshell-gateway
     tag: 0.1.2-deadline
+    # The tag is mutated per build; Always makes every pod roll pull the
+    # current digest instead of the node's cached image.
+    pullPolicy: Always
   # 15 minutes: peer-pods CoCo pod VMs take ~4-5 min to provision, which
   # left the supervisor no time to deliver its first config report inside
   # the default 5-minute window — the gateway stopped the sandbox right as
