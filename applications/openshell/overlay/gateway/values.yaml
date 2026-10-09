@@ -88,3 +88,17 @@ server:
         requiredLabels:
           openshell.ai/sandbox-attachable: "true"
   sandboxImage: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+
+# Sandbox RUNTIME image (the openshell-sandbox binary mounted into every VM
+# by the openshell-sandbox-bootstrap init container — separate from the
+# workload image picked in the UI). The driver default is
+# ghcr.io/nvidia/openshell/sandbox:dev, whose boundary-protocol evidence
+# doesn't match the stock 0.1.2 supervisor ("missing field task_memory_write"
+# at confirmation). Every published official tag predates 0.1.2 (built
+# 2026-09-11..13), so we self-build from the custom-0.1.2-deadline tree —
+# same protocol as the supervisor.
+sandboxRuntime:
+  image:
+    registry: quay.io
+    repository: eformat/openshell-sandbox
+    tag: 0.1.2
