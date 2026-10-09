@@ -1,0 +1,20 @@
+# Fix /sandbox permissions for OpenShell workspace seeding.
+#
+# openshell-sandbox seed-workspace (the workspace-init init container) copies
+# the image workdir (/sandbox) to the workspace PVC as the pod's runAsUser
+# (1000860000 via the OpenShift restricted SCC). This base image ships:
+#   /sandbox          770  1000:root   (others: no access)
+#   /sandbox/.openclaw 700  1000:sandbox (others: no access)
+# so the seed fails with exit 1 and no output ("Init:Error"), and the
+# supervisor then dies with "discover workload image policy: boundary
+# unavailable ... timed out while waiting for remote boundary boot".
+#
+# chmod -R a+rX adds read (and traverse) for group+others without weakening
+# write perms, matching the community sandboxes/base image (755).
+# Build:  podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.2 .
+# Push:   podman push quay.io/eformat/openshell-openclaw:0.1.2  (make public)
+# Use as the sandbox workload image in the dashboard's Create sandbox modal.
+FROM quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65d1c758c8da777f441ed094e19f3bcf6d7445c61
+USER root
+RUN chmod -R a+rX /sandbox
+USER sandbox:sandbox
