@@ -141,6 +141,33 @@ a message.
 | `openclaw models scan` | ❌ OpenRouter-specific; also policy-blocked |
 | `openshell inference set` | ❌ no such subcommand in this CLI version |
 
+## Gateway TLS migration (2026-10-10) — the KEK rotation cascade
+
+The gateway now serves TLS behind the OpenShift Gateway API (see the plan file
+task 8 for the full topology). Any **helm upgrade re-runs pkiInitJob, which
+regenerates the credential-storage KEK** — three stale-encryption failures
+cascade, in this order:
+
+1. **The sandbox's default credential storage** (gateway DB
+   `credential.gateway-encrypted`): the supervisor's startup fails with
+   "encrypted with a different key-encryption key" → the phase sticks at
+   Starting. Fix: delete the stale row from the gateway's `openshell.db`
+   `objects` table — the runtime re-initializes its store with the new KEK.
+2. **The provider's stored credential**: the delivery goes
+   `credentials_withheld` (no `OPENAI_API_KEY` in the sandbox). Fix:
+   `sandbox provider detach` → `provider delete` → `provider create` →
+   re-attach — re-encrypted with the new KEK.
+3. **The CLI's stale mTLS materials**: `~/.config/openshell/gateways/<gw>/mtls/`
+   (the old chart CA) makes the OIDC path trust the chart CA →
+   "invalid peer certificate: UnknownIssuer" against the edge's Let's Encrypt
+   cert (curl verifies fine). Fix: archive the `mtls/` dir — the CLI falls
+   through to native/enabled roots → Connected.
+
+Also: a deleted credential object is referenced **by ID** in the supervisor's
+config — re-attach the provider after deleting to re-store it. And a recreated
+sandbox needs the FULL re-configuration (steps 5–7 below + the origin
+one-liner + the expose).
+
 ## Flipping MaaS to enforce (audit → enforce)
 
 The endpoint starts `enforcement: audit` (records, does not block). The audit

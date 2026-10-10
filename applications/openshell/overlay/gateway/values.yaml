@@ -13,6 +13,12 @@ securityContext:
 # (sandbox-jwt volume) — required even with disableTls.
 pkiInitJob:
   enabled: true
+  # -- Extra DNS SANs appended to the server certificate.
+  # *.openshell.apps.<domain> enables sandbox service URLs under the apps
+  # domain (the gateway's with_server_sans derives the base domain from the
+  # wildcard SANs) — the proper *.apps routing for the openclaw dashboard.
+  serverDnsNames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
 # ArgoCD/kustomize render with offline , which cannot query
 # the live cluster — the preflight's lookup always comes back empty. The
 # Agent Sandbox CRDs ARE served on the spoke (agent-sandbox operator).
