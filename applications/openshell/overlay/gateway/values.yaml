@@ -48,13 +48,21 @@ server:
   # http://<fullname>.<Release.Namespace>.svc.cluster.local:<port>, which
   # resolves to openshift-gitops — where no openshell service exists, so the
   # supervisor dies with "Startup configuration fetch failed after 5 attempts".
-  # Pin the gateway's real service endpoint.
-  grpcEndpoint: http://openshell.openshell.svc.cluster.local:8080
+  # Pin the gateway's real service endpoint. TLS: the gateway serves TLS
+  # (disableTls=false) and the supervisor trusts the chart CA via the
+  # clientCaFromServerTlsSecret default.
+  grpcEndpoint: https://openshell.openshell.svc.cluster.local:8080
   # Explicit sandbox namespace — .Release.Namespace resolved to
   # openshift-gitops through the kustomize helm inflate, so pin it to the
   # spoke's openshell ns where the gateway + sandboxes belong.
   sandboxNamespace: openshell
-  disableTls: true
+  # TLS on: the gateway terminates its own TLS (chart-CA internal cert).
+  # enableMtls=false — BackendTLSPolicy re-encryption from the OpenShift
+  # Gateway cannot present a client cert; OIDC bearer-only auth (the oidc
+  # block below) is the client identity.
+  disableTls: false
+  tls:
+    enableMtls: false
   auth:
     allowUnauthenticatedUsers: false
   # OIDC JWT auth: the gateway validates every request's bearer against the
@@ -102,3 +110,20 @@ sandboxRuntime:
     registry: quay.io
     repository: eformat/openshell-sandbox
     tag: 0.1.2
+# Gateway API GRPCRoute — retire the oc port-forward. The Gateway
+# `openshell-gateway` (openshift-ingress ns, added to the CM policy
+# policy-gateway.yaml) terminates client TLS with the platform's Let's Encrypt
+# wildcard `tls-apps` (`*.apps.<domain>`, publicly resolvable) and
+# re-encrypts to the gateway pod via BackendTLSPolicy (the certgen hook
+# auto-creates the openshell-backend-ca ConfigMap the route's CA mount uses).
+# server.disableTls=false and server.tls.enableMtls=false are required.
+grpcRoute:
+  enabled: true
+  gateway:
+    create: false
+    name: openshell-gateway
+    namespace: openshift-ingress
+  hostnames:
+    - openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+  backendTLSPolicy:
+    enabled: true

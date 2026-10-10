@@ -43,10 +43,14 @@ spec:
             - containerPort: 8080
               name: http
           env:
-            # The gateway serves gRPC on the service port (h2c, plaintext
-            # while the gateway runs disableTls).
+            # The gateway serves gRPC over TLS (disableTls=false). In-cluster
+            # clients trust the chart CA via the certgen hook's
+            # openshell-backend-ca ConfigMap (the same CA the OpenShift
+            # Gateway's BackendTLSPolicy validates the backend against).
             - name: OPENSHELL_GATEWAY_URL
-              value: openshell.openshell.svc.cluster.local:8080
+              value: https://openshell.openshell.svc.cluster.local:8080
+            - name: GATEWAY_CA_CERT
+              value: /etc/gateway-ca/ca.crt
             # AUTH_TOKEN_HEADER stays at its default (x-forwarded-access-
             # token): the proxy middleware falls back to the Authorization
             # header, strips the "Bearer " prefix, and forwards the raw ID
@@ -74,6 +78,10 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
+          volumeMounts:
+            - name: gateway-ca
+              mountPath: /etc/gateway-ca
+              readOnly: true
         # oauth2-proxy — the fronting auth proxy (OIDC against the hub
         # Keycloak realm the gateway trusts). Confidential client
         # `openshell-dashboard`; its client_id MUST match the gateway's
@@ -127,3 +135,7 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+      volumes:
+        - name: gateway-ca
+          configMap:
+            name: openshell-backend-ca

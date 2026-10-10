@@ -162,6 +162,9 @@ Everything shown is GitOps-ready in
 - `provider-profiles/openai.yaml` — the MaaS provider profile (enforce, node)
 - `docs/provider-setup-openclaw.md` — the full runbook (setup, enforce flip,
   proposals, gotchas)
+- `docs/attestation-proof.md` — **the trusted-workflows proof story** (the
+  verified SNP report, the pinning fix, the lifecycle analysis) — the demo +
+  slides source for the CoCo/SEV-SNP guarantee
 
 Follow-ups: gateway TLS + Route (retire the port-forward), trust the proxy CA
 in the sandbox image, upstream issue NVIDIA/OpenShell#4364 (hardcoded
