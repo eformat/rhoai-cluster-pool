@@ -40,9 +40,14 @@ spec:
     email: mhepburn@redhat.com
     # Route53 credentials come from Vault via ESO (eso-cert-aws.yaml, the
     # hub-trusted pattern): the aws-creds Secret on this namespace is
-    # ESO-rendered, so no AWS values live in git. The hostedZoneID stays
-    # inline — it is a zone identifier (not a credential) and the
-    # cert-manager route53 API has no secretRef for it.
+    # ESO-rendered, so no AWS values live in git.
+    #
+    # NO hostedZoneID: cert-manager discovers the zone by matching the
+    # challenge domain against the account's zones (needs ListHostedZones on
+    # the credentials — validated live: the DNS01 challenge presented and the
+    # cert issued with the zone-discovery path). The zone id (ZYWQAK33EMQL3)
+    # is recorded in the ESO-rendered aws-creds Secret (hosted_zone_id) for
+    # reference only.
     privateKeySecretRef:
       name: tls-secret
     server: https://acme-v02.api.letsencrypt.org/directory
