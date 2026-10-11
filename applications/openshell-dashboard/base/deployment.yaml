@@ -103,6 +103,13 @@ spec:
             - --reverse-proxy=true
             - --insecure-oidc-allow-unverified-email
             - --skip-provider-button
+            # Bootstrap auth endpoints must be PUBLIC (chicken-and-egg): the
+            # SPA needs /auth/config to know how to log in/out, and /auth/whoami
+            # must answer 401 JSON for dead sessions. A 302-to-Keycloak on a
+            # fetch is cross-origin and CORS-blocked → blank dashboard. The BFF
+            # maps the gateway's Unauthenticated to 401 JSON; the frontend then
+            # renders AuthRequiredPage.
+            - --skip-auth-route=^/api/v1/auth/(config|whoami)$
             - --code-challenge-method=S256
             - --cookie-secure=true
             - --cookie-samesite=lax
