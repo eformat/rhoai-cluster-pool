@@ -1,11 +1,20 @@
 ---
-# Wildcard service Route: any exposed sandbox service becomes
-# https://{workspace}--{sandbox}--{service}.openshell.apps.<domain> with zero
-# per-service objects — the gateway's host-based service routing
-# (service_routing.rs) proxies any host under openshell.apps.<domain> to the
-# sandbox's exposed service. DNS is already covered by the platform
-# `*.apps.<domain>` wildcard (matches multi-label names), so no per-service
-# DNS object is needed either.
+# Service Route for exposed sandbox service URLs:
+# https://{workspace}--{sandbox}--{service}.openshell.apps.<domain> — the
+# gateway's host-based service routing (service_routing.rs) proxies any host
+# under openshell.apps.<domain> to the sandbox's exposed service. DNS is
+# already covered by the platform `*.apps.<domain>` wildcard (matches
+# multi-label names), so no per-service DNS object is needed.
+#
+# WILDCARD ROUTE NOTE: a v1 Route with `wildcardPolicy: Subdomain` claims
+# `*.<ingress-domain>` — the ENTIRE apps domain — regardless of the Route's
+# host (router host_admitter: "route openshift-authentication/oauth-openshift
+# ... blocking *.apps.<domain>"). A wildcard Route therefore collides with
+# every other Route on the cluster and is impossible here; per-service
+# specific-host Routes are the pattern. Dynamic per-service routing would
+# need the Gateway API (an HTTPRoute with the wildcard hostname
+# `*.openshell.apps.<domain>` on the openshell-gateway listener) or an
+# openshell-server feature that creates Routes on `service expose`.
 #
 # TLS: publicly-trusted Let's Encrypt wildcard via tls.externalCertificate —
 # the router reads the cert-manager secret live, so renewals propagate
@@ -14,11 +23,12 @@
 # RouteExternalCertificate admission runs a SubjectAccessReview) — the
 # least-privilege Role below scopes to resourceNames.
 #
-# GOTCHA: destinationCACertificate is INLINE and regenerates on every PKI
-# re-issue (certgen "PKI secrets already exist, skipping" except when all
-# three PKI secrets are deleted — then openshell-backend-ca changes). Update
-# this value when the PKI rotates, or the router→backend TLS validation
-# fails with 503.
+# GOTCHAS: (1) destinationCACertificate is INLINE and regenerates on every
+# PKI re-issue (certgen; all three PKI secrets must be deleted for the SAN
+# change to take effect) — update this value when the PKI rotates, or the
+# router→backend TLS validation fails with 503. (2) The host is per-service:
+# a NEW exposed service needs a new Route with its
+# {workspace}--{sandbox}--{service} host.
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -90,11 +100,10 @@ roleRef:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: openshell-services
+  name: openshell-services-apps
   namespace: openshell
 spec:
-  host: openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
-  wildcardPolicy: Subdomain
+  host: default--openclaw--openclaw-dashboard.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
   to:
     kind: Service
     name: openshell
