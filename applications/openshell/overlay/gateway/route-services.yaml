@@ -115,6 +115,49 @@ roleRef:
 # the server cert). The v1 Route (openshell-services-apps, below) is the
 # HAProxy fallback path — remove the https-services listener to fall back.
 ---
+# A second Service WITHOUT appProtocol: grpc — the envoy connects to this
+# backend with HTTP/1.1, which is required for WebSocket proxying (an h2
+# upstream cannot proxy the HTTP/1.1 Upgrade: the WS upgrade arrives as a
+# plain GET and the browser gets "Gateway unreachable"). The HTTPRoute (the
+# wildcard services route) points here; the GRPCRoute keeps the original
+# `openshell` Service (h2 upstream for gRPC). Same pods, same port.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openshell-http
+  namespace: openshell
+spec:
+  selector:
+    app.kubernetes.io/instance: openshell
+    app.kubernetes.io/name: openshell
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: grpc
+---
+# Backend TLS validation for the openshell-http Service — the same CA and
+# verification hostname as the chart's policy for the openshell Service (the
+# server cert's SANs cover openshell.openshell.svc.cluster.local).
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: openshell-http
+  namespace: openshell
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: openshell-http
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: openshell-backend-ca
+    hostname: openshell.openshell.svc.cluster.local
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -135,7 +178,7 @@ spec:
     - backendRefs:
         - group: ""
           kind: Service
-          name: openshell
+          name: openshell-http
           port: 8080
           weight: 100
 ---
