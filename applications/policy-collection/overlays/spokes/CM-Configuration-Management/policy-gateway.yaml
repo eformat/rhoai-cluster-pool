@@ -180,6 +180,50 @@ spec:
                           kind: Secret
                           name: tls-apps
                         mode: Terminate
+                    # Wildcard services listener: any exposed sandbox service URL
+                    # ({ws}--{sbx}--{service}.openshell.apps.<domain>) routes to the
+                    # openshell server via the HTTPRoute (openshell ns, rendered into
+                    # the openshell-gateway policy) — zero per-service objects.
+                    # TLS terminates here with the Let's Encrypt wildcard cert for
+                    # *.openshell.apps.<domain> (the Certificate below, issued by the
+                    # platform letsencrypt-ingress Issuer in this namespace).
+                    - allowedRoutes:
+                        namespaces:
+                          from: Selector
+                          selector:
+                            matchLabels:
+                              kubernetes.io/metadata.name: openshell
+                      hostname: '*.openshell.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      name: https-services
+                      port: 443
+                      protocol: HTTPS
+                      tls:
+                        certificateRefs:
+                        - group: ""
+                          kind: Secret
+                          name: openshell-services-apps-tls
+                        mode: Terminate
+            # Let's Encrypt wildcard cert for *.openshell.apps.<domain> — the
+            # https-services listener's certificateRef. Issued by the platform
+            # letsencrypt-ingress Issuer (dns01 route53, aws-creds in this
+            # namespace). cert-manager renews automatically; the listener picks
+            # the renewal up live.
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: cert-manager.io/v1
+                kind: Certificate
+                metadata:
+                  name: openshell-services-apps
+                  namespace: openshift-ingress
+                  annotations:
+                    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+                spec:
+                  secretName: openshell-services-apps-tls
+                  dnsNames:
+                    - '*.openshell.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                  issuerRef:
+                    kind: Issuer
+                    name: letsencrypt-ingress
             - complianceType: musthave
               objectDefinition:
                 apiVersion: v1

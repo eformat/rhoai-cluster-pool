@@ -97,6 +97,41 @@ roleRef:
   kind: Role
   name: openshell-router-cert-reader
 ---
+# Gateway API HTTPRoute — the wildcard services route. ANY exposed sandbox
+# service URL ({workspace}--{sandbox}--{service}.openshell.apps.<domain>)
+# routes to the openshell server, whose host-based routing (service_routing.rs)
+# proxies into the sandbox VM. ZERO per-service objects: a new sandbox +
+# `openshell service expose <sbx> <port> <name>` is live immediately — DNS via
+# the wildcard DNSRecord (the https-services listener), TLS at the envoy
+# Gateway (the LE wildcard cert for *.openshell.apps.<domain>), backend
+# re-encrypted via the existing BackendTLSPolicy (the openshell-backend-ca +
+# the server cert). The v1 Route (openshell-services-apps, below) is the
+# HAProxy fallback path — remove the https-services listener to fall back.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openshell-services
+  namespace: openshell
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: openshell-gateway
+      namespace: openshift-ingress
+      sectionName: https-services
+  hostnames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: openshell
+          port: 8080
+          weight: 100
+---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
