@@ -6,10 +6,10 @@
 # accessKeyIDSecretRef + secretAccessKeySecretRef, so no AWS values live in
 # git.
 #
-# Vault keys to seed (secrets/vault-coco, the standard workflow):
-#   ROUTE53_ACCESS_KEY_ID     — the AWS access key with dnsopen on the zone
-#   ROUTE53_SECRET_ACCESS_KEY — its secret access key
-# at path kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
+# Vault source: coco/peer-pods — the SAME AWS credential the peer-pod VM
+# lifecycle uses (verified identical to the platform letsencrypt-ingress
+# Issuer's key: AKIA...GLN7F), already seeded by secrets/vault-coco. No new
+# vault path needed.
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -50,8 +50,8 @@ spec:
                       kind: Secret
                       apiVersion: v1
                       stringData:
-                        access_key_id: {{.route53AccessKeyId}}
-                        aws_secret_access_key: {{.route53SecretAccessKey}}
+                        access_key_id: {{.awsAccessKeyId}}
+                        aws_secret_access_key: {{.awsSecretAccessKey}}
                         hosted_zone_id: ZYWQAK33EMQL3
                       metadata:
                         name: aws-creds
@@ -62,11 +62,11 @@ spec:
           remediationAction: enforce
         target: spec
   data:
-  - secretKey: route53AccessKeyId
+  - secretKey: awsAccessKeyId
     remoteRef:
-      key: kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
-      property: ROUTE53_ACCESS_KEY_ID
-  - secretKey: route53SecretAccessKey
+      key: kv/data/ocp/sno/openshift-gitops/coco/peer-pods
+      property: AWS_ACCESS_KEY_ID
+  - secretKey: awsSecretAccessKey
     remoteRef:
-      key: kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
-      property: ROUTE53_SECRET_ACCESS_KEY
+      key: kv/data/ocp/sno/openshift-gitops/coco/peer-pods
+      property: AWS_SECRET_ACCESS_KEY
