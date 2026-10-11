@@ -5,7 +5,7 @@ apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: keycloak-admin-eso
-  namespace: openshift-gitops
+  namespace: openshell
 spec:
   refreshInterval: "1m0s"
   secretStoreRef:

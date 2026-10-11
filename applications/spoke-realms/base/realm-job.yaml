@@ -7,7 +7,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: spoke-realms-script
-  namespace: openshift-gitops
+  namespace: openshell
 data:
   realms.py: |
     #!/usr/bin/env python3
@@ -449,7 +449,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: spoke-realms
-  namespace: openshift-gitops
+  namespace: openshell
 spec:
   backoffLimit: 4
   template:

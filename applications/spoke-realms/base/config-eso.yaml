@@ -9,7 +9,7 @@ apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: spoke-realms-config-eso
-  namespace: openshift-gitops
+  namespace: openshell
 spec:
   refreshInterval: "1m0s"
   secretStoreRef:
