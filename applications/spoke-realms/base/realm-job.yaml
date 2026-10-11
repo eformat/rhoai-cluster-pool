@@ -50,7 +50,7 @@ data:
     _origin = urlsplit(DASHBOARD_REDIRECT_URI)
     _base = f"{_origin.scheme}://{_origin.netloc}"
     DASHBOARD_POST_LOGOUT_URIS = (
-        f"{_base}/##{_base}/oauth2/sign_out##{_base}/oauth2/sign_in"
+        f"{_base}/##{_base}/oauth2/sign_out"
     )
     # Gateway OIDC RBAC roles (realm roles, surfaced in a flat `roles` claim
     # by the protocol mapper below).
