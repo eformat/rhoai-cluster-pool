@@ -38,6 +38,18 @@ data:
     DASHBOARD_REDIRECT_URI = os.environ.get(
         "DASHBOARD_REDIRECT_URI", "https://openshell-dashboard.apps.*"
     )
+    # RP-initiated logout (Keycloak 18+): the end-session endpoint validates
+    # post_logout_redirect_uri against the client's post.logout.redirect.uris
+    # attribute — redirectUris does NOT cover it. Without it the logout
+    # redirect back to the dashboard is refused, the Keycloak SSO session
+    # survives, and oauth2-proxy silently re-authenticates ("logout doesn't
+    # work"). oauth2-proxy's /oauth2/sign_out sends the rd param as
+    # post_logout_redirect_uri; register the app root and the sign_out path
+    # ('##'-separated in the attribute).
+    from urllib.parse import urlsplit
+    _origin = urlsplit(DASHBOARD_REDIRECT_URI)
+    _base = f"{_origin.scheme}://{_origin.netloc}"
+    DASHBOARD_POST_LOGOUT_URIS = f"{_base}/##{_base}/oauth2/sign_out"
     # Gateway OIDC RBAC roles (realm roles, surfaced in a flat `roles` claim
     # by the protocol mapper below).
     ADMIN_ROLE = os.environ.get("DASHBOARD_ADMIN_ROLE", "openshell-admin")
@@ -313,6 +325,11 @@ data:
             "publicClient": False,
             "secret": DASHBOARD_CLIENT_SECRET,
             "redirectUris": [DASHBOARD_REDIRECT_URI],
+            # RP-initiated logout: Keycloak validates post_logout_redirect_uri
+            # against this attribute (redirectUris does NOT cover it). Without
+            # it the logout redirect back to the dashboard is refused → SSO
+            # session survives → silent re-login.
+            "attributes": {"post.logout.redirect.uris": DASHBOARD_POST_LOGOUT_URIS},
             "standardFlowEnabled": True,
         }, token)
         if status == 409:
@@ -355,6 +372,29 @@ data:
                     print("synced dashboard client secret from vault")
                 else:
                     print(f"WARN: secret sync returned HTTP {status}")
+
+        # Sync post.logout.redirect.uris on an existing client: the create
+        # above 409s for clients made before this attribute existed, and the
+        # RP-initiated logout (dashboard sign-out) is refused without it —
+        # the Keycloak SSO session survives and oauth2-proxy silently
+        # re-authenticates. Same sync-on-drift pattern as the CLI client's
+        # redirectUris.
+        status, rep = kc_api(
+            "GET", f"/admin/realms/{realm}/clients/{client_uuid}", token=token
+        )
+        if status == 200 and rep:
+            attrs = dict(rep.get("attributes") or {})
+            if attrs.get("post.logout.redirect.uris") != DASHBOARD_POST_LOGOUT_URIS:
+                attrs["post.logout.redirect.uris"] = DASHBOARD_POST_LOGOUT_URIS
+                rep["attributes"] = attrs
+                status, _ = kc_api(
+                    "PUT", f"/admin/realms/{realm}/clients/{client_uuid}", rep, token
+                )
+                if status in (200, 204):
+                    print("synced dashboard client post.logout.redirect.uris")
+                else:
+                    print(f"WARN: post.logout.redirect.uris sync returned "
+                          f"HTTP {status}")
 
         # Realm-roles mapper: emits the user's realm roles in a flat
         # `roles` claim (id token + access token + userinfo) so the gateway
