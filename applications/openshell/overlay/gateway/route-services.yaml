@@ -38,17 +38,20 @@ metadata:
 spec:
   acme:
     email: mhepburn@redhat.com
-    # NOTE: tls-secret (the ACME account key) and the aws-creds secret are
-    # cluster-side objects, not in Git — the secret carries Route53
-    # credentials (copied from openshift-ingress where the platform Issuer
-    # lives). Each namespace registers its own ACME account.
+    # Route53 credentials come from Vault via ESO (eso-cert-aws.yaml, the
+    # hub-trusted pattern): the aws-creds Secret on this namespace is
+    # ESO-rendered, so no AWS values live in git. The hostedZoneID stays
+    # inline — it is a zone identifier (not a credential) and the
+    # cert-manager route53 API has no secretRef for it.
     privateKeySecretRef:
       name: tls-secret
     server: https://acme-v02.api.letsencrypt.org/directory
     solvers:
       - dns01:
           route53:
-            accessKeyID: AKIAR4TTC5UX34YGLN7F
+            accessKeyIDSecretRef:
+              key: access_key_id
+              name: aws-creds
             hostedZoneID: ZYWQAK33EMQL3
             region: us-east-2
             secretAccessKeySecretRef:

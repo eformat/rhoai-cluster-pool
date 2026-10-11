@@ -1,0 +1,72 @@
+---
+# Pattern B (hub-trusted) for the cert-manager Route53 credentials: a HUB-side
+# ESO reads vault and renders an ACM Policy whose ConfigurationPolicy copies
+# the aws-creds Secret onto the spoke (ns openshell). There is NO ESO on
+# spokes. The Issuer (gateway/route-services.yaml) references this secret via
+# accessKeyIDSecretRef + secretAccessKeySecretRef, so no AWS values live in
+# git.
+#
+# Vault keys to seed (secrets/vault-coco, the standard workflow):
+#   ROUTE53_ACCESS_KEY_ID     — the AWS access key with dnsopen on the zone
+#   ROUTE53_SECRET_ACCESS_KEY — its secret access key
+# at path kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: openshell-cert-aws-spokes
+  namespace: openshift-gitops
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: openshell-cert-aws-spokes
+    manifest:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: Policy
+    template:
+      engineVersion: v2
+      mergePolicy: Merge
+      metadata:
+        annotations:
+          policy.open-cluster-management.io/categories: AC Access Control
+          policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+          policy.open-cluster-management.io/standards: NIST SP 800-53
+      templateFrom:
+      - literal: |
+          disabled: false
+          policy-templates:
+          - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                name: openshell-cert-aws-spokes
+              spec:
+                object-templates:
+                  - complianceType: musthave
+                    objectDefinition:
+                      kind: Secret
+                      apiVersion: v1
+                      stringData:
+                        access_key_id: {{.route53AccessKeyId}}
+                        aws_secret_access_key: {{.route53SecretAccessKey}}
+                        hosted_zone_id: ZYWQAK33EMQL3
+                      metadata:
+                        name: aws-creds
+                        namespace: openshell
+                      type: Opaque
+                remediationAction: inform
+                severity: low
+          remediationAction: enforce
+        target: spec
+  data:
+  - secretKey: route53AccessKeyId
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
+      property: ROUTE53_ACCESS_KEY_ID
+  - secretKey: route53SecretAccessKey
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/openshell-cert
+      property: ROUTE53_SECRET_ACCESS_KEY

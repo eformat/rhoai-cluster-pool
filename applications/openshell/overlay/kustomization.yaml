@@ -1,3 +1,8 @@
 ---
+resources:
+  # Hub-side ESO (Pattern B): the cert-manager Route53 credentials from vault
+  # → the aws-creds Secret on the spoke (no AWS values in git). HUB object —
+  # not rendered into the spoke policy (there is no ESO on spokes).
+  - eso-cert-aws.yaml
 generators:
   - policy-generator-config.yaml
