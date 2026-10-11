@@ -1,0 +1,119 @@
+---
+# Wildcard service Route: any exposed sandbox service becomes
+# https://{workspace}--{sandbox}--{service}.openshell.apps.<domain> with zero
+# per-service objects — the gateway's host-based service routing
+# (service_routing.rs) proxies any host under openshell.apps.<domain> to the
+# sandbox's exposed service. DNS is already covered by the platform
+# `*.apps.<domain>` wildcard (matches multi-label names), so no per-service
+# DNS object is needed either.
+#
+# TLS: publicly-trusted Let's Encrypt wildcard via tls.externalCertificate —
+# the router reads the cert-manager secret live, so renewals propagate
+# without touching the Route (an inlined tls.certificate would go stale at
+# renewal). The router serviceaccount needs read access to the secret (the
+# RouteExternalCertificate admission runs a SubjectAccessReview) — the
+# least-privilege Role below scopes to resourceNames.
+#
+# GOTCHA: destinationCACertificate is INLINE and regenerates on every PKI
+# re-issue (certgen "PKI secrets already exist, skipping" except when all
+# three PKI secrets are deleted — then openshell-backend-ca changes). Update
+# this value when the PKI rotates, or the router→backend TLS validation
+# fails with 503.
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-ingress
+  namespace: openshell
+spec:
+  acme:
+    email: mhepburn@redhat.com
+    # NOTE: tls-secret (the ACME account key) and the aws-creds secret are
+    # cluster-side objects, not in Git — the secret carries Route53
+    # credentials (copied from openshift-ingress where the platform Issuer
+    # lives). Each namespace registers its own ACME account.
+    privateKeySecretRef:
+      name: tls-secret
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          route53:
+            accessKeyID: AKIAR4TTC5UX34YGLN7F
+            hostedZoneID: ZYWQAK33EMQL3
+            region: us-east-2
+            secretAccessKeySecretRef:
+              key: aws_secret_access_key
+              name: aws-creds
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openshell-services-apps
+  namespace: openshell
+spec:
+  secretName: openshell-services-apps-tls
+  dnsNames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt-ingress
+---
+# Least-privilege read for the OpenShift router serviceaccount —
+# tls.externalCertificate admission checks get/watch/list on the exact
+# secret (resourceNames-scoped, not cluster-wide secret access).
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openshell-router-cert-reader
+  namespace: openshell
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["openshell-services-apps-tls"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openshell-router-cert-reader
+  namespace: openshell
+subjects:
+  - kind: ServiceAccount
+    name: router
+    namespace: openshift-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openshell-router-cert-reader
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: openshell-services
+  namespace: openshell
+spec:
+  host: openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+  wildcardPolicy: Subdomain
+  to:
+    kind: Service
+    name: openshell
+    weight: 100
+  port:
+    targetPort: grpc
+  tls:
+    termination: Reencrypt
+    externalCertificate:
+      name: openshell-services-apps-tls
+    destinationCACertificate: |
+      -----BEGIN CERTIFICATE-----
+      MIIBnTCCAUKgAwIBAgITDeM1+nYkd96eJUBGPkdZqcXETjAKBggqhkjOPQQDAjAr
+      MRUwEwYDVQQDDAxvcGVuc2hlbGwtY2ExEjAQBgNVBAoMCW9wZW5zaGVsbDAgFw03
+      NTAxMDEwMDAwMDBaGA80MDk2MDEwMTAwMDAwMFowKzEVMBMGA1UEAwwMb3BlbnNo
+      ZWxsLWNhMRIwEAYDVQQKDAlvcGVuc2hlbGwwWTATBgcqhkjOPQIBBggqhkjOPQMB
+      BwNCAARyx3HaR8XBuimNy6CptrnN/oEcmLrCgf9yj5sbDZg2e7cwlqzvL57kb+tg
+      1QAgye3pviPcbniF+2wnTT+CoM58o0MwQTAPBgNVHQ8BAf8EBQMDBwYAMB0GA1Ud
+      DgQWBBRV52WcIf78bCP5/HEV34Wv2tLE9zAPBgNVHRMBAf8EBTADAQH/MAoGCCqG
+      SM49BAMCA0kAMEYCIQCECcTLP+LP7QROa/fiZh96dolFQz9Kde227dNuhG5CDAIh
+      ALDmQeMqhLR2pgY8StpM0DowwPTA3aULYHpSS5MCJ8kJ
+      -----END CERTIFICATE-----

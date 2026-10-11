@@ -123,6 +123,11 @@ sandboxRuntime:
 # re-encrypts to the gateway pod via BackendTLSPolicy (the certgen hook
 # auto-creates the openshell-backend-ca ConfigMap the route's CA mount uses).
 # server.disableTls=false and server.tls.enableMtls=false are required.
+# NOTE: the gateway hostname is `openshell-gw.apps.<domain>` — OUTSIDE the
+# `openshell.apps.<domain>` tree, because the Gateway listener's claim would
+# otherwise block the wildcard service Route (HostAlreadyClaimed): a v1 Route
+# with host `openshell.apps.<domain>` + wildcardPolicy Subdomain claims the
+# whole tree for sandbox service URLs (see overlay/gateway/route-services.yaml).
 grpcRoute:
   enabled: true
   gateway:
@@ -130,6 +135,6 @@ grpcRoute:
     name: openshell-gateway
     namespace: openshift-ingress
   hostnames:
-    - openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+    - openshell-gw.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
   backendTLSPolicy:
     enabled: true

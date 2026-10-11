@@ -8,3 +8,8 @@ helmCharts:
     includeCRDs: true
     releaseName: openshell
     valuesFile: values.yaml
+resources:
+  # Wildcard service Route + LE Certificate + Issuer + router RBAC — one
+  # Route serves every exposed sandbox service URL under
+  # openshell.apps.<domain> (see route-services.yaml for the design notes).
+  - route-services.yaml

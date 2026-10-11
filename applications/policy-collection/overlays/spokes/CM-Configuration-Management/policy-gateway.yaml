@@ -170,7 +170,7 @@ spec:
                           selector:
                             matchLabels:
                               kubernetes.io/metadata.name: openshell
-                      hostname: 'openshell.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
+                      hostname: 'openshell-gw.apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'
                       name: https
                       port: 443
                       protocol: HTTPS
