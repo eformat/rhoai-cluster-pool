@@ -45,7 +45,7 @@ spec:
     # NO hostedZoneID: cert-manager discovers the zone by matching the
     # challenge domain against the account's zones (needs ListHostedZones on
     # the credentials — validated live: the DNS01 challenge presented and the
-    # cert issued with the zone-discovery path). The zone id (ZYWQAK33EMQL3)
+    # cert issued with the zone-discovery path). The zone id
     # is recorded in the ESO-rendered aws-creds Secret (hosted_zone_id) for
     # reference only.
     privateKeySecretRef:
