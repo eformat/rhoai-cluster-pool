@@ -1,0 +1,6 @@
+---
+resources:
+  - serving-llama32-3b-vllm-oci-2.yaml
+  # - serving-llama32-3b-vllm-oci.yaml
+  # - serving-llama32-vllm-oci.yaml
+  # - serving-llama32-vllm.yaml

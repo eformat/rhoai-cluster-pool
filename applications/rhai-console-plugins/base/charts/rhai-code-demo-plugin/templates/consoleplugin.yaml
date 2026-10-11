@@ -1,0 +1,13 @@
+apiVersion: console.openshift.io/v1
+kind: ConsolePlugin
+metadata:
+  name: rhai-code-demo-plugin
+spec:
+  displayName: RHAI Code Demos Console Plugin
+  backend:
+    type: Service
+    service:
+      basePath: /
+      name: rhai-code-demo-plugin
+      namespace: {{ .Values.namespace }}
+      port: 9443

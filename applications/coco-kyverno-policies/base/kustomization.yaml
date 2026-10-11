@@ -1,0 +1,7 @@
+---
+resources:
+  - policies/inject-coco-initdata.yaml
+  - policies/validate-initdata-configmap.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

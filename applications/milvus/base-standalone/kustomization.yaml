@@ -1,0 +1,9 @@
+---
+resources:
+  - secret.yaml
+  - pvc.yaml
+  - etcd-service.yaml
+  - etcd-deployment.yaml
+  - milvus-service.yaml
+  - milvus-deployment.yaml
+  - route.yaml

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: coco-agents
+description: >-
+  Per-user CoCo agent fan-out — agents run in kata-remote (peer pod)
+  confidential containers. Adapted from secure-agent-workspace
+  charts/saw-users: generates CoCo agent pods instead of KubeVirt VMs,
+  dropping the CNV dependency.
+version: 0.1.0

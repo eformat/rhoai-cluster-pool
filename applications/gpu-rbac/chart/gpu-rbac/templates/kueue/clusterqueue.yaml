@@ -1,0 +1,28 @@
+{{- range $name, $queue := .Values.clusterQueues }}
+{{- $_ := set $queue "name" $name }}
+---
+{{ include "kueue.cluster-queue" $queue }}
+{{- end }}
+{{- range $cname, $cohort := .Values.cohorts }}
+  {{- range $cqname, $clusterQueue := $cohort.clusterQueues }}
+    {{- $queue := dict }}
+    {{- $_ := set $queue "name" $cqname }}
+    {{- $_ := set $queue "cohort" $cname }}
+    {{- $resourceGroups := list }}
+    {{- range $rg := $cohort.resourceGroups }}
+      {{- $flavors := dict }}
+      {{- range $flavor, $quotas := $rg.flavors }}
+        {{- $newFlavor := dict }}
+        {{- range $k, $_ := $quotas }}
+          {{- $_ := set $newFlavor $k 0 }}
+        {{- end }}
+        {{- $_ := set $flavors $flavor $newFlavor }}
+      {{- end }}
+      {{- $resourceGroups = append $resourceGroups (dict "flavors" $flavors) }}
+    {{- end }}
+    {{- $_ := set $queue "resourceGroups" $resourceGroups }}
+    {{- $_ := merge $queue $clusterQueue }}
+---
+{{ include "kueue.cluster-queue" $queue }}
+  {{- end }}
+{{- end }}

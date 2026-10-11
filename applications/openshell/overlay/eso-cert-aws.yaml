@@ -1,0 +1,93 @@
+---
+# Pattern B (hub-trusted) for the cert-manager Route53 credentials: a HUB-side
+# ESO reads vault and renders an ACM Policy whose ConfigurationPolicy copies
+# the aws-creds Secret onto the spoke (ns openshell). There is NO ESO on
+# spokes. The Issuer (gateway/route-services.yaml) references this secret via
+# accessKeyIDSecretRef + secretAccessKeySecretRef, so no AWS values live in
+# git.
+#
+# Vault source: coco/peer-pods — the SAME AWS credential the peer-pod VM
+# lifecycle uses (verified identical to the platform letsencrypt-ingress
+# Issuer's credential), already seeded by secrets/vault-coco. No new
+# vault path needed. No hostedZoneID: the Issuer discovers the zone by
+# matching the challenge domain against the account's zones (needs
+# ListHostedZones) — validated live, so no zone id is needed anywhere.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: openshell-cert-aws-spokes
+  namespace: openshift-gitops
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: openshell-cert-aws-spokes
+    manifest:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: Policy
+    template:
+      engineVersion: v2
+      mergePolicy: Merge
+      metadata:
+        annotations:
+          policy.open-cluster-management.io/categories: AC Access Control
+          policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+          policy.open-cluster-management.io/standards: NIST SP 800-53
+      templateFrom:
+      - literal: |
+          disabled: false
+          policy-templates:
+          - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                name: openshell-cert-aws-spokes
+              spec:
+                object-templates:
+                  - complianceType: musthave
+                    objectDefinition:
+                      kind: Secret
+                      apiVersion: v1
+                      stringData:
+                        access_key_id: {{.awsAccessKeyId}}
+                        aws_secret_access_key: {{.awsSecretAccessKey}}
+                      metadata:
+                        name: aws-creds
+                        namespace: openshell
+                      type: Opaque
+                remediationAction: inform
+                severity: low
+          remediationAction: enforce
+        target: spec
+  data:
+  - secretKey: awsAccessKeyId
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/peer-pods
+      property: AWS_ACCESS_KEY_ID
+  - secretKey: awsSecretAccessKey
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/peer-pods
+      property: AWS_SECRET_ACCESS_KEY
+---
+# Binds the ESO-rendered cert-aws Policy to the coco spoke placement —
+# same pattern as the dashboard's placement-binding. metadata.namespace
+# MUST be explicit: a namespace-less binding silently lands in the
+# ArgoCD app's destination namespace and the ACM propagator never sees it
+# (the policy never distributes, with no status, events, or errors).
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-openshell-cert-aws
+  namespace: openshift-gitops
+placementRef:
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+  name: placement-spoke-coco
+subjects:
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: openshell-cert-aws-spokes

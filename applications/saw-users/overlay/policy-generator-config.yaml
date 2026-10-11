@@ -1,0 +1,32 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: saw-users
+placementBindingDefaults:
+  name: saw-users
+policyDefaults:
+  placement:
+    placementName: placement-spoke-coco
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  recreateOption: IfRequired
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: saw-users-coco
+    placement:
+      placementName: placement-spoke-coco
+    manifests:
+      - path: spokes/

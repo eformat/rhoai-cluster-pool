@@ -1,0 +1,60 @@
+# KBS resource access policy.
+# Ported from validatedpatterns/trustee-chart templates/resource-policy.yaml.
+#
+# PERMISSIVE BY DEFAULT: the pool's AWS peer-pod VMs run on non-TEE instance
+# types (m6i/t3/g6), where EAR claims default to failing values
+# (executables=33, hardware=97, configuration=36) — enforcing any claim
+# would deny ALL resource delivery. Resources remain token-gated (clients
+# must complete the KBS attestation round-trip to obtain a token), but
+# claims are not checked.
+#
+# To enforce claims once TEE pod VMs are used (AWS SEV-SNP on 7th-gen AMD
+# instances m7a/c7a/r7a via PODVM_INSTANCE_TYPE, or TDX on baremetal):
+# uncomment the *_failing rules below and provide the matching reference
+# values in the KBS RVPS / attestation policy.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resource-policy
+  namespace: trustee-operator-system
+data:
+  resource-policy.rego: |
+    package policy
+    import rego.v1
+
+    default allow = false
+    default executable_failing = false
+    default configuration_failing = false
+    default hardware_failing = false
+
+    allow if {
+        count(input.submods) > 0
+        not executable_failing
+        not configuration_failing
+        not hardware_failing
+    }
+
+    # --- claim enforcement (enable for TEE pod VMs) ---
+
+    # executable_failing if {
+    #     some _, submod in input.submods
+    #     executables := submod["ear.trustworthiness-vector"]["executables"]
+    #     not in_affirming_range(executables)
+    # }
+
+    # configuration_failing if {
+    #     some _, submod in input.submods
+    #     configuration := submod["ear.trustworthiness-vector"]["configuration"]
+    #     not in_affirming_range(configuration)
+    # }
+
+    # hardware_failing if {
+    #    some _, submod in input.submods
+    #    hardware := submod["ear.trustworthiness-vector"]["hardware"]
+    #    not in_affirming_range(hardware)
+    # }
+
+    in_affirming_range(val) if {
+        val >= 2
+        val <= 31
+    }

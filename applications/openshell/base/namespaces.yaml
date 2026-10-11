@@ -1,0 +1,16 @@
+# Workload namespaces for the CoCo agents. Kyverno clones initdata
+# ConfigMaps into these namespaces (coco-kyverno-policies).
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshell
+  labels:
+    openshift.io/cluster-monitoring: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coco-agents
+  labels:
+    openshift.io/cluster-monitoring: "true"

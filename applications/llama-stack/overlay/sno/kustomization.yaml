@@ -1,0 +1,6 @@
+---
+namespace: llama-serving
+
+resources:
+  - ../../base
+  # - namespace.yaml

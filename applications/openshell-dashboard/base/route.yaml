@@ -1,0 +1,21 @@
+# Edge TLS route to oauth2-proxy (the only ingress to the dashboard).
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: openshell-dashboard
+  namespace: openshell
+  labels:
+    app: openshell-dashboard
+spec:
+  host: openshell-dashboard.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+  to:
+    kind: Service
+    name: openshell-dashboard
+    weight: 100
+  port:
+    targetPort: oauth2
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

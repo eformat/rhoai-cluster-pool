@@ -1,0 +1,10 @@
+---
+# Source: keycloak-auth/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: keycloak-internal-tls
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+    argocd.argoproj.io/sync-options: ServerSideApply=true

@@ -1,0 +1,37 @@
+apiVersion: v1
+data:
+  rhoai-scale.sh: |-
+    #!/bin/bash
+
+    scale() {
+        local component="$1"
+        local namespace="$2"
+        echo "💥 Scale ${component} in ${namespace}..."
+        local i=0
+        oc -n ${namespace} scale deployment ${component} --replicas=1
+        until [ "$?" == 0 ]
+        do
+            echo -e "Waiting for 0 rc from oc commands."
+            ((i=i+1))
+            if [ $i -gt 30 ]; then
+                echo -e "🕱Failed - to scale ${component} in ${namespace}?"
+                exit 1
+            fi
+            sleep 10
+            oc -n ${namespace} scale deployment ${component} --replicas=1
+        done
+        echo "💥 Scale ${component} in ${namespace} Done"
+    }
+    scale rhods-dashboard redhat-ods-applications
+    scale scanner-v4-indexer stackrox
+    scale lws-controller-manager openshift-lws-operator
+    scale kueue-controller-manager openshift-kueue-operator
+    scale security-profiles-operator openshift-security-profiles
+    scale security-profiles-operator-webhook openshift-security-profiles
+
+    echo -e "\n🌻Scale RHOAI components OK.🌻\n"
+    exit 0
+kind: ConfigMap
+metadata:
+  name: rhoai-scale
+  namespace: openshift-config

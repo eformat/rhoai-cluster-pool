@@ -1,0 +1,139 @@
+{{- if .Values.registration.enabled }}
+# Idempotent dashboard registration. The dashboard-operator rebuilds the
+# federation-config ConfigMap on every reconcile, so the communityPluginsAdmin
+# entry is applied as a literal MODULE_FEDERATION_CONFIG env value on the
+# dashboard Deployment. This CronJob merges that entry into the current config
+# (literal env value, or the federation-config ConfigMap the env references) and
+# re-asserts it, e.g. after RHOAI operator upgrades reset the dashboard
+# Deployment. Uses the BFF ServiceAccount, whose ClusterRole (bff.rbac.create)
+# authorizes read/patch on Deployments.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "community-plugins-admin.fullname" . }}-registration
+  namespace: {{ include "community-plugins-admin.namespace" . }}
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+    app.kubernetes.io/component: registration
+data:
+  register.sh: |
+    #!/bin/bash
+    # Merge the communityPluginsAdmin entry into the dashboard's
+    # MODULE_FEDERATION_CONFIG env var (idempotent; no-op when present).
+    set -euo pipefail
+
+    DASHBOARD_NAMESPACE="${DASHBOARD_NAMESPACE:-redhat-ods-applications}"
+    DASHBOARD_DEPLOYMENT="${DASHBOARD_DEPLOYMENT:-rhods-dashboard}"
+    PLUGIN_NAMESPACE="${PLUGIN_NAMESPACE:-cp-plugins-admin}"
+    ENTRY_NAME="communityPluginsAdmin"
+
+    ENTRY=$(jq -n \
+      --arg n "$ENTRY_NAME" \
+      --arg ns "$PLUGIN_NAMESPACE" \
+      '{
+        name: $n,
+        backend: {
+          remoteEntry: "/remoteEntry.js",
+          authorize: false,
+          tls: false,
+          service: {name: "community-plugins-admin", namespace: $ns, port: 8080}
+        },
+        proxyService: [{
+          path: "/community-plugins-admin/api",
+          pathRewrite: "/api",
+          authorize: true,
+          tls: false,
+          service: {name: "community-plugins-admin-bff", namespace: $ns, port: 3000}
+        }]
+      }')
+
+    DEPLOY_JSON=$(oc get deploy "$DASHBOARD_DEPLOYMENT" -n "$DASHBOARD_NAMESPACE" -o json)
+
+    ENV_ENTRY=$(printf '%s' "$DEPLOY_JSON" | jq -c '[.spec.template.spec.containers[].env[]? | select(.name == "MODULE_FEDERATION_CONFIG")][0] // empty')
+    if [ -z "$ENV_ENTRY" ]; then
+      echo "MODULE_FEDERATION_CONFIG env not found on $DASHBOARD_DEPLOYMENT; dashboard may not be module-federation enabled. Nothing to do."
+      exit 0
+    fi
+
+    CURRENT=$(printf '%s' "$ENV_ENTRY" | jq -r '.value // empty')
+    if [ -z "$CURRENT" ]; then
+      # env is wired via configMapKeyRef (dashboard-operator managed) — read the
+      # live value from the ConfigMap so operator-owned entries are preserved.
+      CM_NAME=$(printf '%s' "$ENV_ENTRY" | jq -r '.valueFrom.configMapKeyRef.name // empty')
+      CM_KEY=$(printf '%s' "$ENV_ENTRY" | jq -r '.valueFrom.configMapKeyRef.key // empty')
+      if [ -z "$CM_NAME" ] || [ -z "$CM_KEY" ]; then
+        echo "env is neither a literal value nor a configMapKeyRef; cannot merge." >&2
+        exit 1
+      fi
+      CURRENT=$(oc get cm "$CM_NAME" -n "$DASHBOARD_NAMESPACE" -o json | jq -r --arg k "$CM_KEY" '.data[$k] // empty')
+    fi
+    if [ -z "$CURRENT" ]; then
+      echo "could not read MODULE_FEDERATION_CONFIG value (no literal value, ConfigMap $CM_NAME/$CM_KEY missing or empty)." >&2
+      exit 1
+    fi
+
+    CURRENT_COMPACT=$(printf '%s' "$CURRENT" | jq -cS .)
+    DESIRED=$(printf '%s' "$CURRENT" | jq -cS --argjson entry "$ENTRY" 'map(select(.name != $entry.name)) + [$entry]')
+
+    if [ "$CURRENT_COMPACT" = "$DESIRED" ]; then
+      echo "already registered: $ENTRY_NAME present in MODULE_FEDERATION_CONFIG"
+      exit 0
+    fi
+
+    oc set env "deploy/$DASHBOARD_DEPLOYMENT" -n "$DASHBOARD_NAMESPACE" "MODULE_FEDERATION_CONFIG=$DESIRED"
+    echo "registered $ENTRY_NAME on $DASHBOARD_DEPLOYMENT; dashboard pods will roll out"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "community-plugins-admin.fullname" . }}-registration
+  namespace: {{ include "community-plugins-admin.namespace" . }}
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+    app.kubernetes.io/component: registration
+spec:
+  schedule: {{ .Values.registration.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          name: {{ include "community-plugins-admin.fullname" . }}-registration
+        spec:
+          serviceAccountName: {{ include "community-plugins-admin.bffServiceAccountName" . }}
+          restartPolicy: OnFailure
+          containers:
+            - name: register
+              image: quay.io/eformat/toolbox:latest
+              imagePullPolicy: Always
+              command:
+                - /bin/bash
+                - -x
+                - /scripts/register.sh
+              env:
+                - name: DASHBOARD_NAMESPACE
+                  value: {{ .Values.bff.dashboardNamespace | quote }}
+                - name: DASHBOARD_DEPLOYMENT
+                  value: {{ .Values.bff.dashboardDeployment | quote }}
+                - name: PLUGIN_NAMESPACE
+                  value: {{ include "community-plugins-admin.namespace" . | quote }}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 50m
+                  memory: 64Mi
+          volumes:
+            - name: scripts
+              configMap:
+                name: {{ include "community-plugins-admin.fullname" . }}-registration
+                defaultMode: 493
+{{- end }}

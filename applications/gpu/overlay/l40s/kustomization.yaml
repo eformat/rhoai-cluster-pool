@@ -1,0 +1,7 @@
+---
+resources:
+  - ../../base
+
+# no ts for now
+#patches:
+#  - path: configmap.yaml

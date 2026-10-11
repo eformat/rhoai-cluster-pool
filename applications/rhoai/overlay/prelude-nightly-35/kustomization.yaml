@@ -1,0 +1,28 @@
+---
+resources:
+  - ../base
+  - hardware-profile.yaml
+  - odh-document.yaml
+  - mlflow.yaml
+  - catalog-source.yaml
+  - icsp.yaml
+  - evalhub.yaml
+  - postgres-maas.yaml
+  - maas-tenant.yaml
+  - ai-tenants-namespace.yaml
+  - redhat-ai-gateway-infra-namespace.yaml
+  - maas-tenant-config.yaml
+  - maas-controller-supplement.yaml
+  - maas-controller-deployment.yaml
+  - payload-processing-networkpolicy.yaml
+  - payload-pre-processing-deployment.yaml
+  - payload-processing-plugins.yaml
+  - payload-processing-deployment.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+  - path: dsci-cr.yaml
+  - path: dsc-cr.yaml
+  - path: odh-dashboard.yaml
+  - path: subscription-rhods-operator.yaml

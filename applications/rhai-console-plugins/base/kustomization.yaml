@@ -1,0 +1,11 @@
+---
+resources:
+  - namespaces.yaml
+
+helmCharts:
+
+  - name: rhai-nav-plugin
+    namespace: rhai-nav-plugin
+    includeCRDs: true
+    releaseName: rhai-nav-plugin
+    valuesFile: values.yaml

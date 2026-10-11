@@ -1,0 +1,14 @@
+apiVersion: v2
+name: community-plugins-admin-chart
+description: A Helm chart for deploying the RHOAI Community Plugins Admin plugin
+type: application
+version: 0.1.4
+appVersion: "0.1.4"
+keywords:
+  - rhoai
+  - openshift-ai
+  - plugin
+  - community-plugins-admin
+home: https://github.com/rh-ai-community-plugins/community-plugins-admin
+sources:
+  - https://github.com/rh-ai-community-plugins/community-plugins-admin

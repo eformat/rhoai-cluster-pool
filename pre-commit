@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#set -x
+
+exec 1>&2
+
+listchange=$(git diff --staged --name-only)
+
+for filename in $listchange 
+do
+  fname=$(basename $filename)
+  if [[ $fname =~ "vault-"* ]]; then
+    echo "checking $fname";
+    if [[ -f ${filename} ]] && [[ $filename != *".yaml" ]] && [[ $(head -n 1 $filename) != '$ANSIBLE_VAULT;1.1;AES256' ]]; then
+      echo "$fname not AES256 encoded \_(ツ)_/¯"
+      exit 1
+    fi
+  fi
+done
+exit 0

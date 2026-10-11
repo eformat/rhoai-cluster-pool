@@ -1,0 +1,8 @@
+---
+namespace: openshift-gitops
+
+resources:
+  # - ../../base
+  - AC-Access-Control
+  - CM-Configuration-Management
+  - policyset-clusters.yaml

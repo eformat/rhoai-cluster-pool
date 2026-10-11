@@ -1,0 +1,76 @@
+# OpenShell gateway — deployed from the NVIDIA OCI helm chart.
+# Sandboxes are created via the agent-sandbox operator (existing app); the
+# CoCo agent pods (kata-remote) are deployed separately via
+# openshell-agents.yaml -> applications/openshell.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: openshell
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            # Same pattern as ALL existing apps: generated from the HUB
+            # decision; the app deploys a PolicyGenerator on the hub and
+            # the ACM policy applies the gateway on the coco spoke.
+            cluster.open-cluster-management.io/placement: placement-hub-openshift
+        requeueAfterSeconds: 180
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  template:
+    metadata:
+      name: openshell-{{.name}}
+      annotations:
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+    spec:
+      project: default
+      destination:
+        server: "{{.server}}"
+        namespace: openshell
+      sources:
+        # Chart vendored locally: ghcr.io 403s anonymous token requests for
+        # nvidia/openshell from the hub (ArgoCD has no ghcr.io credentials),
+        # so the OCI source can't resolve. Chart 0.1.2 extracted verbatim.
+        - repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+          targetRevision: main
+          path: applications/openshell/gateway-chart
+          helm:
+            valuesObject:
+              # 0.1.2: the pkiInitJob pre-install hook generates the sandbox
+              # JWT keys (sandbox-jwt volume) — required even with
+              # disableTls. Disabling it caused FailedMount
+              # "openshell-local-cluster-jwt-keys not found".
+              pkiInitJob:
+                enabled: true
+              # ArgoCD renders with offline `helm template`, which cannot
+              # query the live cluster — the preflight's lookup always comes
+              # back empty. The Agent Sandbox CRDs ARE served on the hub
+              # (agent-sandbox operator deployed), so the preflight is
+              # redundant here.
+              agentSandbox:
+                preflight:
+                  enabled: false
+              server:
+                disableTls: true
+                auth:
+                  allowUnauthenticatedUsers: true
+                sandboxImage: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+              # restricted-v2 SCC: fsGroup/runAsUser must be inside the
+              # namespace's assigned ranges (openshell ns: supplemental
+              # groups 1001030000/10000) — the chart default 1000 is
+              # rejected and null doesn't override the chart default.
+              podSecurityContext:
+                fsGroup: 1001030000
+              securityContext:
+                runAsUser: 1001030000
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

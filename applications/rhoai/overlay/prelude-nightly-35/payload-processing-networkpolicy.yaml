@@ -1,0 +1,49 @@
+---
+# Allow both data-science-gateway AND maas-default-gateway to reach
+# payload-processing ext-proc gRPC on port 9004.
+# opendatahub.io/managed=false prevents TenantReconciler from reverting.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: payload-processing
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    opendatahub.io/managed: "false"
+spec:
+  podSelector:
+    matchLabels:
+      app: payload-processing
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-ingress
+      podSelector:
+        matchLabels:
+          gateway.networking.k8s.io/gateway-name: data-science-gateway
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-ingress
+      podSelector:
+        matchLabels:
+          gateway.networking.k8s.io/gateway-name: maas-default-gateway
+    ports:
+    - port: 9004
+      protocol: TCP
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-user-workload-monitoring
+    ports:
+    - port: 9005
+      protocol: TCP
+    - port: 9090
+      protocol: TCP
+  egress:
+  - {}

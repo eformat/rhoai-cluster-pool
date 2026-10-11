@@ -1,0 +1,22 @@
+{{- if .Values.operators }}
+{{- range $app := .Values.operators }}
+{{- $name := $app.name }}
+{{- $namespace := $app.namespace.name }}
+{{- if $app.enabled }}
+{{- if $app.namespace.create }}
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ $name }}-og
+  namespace: {{ $namespace | quote }}
+spec:
+{{- if not $app.namespace.global }}
+  targetNamespaces: 
+  - {{ $namespace }}
+{{- end }}
+  upgradeStrategy: Default
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

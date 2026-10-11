@@ -1,0 +1,48 @@
+---
+# Source: keycloak-auth/templates/keycloak.yaml
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  db:
+    vendor: postgres
+    database: keycloak-postgres
+    host: keycloak-postgres-rw
+    usernameSecret:
+      name: keycloak-postgres-app
+      key: username
+    passwordSecret:
+      name: keycloak-postgres-app
+      key: password
+  hostname:
+    strict: false
+    strictBackchannel: false
+  http:
+    httpEnabled: False
+    tlsSecret: keycloak-internal-tls
+  ingress:
+    enabled: false
+  instances: 2
+  transaction:
+    xaEnabled: true
+  additionalOptions:
+    - name: enable-recovery
+      value: 'true'
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - volumeMounts:
+              - name: prelude-theme
+                mountPath: /opt/keycloak/themes/prelude/login/theme.properties
+                subPath: theme.properties
+              - name: prelude-theme
+                mountPath: /opt/keycloak/themes/prelude/login/resources/css/styles.css
+                subPath: styles.css
+        volumes:
+          - name: prelude-theme
+            configMap:
+              name: keycloak-theme-prelude

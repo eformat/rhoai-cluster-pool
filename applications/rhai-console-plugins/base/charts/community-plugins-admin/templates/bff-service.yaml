@@ -1,0 +1,20 @@
+{{- if .Values.bff.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "community-plugins-admin.fullname" . }}-bff
+  namespace: {{ include "community-plugins-admin.namespace" . }}
+  labels:
+    {{- include "community-plugins-admin.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+spec:
+  type: {{ .Values.bff.service.type }}
+  ports:
+    - port: {{ .Values.bff.service.port }}
+      targetPort: {{ .Values.bff.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "community-plugins-admin.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+{{- end }}

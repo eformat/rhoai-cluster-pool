@@ -1,0 +1,103 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keda-autoscaling-metrics
+rules:
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - prometheuses
+      - prometheuses/api
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keda-autoscaling-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keda-autoscaling-metrics
+subjects:
+  - kind: ServiceAccount
+    name: inference-prometheus-auth
+    namespace: autoscaling-models
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    security.opendatahub.io/enable-auth: "false"
+    openshift.io/display-name: NVIDIA Nemotron 3 Nano 30B A3B FP8
+    serving.kserve.io/deploymentMode: RawDeployment
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/hardware-profile-name: nvidia-l40s
+    opendatahub.io/model-type: generative
+    serving.kserve.io/autoscalerClass: keda
+  name: nvidia-nemotron-3-nano-30b-a3b-fp8
+  namespace: autoscaling-models
+  labels:
+    opendatahub.io/dashboard: "true"
+spec:
+  predictor:
+    automountServiceAccountToken: false
+    deploymentStrategy:
+      type: Recreate
+    minReplicas: 1
+    maxReplicas: 3
+    autoScaling:
+      metrics:
+        - type: External
+          external:
+            metric:
+              backend: "prometheus"
+              serverAddress: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"
+              query: > # Total tokens (prompt and generated)
+                sum(
+                  rate(
+                    vllm:generation_tokens_total{
+                      model_name="nvidia-nemotron-3-nano-30b-a3b-fp8"
+                    }[1m]
+                  ) + rate(
+                    vllm:prompt_tokens_total{
+                      model_name="nvidia-nemotron-3-nano-30b-a3b-fp8"
+                    }[1m]
+                  )
+                )
+            target:
+              type: Value
+              value: 2000
+            authenticationRef:
+              authModes: bearer
+              authenticationRef:
+                name: inference-prometheus-auth
+    model:
+      args:
+        - "--enable-auto-tool-choice"
+        - "--tool-call-parser=qwen3_coder"
+        - "--trust-remote-code"
+        - "--reasoning-parser-plugin=/mnt/models/nano_v3_reasoning_parser.py"
+        - "--reasoning-parser=nano_v3"
+      modelFormat:
+        name: vLLM
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 24Gi
+          nvidia.com/gpu: "1"
+        requests:
+          cpu: "4"
+          memory: 16Gi
+          nvidia.com/gpu: "1"
+      runtime: nvidia-nemotron-3-nano-30b-a3b-fp8
+      storageUri: "oci://quay.io/jharmison/models:redhatai--nvidia-nemotron-3-nano-30b-a3b-fp8-modelcar@sha256:c7faa6cd2fe0fc636c8eebab0a13438561fa167735c2a5440abaa30259ff44e4"
+    nodeSelector:
+      rhai-tmm.dev/gpu: l40s
+    tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists

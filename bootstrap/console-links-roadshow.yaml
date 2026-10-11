@@ -1,0 +1,36 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: minio
+spec:
+  applicationMenu:
+    section: GenAI
+    imageURL: https://cdn.prod.website-files.com/681c8426519d8db8f867c1e8/68656cb290ee4fa91989c2dc_Brand-Logo%20%E2%9C%85.svg
+  href: https://minio-minio.apps.$BASE_DOMAIN
+  location: ApplicationMenu
+  text: minio
+# ---
+# apiVersion: console.openshift.io/v1
+# kind: ConsoleLink
+# metadata:
+#   name: milvus
+# spec:
+#   applicationMenu:
+#     imageURL: https://raw.githubusercontent.com/milvus-io/artwork/refs/heads/master/icon/color/milvus-icon-color.svg
+#     section: GenAI
+#   href: https://milvus-console-milvus.apps.$BASE_DOMAIN/webui
+#   location: ApplicationMenu
+#   text: milvus
+# ---
+# apiVersion: console.openshift.io/v1
+# kind: ConsoleLink
+# metadata:
+#   name: llama-stack-playground
+# spec:
+#   applicationMenu:
+#     section: GenAI
+#     imageURL: https://avatars.githubusercontent.com/u/153379578?s=48&v=4
+#   href: https://llama-stack-playground-llama-stack.apps.$BASE_DOMAIN
+#   location: ApplicationMenu
+#   text: llama-stack-playground

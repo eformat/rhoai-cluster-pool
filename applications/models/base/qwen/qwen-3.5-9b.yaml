@@ -1,0 +1,102 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    alpha.maas.opendatahub.io/tiers: '["enterprise", "premium", "free"]'
+    opendatahub.io/hardware-profile-name: mig-2g-35gb
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: qwen35-9b
+    serving.kserve.io/stop: "false"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: qwen35-9b
+spec:
+  model:
+    name: Qwen/Qwen3.5-9B
+    uri: hf://Qwen/Qwen3.5-9B
+  replicas: 1
+  router:
+    gateway:
+      refs:
+      - name: maas-default-gateway
+        namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+    - name: main
+      image: quay.io/eformat/qwen35:latest
+      args:
+      - --served-model-name={{.Name}}
+      - --model=/mnt/models
+      - --max-model-len=60000
+      - --gpu-memory-utilization=0.99
+      - --enable-ssl-refresh
+      - --ssl-certfile=/var/run/kserve/tls/tls.crt
+      - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      - --enforce-eager
+      command:
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      resources:
+        limits:
+          cpu: "2"
+          memory: 18Gi
+          nvidia.com/mig-2g.35gb: "1"
+        requests:
+          cpu: "2"
+          memory: 18Gi
+          nvidia.com/mig-2g.35gb: "1"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: qwen35-9b-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: qwen35-9b-sa
+  annotations:
+    kubernetes.io/service-account.name: "qwen35-9b-sa"
+    openshift.io/display-name: qwen35-9b-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: qwen35-9b-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - qwen35-9b
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: qwen35-9b-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: qwen35-9b-view-role
+subjects:
+- kind: ServiceAccount
+  name: qwen35-9b-sa

@@ -1,0 +1,16 @@
+# More info on playground configuration can be found here:
+# https://llama-stack.readthedocs.io/en/latest/playground
+# See also
+# https://quay.io/repository/redhat-et/streamlit_client/manifest/sha256:9747640e90bd3549263e75544b1f099d8da75799b9b630f4459d04164a3af6c0?tab=layers
+
+FROM registry.access.redhat.com/ubi9/python-312:latest
+WORKDIR /app
+RUN git clone --depth 1 --branch main https://github.com/meta-llama/llama-stack.git llama-stack
+RUN pip install --upgrade pip && \
+    pip install /app/llama-stack && \
+    pip install -r /app/llama-stack/llama_stack/distribution/ui/requirements.txt
+# hack
+# COPY tools.py /app/llama_stack/distribution/ui/page/playground/tools.py
+EXPOSE 8501
+USER 1001
+ENTRYPOINT ["streamlit", "run", "/app/llama-stack/llama_stack/distribution/ui/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

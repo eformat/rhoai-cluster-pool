@@ -1,0 +1,72 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    requires-rolling-restart: none
+  name: cluster-admin-spokes
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: cluster-admin-spokes
+        spec:
+          object-templates-raw: |
+            - complianceType: mustnothave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  name: cluster-admin-0
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: cluster-admin
+                subjects:
+                  - apiGroup: rbac.authorization.k8s.io
+                    kind: User
+                    name: admin
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: services.platform.opendatahub.io/v1alpha1
+                kind: Auth
+                metadata:
+                  name: auth
+                spec:
+                  adminGroups:
+                  - admin
+                  allowedGroups:
+                  - system:authenticated
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: user.openshift.io/v1
+                kind: Group
+                metadata:
+                  name: admin
+                users:
+                  - admin
+                  - prelude
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  name: cluster-admin-to-prelude
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: cluster-admin
+                subjects:
+                - kind: User
+                  name: prelude
+                  apiGroup: rbac.authorization.k8s.io
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce

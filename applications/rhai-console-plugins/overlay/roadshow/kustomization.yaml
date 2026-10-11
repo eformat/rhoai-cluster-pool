@@ -1,0 +1,15 @@
+---
+resources:
+  - ../../base
+
+helmGlobals:
+  chartHome: ../../base/charts
+
+helmCharts:
+
+  - name: rhai-code-demo-plugin
+    namespace: rhai-code-demo-plugin
+    includeCRDs: true
+    releaseName: rhai-code-demo-plugin
+    valuesFile: values.yaml
+    repo:  # we expand chart in folder

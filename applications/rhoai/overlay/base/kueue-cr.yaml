@@ -1,0 +1,22 @@
+---
+kind: Kueue
+apiVersion: kueue.openshift.io/v1
+metadata:
+  name: cluster
+spec:
+  config:
+    integrations:
+      frameworks:
+        - BatchJob
+        - Deployment
+        - Pod
+        - PyTorchJob
+        - RayCluster
+        - RayJob
+        - StatefulSet
+        - TrainJob
+    preemption:
+      preemptionPolicy: Classical
+  logLevel: Normal
+  managementState: Managed
+  operatorLogLevel: Normal

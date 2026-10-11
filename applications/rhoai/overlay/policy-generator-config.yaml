@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: rhoai
+placementBindingDefaults:
+  name: rhoai
+policyDefaults:
+  placement:
+    placementName: placement-spokes-openshift
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  recreateOption: IfRequired
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: rhoai-roadshow
+    placement:
+      placementName: placement-spokes-roadshow
+    manifests:
+      - path: roadshow/
+  - name: rhoai-prelude
+    placement:
+      placementName: placement-spokes-prelude-34
+    manifests:
+      - path: prelude-34/
+  - name: rhoai-prelude-nightly-35
+    placement:
+      placementName: placement-spokes-prelude-nightly-35
+    manifests:
+      - path: prelude-nightly-35/
+  - name: rhoai-prelude-nightly-36
+    placement:
+      placementName: placement-spokes-prelude-nightly-36
+    manifests:
+      - path: prelude-nightly-36/

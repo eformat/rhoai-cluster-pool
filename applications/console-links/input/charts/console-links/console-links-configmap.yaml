@@ -1,0 +1,26 @@
+apiVersion: v1
+data:
+  console-links.sh: |-
+    #!/bin/bash
+
+    wget -P /tmp https://raw.githubusercontent.com/eformat/rhoai-cluster-pool/refs/heads/main/bootstrap/console-links-roadshow.yaml
+    if [ ! -f "/tmp/console-links-roadshow.yaml" ]; then
+        echo -e "🚨Failed - to get console links file ?"
+        exit 1
+    fi
+    export BASE_DOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+    if [ -z "${BASE_DOMAIN}" ]; then
+        echo -e "🚨Failed - to find base domain ?"
+        exit 1
+    fi
+    cat /tmp/console-links-roadshow.yaml | envsubst | oc apply -f-
+    if [ "$?" != 0 ]; then
+        echo -e "🚨Failed - to find configure console links ?"
+        exit 1
+    fi
+    echo -e "\n🌻${GREEN}Console links configured OK.${NC}🌻\n"
+    exit 0
+kind: ConfigMap
+metadata:
+  name: console-links
+  namespace: openshift-config

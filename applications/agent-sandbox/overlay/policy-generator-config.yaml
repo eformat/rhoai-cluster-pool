@@ -1,0 +1,41 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: agent-sandbox
+placementBindingDefaults:
+  name: agent-sandbox
+policyDefaults:
+  placement:
+    placementName: placement-spokes-prelude
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  recreateOption: IfRequired
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: agent-sandbox-prelude
+    placement:
+      placementName: placement-spokes-prelude
+    manifests:
+      - path: prelude/
+  # The OpenShell gateway runs on the COCO SPOKE and needs the Agent
+  # Sandbox API (agents.x-k8s.io) served cluster-locally — the gateway
+  # crashes with "no supported Agent Sandbox API version is available"
+  # without it. (NOT the hub — the gateway + agents belong on the spoke.)
+  - name: agent-sandbox-coco
+    placement:
+      placementName: placement-spoke-coco
+    manifests:
+      - path: coco/

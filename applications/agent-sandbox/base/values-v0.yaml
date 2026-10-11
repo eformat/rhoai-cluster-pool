@@ -1,0 +1,14 @@
+# list of operators
+operators:
+  # rhoai
+  - name: agent-sandbox-operator
+    namespace:
+      name: agent-sandbox-system
+      create: true
+      global: true
+    channels: [preview-0.9] # v0,1
+    version: "0.9.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

@@ -1,0 +1,67 @@
+---
+# Pattern B (hub-trusted) for the dashboard's oauth2-proxy secret: a HUB-side
+# ESO reads vault and renders an ACM Policy whose ConfigurationPolicy copies
+# the Secret onto the spoke (ns openshell). There is NO ESO on spokes.
+# Vault keys (seeded by secrets/vault-coco in coco/dashboard):
+#   DASHBOARD_CLIENT_SECRET — the keycloak client secret the realm job sets
+#                             on the `openshell-dashboard` client
+#   OAUTH2_COOKIE_SECRET    — oauth2-proxy cookie secret (openssl rand -base64 32)
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: openshell-dashboard-oauth2proxy-spokes
+  namespace: openshift-gitops
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: openshell-dashboard-oauth2proxy-spokes
+    manifest:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: Policy
+    template:
+      engineVersion: v2
+      mergePolicy: Merge
+      metadata:
+        annotations:
+          policy.open-cluster-management.io/categories: AC Access Control
+          policy.open-cluster-management.io/controls: AC-3 Access Enforcement
+          policy.open-cluster-management.io/standards: NIST SP 800-53
+      templateFrom:
+      - literal: |
+          disabled: false
+          policy-templates:
+          - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                name: openshell-dashboard-oauth2proxy-spokes
+              spec:
+                object-templates:
+                  - complianceType: musthave
+                    objectDefinition:
+                      kind: Secret
+                      apiVersion: v1
+                      stringData:
+                        CLIENT_SECRET: {{.clientSecret}}
+                        COOKIE_SECRET: {{.cookieSecret}}
+                      metadata:
+                        name: openshell-dashboard-oauth2proxy
+                        namespace: openshell
+                      type: Opaque
+                remediationAction: inform
+                severity: low
+          remediationAction: enforce
+        target: spec
+  data:
+  - secretKey: clientSecret
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/dashboard
+      property: DASHBOARD_CLIENT_SECRET
+  - secretKey: cookieSecret
+    remoteRef:
+      key: kv/data/ocp/sno/openshift-gitops/coco/dashboard
+      property: OAUTH2_COOKIE_SECRET

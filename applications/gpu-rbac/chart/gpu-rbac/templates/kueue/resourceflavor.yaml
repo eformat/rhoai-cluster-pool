@@ -1,0 +1,23 @@
+{{- range $name, $spec := .Values.resourceFlavors }}
+{{- if or (not $.Values.dynamicGpuConfig) (not $spec) (not (hasKey ($spec | default dict) "tolerations")) }}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: {{ $name }}
+{{- if $spec }}
+spec:
+  {{- with $spec.nodeLabels }}
+  nodeLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $spec.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $spec.topologyName }}
+  topologyName: {{ . }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,140 @@
+# OpenShell gateway helm values — deployed on the COCO SPOKE via the ACM
+# policy pattern (same as trustee/kyverno/agents: app on hub -> PolicyGenerator
+# -> policy -> ACM applies operands on the destination cluster).
+#
+# restricted-v2 SCC: fsGroup/runAsUser must be inside the SPOKE's openshell
+# namespace ranges (supplemental groups 1000860000/10000) — the chart default
+# 1000 is rejected.
+podSecurityContext:
+  fsGroup: 1000860000
+securityContext:
+  runAsUser: 1000860000
+# 0.1.2: the pkiInitJob pre-install hook generates the sandbox JWT keys
+# (sandbox-jwt volume) — required even with disableTls.
+pkiInitJob:
+  enabled: true
+  # -- Extra DNS SANs appended to the server certificate.
+  # *.openshell.apps.<domain> enables sandbox service URLs under the apps
+  # domain (the gateway's with_server_sans derives the base domain from the
+  # wildcard SANs) — the proper *.apps routing for the openclaw dashboard.
+  serverDnsNames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
+# ArgoCD/kustomize render with offline , which cannot query
+# the live cluster — the preflight's lookup always comes back empty. The
+# Agent Sandbox CRDs ARE served on the spoke (agent-sandbox operator).
+agentSandbox:
+  preflight:
+    enabled: false
+gateway:
+  image:
+    # Custom gateway build: exposes the provisioning repair window via
+    # OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS. Built from the v0.1.2 base
+    # (which parses the 0.1.2 chart's gateway.toml) + the deadline patch,
+    # using deploy/docker/Dockerfile.gateway-patched.
+    registry: quay.io
+    repository: eformat/openshell-gateway
+    tag: 0.1.2-deadline.2
+    # The tag is mutated per build; Always makes every pod roll pull the
+    # current digest instead of the node's cached image.
+    pullPolicy: Always
+  # 15 minutes: peer-pods CoCo pod VMs take ~4-5 min to provision, which
+  # left the supervisor no time to deliver its first config report inside
+  # the default 5-minute window — the gateway stopped the sandbox right as
+  # it finished booting (provisioning_deadline.rs).
+  provisioningRepairWindowMs: 900000
+  # The reconcile also deletes a sandbox whose bootstrap is stale after the
+  # grace (SANDBOX_RUNTIME_BOOTSTRAP_GRACE in driver.rs) — same 15 minutes.
+  bootstrapGraceMs: 900000
+server:
+  # gateway_namespace is only used for managed-SSH ingress isolation, but the
+  # kustomize helm inflate resolves .Release.Namespace to the ArgoCD app
+  # namespace (openshift-gitops), so pin it to the gateway's real namespace.
+  gatewayNamespace: openshell
+  # The supervisor pods' OPENSHELL_ENDPOINT. The chart helper's default composes
+  # http://<fullname>.<Release.Namespace>.svc.cluster.local:<port>, which
+  # resolves to openshift-gitops — where no openshell service exists, so the
+  # supervisor dies with "Startup configuration fetch failed after 5 attempts".
+  # Pin the gateway's real service endpoint. TLS: the gateway serves TLS
+  # (disableTls=false) and the supervisor trusts the chart CA via the
+  # clientCaFromServerTlsSecret default.
+  grpcEndpoint: https://openshell.openshell.svc.cluster.local:8080
+  # Explicit sandbox namespace — .Release.Namespace resolved to
+  # openshift-gitops through the kustomize helm inflate, so pin it to the
+  # spoke's openshell ns where the gateway + sandboxes belong.
+  sandboxNamespace: openshell
+  # TLS on: the gateway terminates its own TLS (chart-CA internal cert).
+  # enableMtls=false — BackendTLSPolicy re-encryption from the OpenShift
+  # Gateway cannot present a client cert; OIDC bearer-only auth (the oidc
+  # block below) is the client identity.
+  disableTls: false
+  tls:
+    enableMtls: false
+  auth:
+    allowUnauthenticatedUsers: false
+  # OIDC JWT auth: the gateway validates every request's bearer against the
+  # hub Keycloak realm's JWKS and enforces RBAC. Realm roles surface in a
+  # flat `roles` claim via the spoke-realms protocol mapper; the dashboard's
+  # oauth2-proxy forwards ID tokens with audience = openshell-dashboard.
+  # The CLI logs in with `openshell gateway login` (public openshell-cli
+  # client).
+  oidc:
+    issuer: https://keycloak-keycloak.apps.sno.sandbox1254.opentlc.com/realms/coco-coco-m6wl4-gfqch
+    audience: openshell-dashboard
+    rolesClaim: roles
+    adminRole: openshell-admin
+    userRole: openshell-user
+  # Boot every sandbox as a CoCo pod VM (kata-remote peer pods, SNP CVM).
+  # Per COCO.md dual-sandbox research: global INITDATA on peer-pods-cm
+  # covers any namespace, so sandbox pods attest to the hub KBS
+  # automatically.
+  defaultRuntimeClassName: kata-remote
+  # Resource admission gate: external resources a sandbox references (e.g.
+  # the RuntimeClass) must carry the shared approval label. Only the shared
+  # label is required so ANY workspace can use the RuntimeClass (the code
+  # default also pins attachable-workspace, which would bind the
+  # RuntimeClass to one workspace). The Kyverno policy
+  # label-kata-remote-attachable (coco-kyverno-policies app) keeps the
+  # label enforced on the OSC-created RuntimeClass.
+  drivers:
+    kubernetes:
+      resourceAdmission:
+        enabled: true
+        requiredLabels:
+          openshell.ai/sandbox-attachable: "true"
+  sandboxImage: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+
+# Sandbox RUNTIME image (the openshell-sandbox binary mounted into every VM
+# by the openshell-sandbox-bootstrap init container — separate from the
+# workload image picked in the UI). The driver default is
+# ghcr.io/nvidia/openshell/sandbox:dev, whose boundary-protocol evidence
+# doesn't match the stock 0.1.2 supervisor ("missing field task_memory_write"
+# at confirmation). Every published official tag predates 0.1.2 (built
+# 2026-09-11..13), so we self-build from the custom-0.1.2-deadline tree —
+# same protocol as the supervisor.
+sandboxRuntime:
+  image:
+    registry: quay.io
+    repository: eformat/openshell-sandbox
+    tag: 0.1.2
+# Gateway API GRPCRoute — retire the oc port-forward. The Gateway
+# `openshell-gateway` (openshift-ingress ns, added to the CM policy
+# policy-gateway.yaml) terminates client TLS with the platform's Let's Encrypt
+# wildcard `tls-apps` (`*.apps.<domain>`, publicly resolvable) and
+# re-encrypts to the gateway pod via BackendTLSPolicy (the certgen hook
+# auto-creates the openshell-backend-ca ConfigMap the route's CA mount uses).
+# server.disableTls=false and server.tls.enableMtls=false are required.
+# NOTE: the gateway hostname is `openshell-gw.apps.<domain>` — OUTSIDE the
+# `openshell.apps.<domain>` tree, because the Gateway listener's claim would
+# otherwise block the wildcard service Route (HostAlreadyClaimed): a v1 Route
+# with host `openshell.apps.<domain>` + wildcardPolicy Subdomain claims the
+# whole tree for sandbox service URLs (see overlay/gateway/route-services.yaml).
+grpcRoute:
+  enabled: true
+  gateway:
+    create: false
+    name: openshell-gateway
+    namespace: openshift-ingress
+  hostnames:
+    - openshell-gw.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+  backendTLSPolicy:
+    enabled: true

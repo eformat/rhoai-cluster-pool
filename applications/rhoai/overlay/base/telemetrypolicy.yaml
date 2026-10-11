@@ -1,0 +1,22 @@
+---
+apiVersion: extensions.kuadrant.io/v1alpha1
+kind: TelemetryPolicy
+metadata:
+  name: maas-telemetry
+  namespace: openshift-ingress
+  labels:
+    app.kubernetes.io/part-of: maas-observability
+spec:
+  metrics:
+    default:
+      labels:
+        cost_center: 'has(auth.identity.subscription_info.costCenter) ? auth.identity.subscription_info.costCenter: ""'
+        group: auth.identity.groups_str
+        model: responseBodyJSON("/model")
+        organization_id: 'has(auth.identity.subscription_info.organizationId) ? auth.identity.subscription_info.organizationId: ""'
+        subscription: auth.identity.selected_subscription
+        user: auth.identity.userid
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: maas-default-gateway

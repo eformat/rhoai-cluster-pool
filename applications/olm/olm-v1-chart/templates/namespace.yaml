@@ -1,0 +1,16 @@
+{{- if .Values.operators }}
+{{- range $app := .Values.operators }}
+{{- $namespace := $app.namespace.name }}
+{{- if $app.enabled }}
+{{- if $app.namespace.create }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: {{ $namespace }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

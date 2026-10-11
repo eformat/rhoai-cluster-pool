@@ -1,0 +1,25 @@
+# Keycloak admin credentials for realm creation, from vault
+# (seeded by secrets/vault-coco).
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: keycloak-admin-eso
+  namespace: openshift-gitops
+spec:
+  refreshInterval: "1m0s"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: keycloak-admin
+    creationPolicy: Owner
+  data:
+    - secretKey: username
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/keycloak-admin
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: kv/data/ocp/sno/openshift-gitops/coco/keycloak-admin
+        property: password

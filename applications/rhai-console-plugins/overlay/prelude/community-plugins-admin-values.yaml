@@ -1,0 +1,5 @@
+# community-plugins-admin overrides for the prelude pool.
+# The plugin frontend is only reached in-cluster by the RHOAI dashboard
+# (module federation service proxy), so the chart's example Ingress is noise.
+ingress:
+  enabled: false

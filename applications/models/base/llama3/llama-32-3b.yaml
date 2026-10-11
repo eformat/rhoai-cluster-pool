@@ -1,0 +1,100 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    opendatahub.io/hardware-profile-name: mig-1g-18gb
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: llama-32-3b
+    serving.kserve.io/stop: "false"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: llama-32-3b
+spec:
+  model:
+    name: RedHatAI/llama-3.2-3b-instruct
+    uri: oci://quay.io/redhat-ai-services/modelcar-catalog:llama-3.2-3b-instruct
+  replicas: 1
+  router:
+    gateway:
+      refs:
+      - name: openshift-ai-inference
+        namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+    - name: main
+      args:
+      - --served-model-name={{.Name}}
+      - --model=/mnt/models
+      - --enable-ssl-refresh
+      - --ssl-certfile=/var/run/kserve/tls/tls.crt
+      - --ssl-keyfile=/var/run/kserve/tls/tls.key
+      - --max-model-len=70000
+      - --gpu-memory-utilization=0.95
+      - --enforce-eager
+      command:
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      resources:
+        limits:
+          cpu: "1"
+          memory: 8Gi
+          nvidia.com/mig-1g.18gb: "1"
+        requests:
+          cpu: "1"
+          memory: 8Gi
+          nvidia.com/mig-1g.18gb: "1"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: llama-32-3b-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: llama-32-3b-sa
+  annotations:
+    kubernetes.io/service-account.name: "llama-32-3b-sa"
+    openshift.io/display-name: llama-32-3b-sa
+  labels:
+    opendatahub.io/dashboard: "true"
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: llama-32-3b-view-role
+rules:
+- apiGroups:
+  - serving.kserve.io
+  resourceNames:
+  - llama-32-3b
+  resources:
+  - llminferenceservices
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    opendatahub.io/dashboard: "true"
+  name: llama-32-3b-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: llama-32-3b-view-role
+subjects:
+- kind: ServiceAccount
+  name: llama-32-3b-sa

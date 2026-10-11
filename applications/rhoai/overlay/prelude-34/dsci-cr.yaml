@@ -1,0 +1,31 @@
+---
+apiVersion: dscinitialization.opendatahub.io/v2
+kind: DSCInitialization
+metadata:
+  name: default-dsci
+spec:
+  applicationsNamespace: redhat-ods-applications
+  monitoring:
+    alerting: {}
+    managementState: Managed
+    metrics:
+      replicas: 1
+      # resources:
+      #   cpulimit: 500m
+      #   cpurequest: 100m
+      #   memorylimit: 512Mi
+      #   memoryrequest: 256Mi
+      storage:
+        retention: 90d
+        size: 5Gi
+    namespace: redhat-ods-monitoring
+    traces:
+      sampleRatio: '0.1'
+      storage:
+        backend: pv
+        size: 5Gi
+        retention: 2160h0m0s
+  trustedCABundle:
+    customCABundle: ''
+    managementState: Managed
+status: {}

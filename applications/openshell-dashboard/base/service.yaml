@@ -1,0 +1,18 @@
+# Service exposes ONLY the oauth2-proxy port — the BFF stays pod-internal
+# (deployment invariant: the proxy is the sole network path to the BFF).
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openshell-dashboard
+  namespace: openshell
+  labels:
+    app: openshell-dashboard
+spec:
+  selector:
+    app: openshell-dashboard
+  ports:
+    - name: oauth2
+      port: 4180
+      targetPort: 4180
+      protocol: TCP

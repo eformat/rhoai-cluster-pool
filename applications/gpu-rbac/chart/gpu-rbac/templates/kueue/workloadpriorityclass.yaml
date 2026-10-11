@@ -1,0 +1,11 @@
+{{- range $name, $spec := .Values.workloadPriorityClasses }}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: {{ $name }}
+value: {{ $spec.value }}
+{{- with $spec.description }}
+description: {{ . }}
+{{- end }}
+{{- end }}

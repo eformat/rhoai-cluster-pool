@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: acs
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: placement-hub-openshift
+        requeueAfterSeconds: 180
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  template:
+    metadata:
+      name: acs-{{.name}}
+      annotations:
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+    spec:
+      project: default
+      destination:
+        server: "{{.server}}"
+        namespace: openshift-gitops
+      sources:
+        - repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+          path: applications/advanced-cluster-security
+          plugin:
+            name: argocd-vault-plugin-kustomize
+          targetRevision: main
+        - repoURL: https://github.com/eformat/rhoai-cluster-pool.git
+          path: applications/advanced-cluster-security/overlay/spokes
+          plugin:
+            name: argocd-novault-plugin-kustomize
+            # env:
+            #   - name: VAULT_NAMESPACE
+            #     value: ocp
+          targetRevision: main
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true

@@ -1,0 +1,212 @@
+---
+# Service Route for exposed sandbox service URLs:
+# https://{workspace}--{sandbox}--{service}.openshell.apps.<domain> — the
+# gateway's host-based service routing (service_routing.rs) proxies any host
+# under openshell.apps.<domain> to the sandbox's exposed service. DNS is
+# already covered by the platform `*.apps.<domain>` wildcard (matches
+# multi-label names), so no per-service DNS object is needed.
+#
+# WILDCARD ROUTE NOTE: a v1 Route with `wildcardPolicy: Subdomain` claims
+# `*.<ingress-domain>` — the ENTIRE apps domain — regardless of the Route's
+# host (router host_admitter: "route openshift-authentication/oauth-openshift
+# ... blocking *.apps.<domain>"). A wildcard Route therefore collides with
+# every other Route on the cluster and is impossible here; per-service
+# specific-host Routes are the pattern. Dynamic per-service routing would
+# need the Gateway API (an HTTPRoute with the wildcard hostname
+# `*.openshell.apps.<domain>` on the openshell-gateway listener) or an
+# openshell-server feature that creates Routes on `service expose`.
+#
+# TLS: publicly-trusted Let's Encrypt wildcard via tls.externalCertificate —
+# the router reads the cert-manager secret live, so renewals propagate
+# without touching the Route (an inlined tls.certificate would go stale at
+# renewal). The router serviceaccount needs read access to the secret (the
+# RouteExternalCertificate admission runs a SubjectAccessReview) — the
+# least-privilege Role below scopes to resourceNames.
+#
+# GOTCHAS: (1) destinationCACertificate is INLINE and regenerates on every
+# PKI re-issue (certgen; all three PKI secrets must be deleted for the SAN
+# change to take effect) — update this value when the PKI rotates, or the
+# router→backend TLS validation fails with 503. (2) The host is per-service:
+# a NEW exposed service needs a new Route with its
+# {workspace}--{sandbox}--{service} host.
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-ingress
+  namespace: openshell
+spec:
+  acme:
+    email: mhepburn@redhat.com
+    # Route53 credentials come from Vault via ESO (eso-cert-aws.yaml, the
+    # hub-trusted pattern): the aws-creds Secret on this namespace is
+    # ESO-rendered, so no AWS values live in git.
+    #
+    # NO hostedZoneID: cert-manager discovers the zone by matching the
+    # challenge domain against the account's zones (needs ListHostedZones on
+    # the credentials — validated live: the DNS01 challenge presented and the
+    # cert issued with the zone-discovery path). No zone id is recorded or
+    # pinned anywhere.
+    privateKeySecretRef:
+      name: tls-secret
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          route53:
+            accessKeyIDSecretRef:
+              key: access_key_id
+              name: aws-creds
+            region: us-east-2
+            secretAccessKeySecretRef:
+              key: aws_secret_access_key
+              name: aws-creds
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openshell-services-apps
+  namespace: openshell
+spec:
+  secretName: openshell-services-apps-tls
+  dnsNames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt-ingress
+---
+# Least-privilege read for the OpenShift router serviceaccount —
+# tls.externalCertificate admission checks get/watch/list on the exact
+# secret (resourceNames-scoped, not cluster-wide secret access).
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openshell-router-cert-reader
+  namespace: openshell
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["openshell-services-apps-tls"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openshell-router-cert-reader
+  namespace: openshell
+subjects:
+  - kind: ServiceAccount
+    name: router
+    namespace: openshift-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openshell-router-cert-reader
+---
+# Gateway API HTTPRoute — the wildcard services route. ANY exposed sandbox
+# service URL ({workspace}--{sandbox}--{service}.openshell.apps.<domain>)
+# routes to the openshell server, whose host-based routing (service_routing.rs)
+# proxies into the sandbox VM. ZERO per-service objects: a new sandbox +
+# `openshell service expose <sbx> <port> <name>` is live immediately — DNS via
+# the wildcard DNSRecord (the https-services listener), TLS at the envoy
+# Gateway (the LE wildcard cert for *.openshell.apps.<domain>), backend
+# re-encrypted via the existing BackendTLSPolicy (the openshell-backend-ca +
+# the server cert). The v1 Route (openshell-services-apps, below) is the
+# HAProxy fallback path — remove the https-services listener to fall back.
+---
+# A second Service WITHOUT appProtocol: grpc — the envoy connects to this
+# backend with HTTP/1.1, which is required for WebSocket proxying (an h2
+# upstream cannot proxy the HTTP/1.1 Upgrade: the WS upgrade arrives as a
+# plain GET and the browser gets "Gateway unreachable"). The HTTPRoute (the
+# wildcard services route) points here; the GRPCRoute keeps the original
+# `openshell` Service (h2 upstream for gRPC). Same pods, same port.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openshell-http
+  namespace: openshell
+spec:
+  selector:
+    app.kubernetes.io/instance: openshell
+    app.kubernetes.io/name: openshell
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: grpc
+---
+# Backend TLS validation for the openshell-http Service — the same CA and
+# verification hostname as the chart's policy for the openshell Service (the
+# server cert's SANs cover openshell.openshell.svc.cluster.local).
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: openshell-http
+  namespace: openshell
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: openshell-http
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: openshell-backend-ca
+    hostname: openshell.openshell.svc.cluster.local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openshell-services
+  namespace: openshell
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: openshell-gateway
+      namespace: openshift-ingress
+      sectionName: https-services
+  hostnames:
+    - "*.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: openshell-http
+          port: 8080
+          weight: 100
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: openshell-services-apps
+  namespace: openshell
+spec:
+  host: default--openclaw--openclaw-dashboard.openshell.apps.coco-m6wl4-gfqch.sandbox1832.opentlc.com
+  to:
+    kind: Service
+    name: openshell
+    weight: 100
+  port:
+    targetPort: grpc
+  tls:
+    termination: Reencrypt
+    externalCertificate:
+      name: openshell-services-apps-tls
+    destinationCACertificate: |
+      -----BEGIN CERTIFICATE-----
+      MIIBnTCCAUKgAwIBAgITDeM1+nYkd96eJUBGPkdZqcXETjAKBggqhkjOPQQDAjAr
+      MRUwEwYDVQQDDAxvcGVuc2hlbGwtY2ExEjAQBgNVBAoMCW9wZW5zaGVsbDAgFw03
+      NTAxMDEwMDAwMDBaGA80MDk2MDEwMTAwMDAwMFowKzEVMBMGA1UEAwwMb3BlbnNo
+      ZWxsLWNhMRIwEAYDVQQKDAlvcGVuc2hlbGwwWTATBgcqhkjOPQIBBggqhkjOPQMB
+      BwNCAARyx3HaR8XBuimNy6CptrnN/oEcmLrCgf9yj5sbDZg2e7cwlqzvL57kb+tg
+      1QAgye3pviPcbniF+2wnTT+CoM58o0MwQTAPBgNVHQ8BAf8EBQMDBwYAMB0GA1Ud
+      DgQWBBRV52WcIf78bCP5/HEV34Wv2tLE9zAPBgNVHRMBAf8EBTADAQH/MAoGCCqG
+      SM49BAMCA0kAMEYCIQCECcTLP+LP7QROa/fiZh96dolFQz9Kde227dNuhG5CDAIh
+      ALDmQeMqhLR2pgY8StpM0DowwPTA3aULYHpSS5MCJ8kJ
+      -----END CERTIFICATE-----

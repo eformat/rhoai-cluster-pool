@@ -1,0 +1,8 @@
+---
+ingress:
+  enabled: false
+route:
+  enabled: true
+image:
+  repository: eformat/kubernetes-mcp-server
+  pullPolicy: Always

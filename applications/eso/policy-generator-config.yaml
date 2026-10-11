@@ -1,0 +1,33 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: eso
+placementBindingDefaults:
+  name: eso
+policyDefaults:
+  placement:
+    placementName: placement-hub-openshift
+  categories:
+    - CM Configuration Management
+  complianceType: "musthave"
+  controls:
+    - CM-2 Baseline Configuration
+  consolidateManifests: false
+  copyPolicyMetadata: false
+  disabled: false
+  namespace: openshift-gitops
+  pruneObjectBehavior: "None"
+  remediationAction: enforce
+  severity: medium
+  standards:
+    - NIST SP 800-53
+  policyAnnotations: {"argocd.argoproj.io/compare-options": "IgnoreExtraneous"}
+policies:
+  - name: eso
+    disabled: false
+    pruneObjectBehavior: "DeleteAll"
+    placement:
+      placementName: placement-hub-openshift
+    manifests:
+      - path: eso/

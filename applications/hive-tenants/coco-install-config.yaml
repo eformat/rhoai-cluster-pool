@@ -1,0 +1,32 @@
+# CoCo pool install config - SNO spokes with peer pods (kata-remote)
+# Same env-var pattern as prelude-install-config.yaml. $INSTANCE_TYPE is
+# documented in COCO.md (m6i.4xlarge cheapest viable SNO / m7i.8xlarge for
+# 2x headroom). NOTE: passed to helm --set so it must not contain commas.
+apiVersion: v1
+baseDomain: $GUID-coco.$BASE_DOMAIN
+compute:
+- name: worker
+  hyperthreading: Enabled
+  replicas: 0
+controlPlane:
+  name: master
+  replicas: 1
+  architecture: amd64
+  hyperthreading: Enabled
+  platform:
+    aws:
+      type: $INSTANCE_TYPE
+      rootVolume:
+        size: $ROOT_VOLUME_SIZE
+        type: gp3
+metadata:
+  name: hivec
+platform:
+  aws:
+    region: $AWS_DEFAULT_REGION
+    userTags:
+      owner: $USER_EMAIL
+      team: $USER_TEAM
+      usage: $USER_USAGE
+      description: $USER_USAGE_DESCRIPTION
+sshKey: $SSH_PUBLIC_KEY

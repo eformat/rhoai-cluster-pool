@@ -1,0 +1,11 @@
+# KataConfig — enables the kata-remote runtime class (peer pods).
+# For AWS, enablePeerPods: true makes the operator create pod VMs via the
+# EC2 API. This takes ~15-30 minutes to deploy the peer-pod machine image.
+# Ported from validatedpatterns/sandboxed-containers-chart (renders
+# enablePeerPods: true for clusterPlatform AWS).
+apiVersion: kataconfiguration.openshift.io/v1
+kind: KataConfig
+metadata:
+  name: default-kata-config
+spec:
+  enablePeerPods: true

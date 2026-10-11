@@ -1,0 +1,55 @@
+id: gemini
+display_name: Google Gemini
+description: Google Gemini AI and Vertex AI API access
+category: other
+credentials:
+  - name: api_key
+    description: Google Gemini API key
+    env_vars: [GEMINI_API_KEY]
+    required: true
+    auth_style: query
+    query_param: key
+discovery:
+  credentials: [api_key]
+endpoints:
+  - host: generativelanguage.googleapis.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-write
+  - host: "*-aiplatform.googleapis.com"
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-write
+  - host: cloudcode-pa.googleapis.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-write
+  - host: accounts.google.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+  - host: oauth2.googleapis.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+  - host: www.googleapis.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+  - host: iamcredentials.googleapis.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+binaries:
+  - /usr/bin/gemini
+  - /usr/lib/node_modules/@google/gemini-cli/dist/index.js
+  - /usr/bin/node
+  - /usr/bin/node-*
+  - /usr/local/bin/node

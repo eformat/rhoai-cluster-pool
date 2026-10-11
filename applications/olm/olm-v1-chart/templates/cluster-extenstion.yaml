@@ -1,0 +1,38 @@
+{{- if .Values.operators }}
+{{- range $app := .Values.operators }}
+{{- $name := $app.name }}
+{{- $namespace := $app.namespace.name }}
+{{- $channels := $app.channels }}
+{{- $version := $app.version }}
+{{- $catalog := $app.catalog }}
+{{- $config := $app.config }}
+{{- if $app.enabled }}
+---
+apiVersion: olm.operatorframework.io/v1
+kind: ClusterExtension
+metadata:
+  name: {{ $name }}
+spec:
+  namespace: {{ $namespace }}
+  serviceAccount:
+    name: {{ $name }}-operator-installer
+  source:
+    sourceType: Catalog
+    catalog:
+      packageName: {{ $name }}
+      {{- if $channels }}
+      channels: {{ $channels | toYaml | nindent 8}}
+      {{- end }}
+      {{- if $version }}
+      version: {{ $version | quote }}
+      {{- end }}
+      upgradeConstraintPolicy: CatalogProvided
+      selector:
+        matchLabels:
+          olm.operatorframework.io/metadata.name: {{ $catalog }}
+  {{- if $config }}
+  config: {{ $config | toYaml | nindent 4}}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

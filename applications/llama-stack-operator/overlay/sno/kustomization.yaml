@@ -1,0 +1,5 @@
+---
+namespace: llama-stack-k8s-operator-controller-manager
+
+resources:
+  - ../../base

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/node_modules/patternfly/dist/css/patternfly.css">
+  <link rel="stylesheet" type="text/css" href="/node_modules/patternfly/dist/css/patternfly-additions.css">
+  <title>Hive Tenants Roadshow</title>
+  <style>
+    .container { max-width: 1100px; }
+    textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .muted { color: #6a6e73; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Hive Tenants – Roadshow Config</h1>
+      <p class="muted">
+        This page posts your inputs to <code>/api/configure-hive-tenants-roadshow</code>, which runs
+        <code>helm template ... | oc apply -f-</code> on the server. Do not expose this UI publicly.
+      </p>
+    </div>
+
+    <div id="alert" class="alert alert-info" style="display:none;"></div>
+
+    <form id="cfgForm">
+      <div class="row">
+        <div class="col-md-6">
+          <h3>Required</h3>
+
+          <div class="form-group">
+            <label for="GUID">GUID</label>
+            <input class="form-control" id="GUID" placeholder="q8jzk" required>
+          </div>
+
+          <div class="form-group">
+            <label for="ROADSHOW">ROADSHOW</label>
+            <input class="form-control" id="ROADSHOW" placeholder="roadshow" value="roadshow" required>
+          </div>
+
+          <div class="form-group">
+            <label for="BASE_DOMAIN">BASE_DOMAIN</label>
+            <input class="form-control" id="BASE_DOMAIN" placeholder="sandbox3542.opentlc.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="AWS_ACCESS_KEY_ID">AWS_ACCESS_KEY_ID</label>
+            <input class="form-control" id="AWS_ACCESS_KEY_ID" autocomplete="off" required>
+          </div>
+
+          <div class="form-group">
+            <label for="AWS_SECRET_ACCESS_KEY">AWS_SECRET_ACCESS_KEY</label>
+            <input class="form-control" id="AWS_SECRET_ACCESS_KEY" type="password" autocomplete="off" required>
+          </div>
+
+          <div class="form-group">
+            <label for="PULL_SECRET">PULL_SECRET (JSON)</label>
+            <textarea class="form-control" id="PULL_SECRET" rows="8" placeholder='{"auths":{...}}' required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="SSH_PUBLIC_KEY">SSH_PUBLIC_KEY</label>
+            <textarea class="form-control" id="SSH_PUBLIC_KEY" rows="3" placeholder="ssh-rsa AAAA... user@host" required></textarea>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <h3>Optional (used by roadshow install-config template)</h3>
+
+          <div class="form-group">
+            <label for="INSTANCE_TYPE">INSTANCE_TYPE</label>
+            <input class="form-control" id="INSTANCE_TYPE" placeholder="g6e.4xlarge">
+          </div>
+
+          <div class="form-group">
+            <label for="ROOT_VOLUME_SIZE">ROOT_VOLUME_SIZE</label>
+            <input class="form-control" id="ROOT_VOLUME_SIZE" placeholder="400">
+          </div>
+
+          <div class="form-group">
+            <label for="AWS_DEFAULT_REGION">AWS_DEFAULT_REGION</label>
+            <input class="form-control" id="AWS_DEFAULT_REGION" placeholder="us-east-2">
+          </div>
+
+          <div class="form-group">
+            <label for="USER_EMAIL">USER_EMAIL</label>
+            <input class="form-control" id="USER_EMAIL" placeholder="mhepburn@redhat.com">
+          </div>
+
+          <div class="form-group">
+            <label for="USER_TEAM">USER_TEAM</label>
+            <input class="form-control" id="USER_TEAM" placeholder="RedHat-AI-BU">
+          </div>
+
+          <div class="form-group">
+            <label for="USER_USAGE">USER_USAGE</label>
+            <input class="form-control" id="USER_USAGE" placeholder="Dev">
+          </div>
+
+          <div class="form-group">
+            <label for="USER_USAGE_DESCRIPTION">USER_USAGE_DESCRIPTION</label>
+            <input class="form-control" id="USER_USAGE_DESCRIPTION" placeholder="Product Development and Demo environment for OpenShift">
+          </div>
+
+          <hr>
+          <h3>Install-config (editable)</h3>
+          <p class="muted">
+            Leave blank to use the repo template <code>applications/hive-tenants/&lt;ROADSHOW&gt;-install-config.yaml</code>.
+            If provided, this YAML will be used instead (and env-substituted server-side).
+          </p>
+          <div class="form-group">
+            <label for="installConfigOverride">installConfigOverride</label>
+            <textarea class="form-control" id="installConfigOverride" rows="12" placeholder="(optional) paste YAML here"></textarea>
+          </div>
+
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="dryRun">
+              dryRun (server-side)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="ADMIN_TOKEN">ADMIN_TOKEN (optional)</label>
+            <input class="form-control" id="ADMIN_TOKEN" type="password" autocomplete="off" placeholder="Only needed if the server sets ADMIN_TOKEN">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="runBtn">Run configure_hive_tenants_roadshow</button>
+        </div>
+      </div>
+    </form>
+
+    <hr>
+    <h3>Result</h3>
+    <div id="resultPanel" class="well">
+      <div id="resultSummary" class="muted">(no run yet)</div>
+      <div id="resultDetails" style="display:none; margin-top: 10px;">
+        <h4 style="margin-top: 0;">OpenShift objects created:</h4>
+        <pre id="resultStdout"></pre>
+        <div id="stderrWrap" style="display:none;">
+          <h4>oc apply errors:</h4>
+          <pre id="resultStderr"></pre>
+        </div>
+        <details style="margin-top: 10px;">
+          <summary>Raw JSON</summary>
+          <pre id="resultRaw"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+  <script src="/node_modules/jquery/dist/jquery.js"></script>
+  <script src="/node_modules/bootstrap/dist/js/bootstrap.js"></script>
+  <script>
+    function setAlert(kind, text) {
+      var el = document.getElementById('alert');
+      el.className = 'alert alert-' + kind;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    function showResult(json, meta) {
+      var summary = document.getElementById('resultSummary');
+      var details = document.getElementById('resultDetails');
+      var stdoutEl = document.getElementById('resultStdout');
+      var stderrWrap = document.getElementById('stderrWrap');
+      var stderrEl = document.getElementById('resultStderr');
+      var rawEl = document.getElementById('resultRaw');
+
+      if (!json) {
+        summary.textContent = '(no result)';
+        details.style.display = 'none';
+        return;
+      }
+
+      var ok = !!json.ok;
+      var msg = json.message || json.error || '';
+      var where = meta && meta.url ? (' via ' + meta.url) : '';
+      summary.textContent = (ok ? 'OK' : 'FAILED') + (msg ? (': ' + msg) : '') + where;
+
+      // Prefer readable blocks when available.
+      var stdout = json.ocStdout || '';
+      var stderr = json.ocStderr || '';
+      if (stdout || stderr || json.details) {
+        details.style.display = 'block';
+        stdoutEl.textContent = stdout ? String(stdout).trim() : '(no stdout)';
+        if (stderr && String(stderr).trim().length) {
+          stderrWrap.style.display = 'block';
+          stderrEl.textContent = String(stderr).trim();
+        } else {
+          stderrWrap.style.display = 'none';
+          stderrEl.textContent = '';
+        }
+        rawEl.textContent = JSON.stringify(json, null, 2);
+      } else {
+        details.style.display = 'none';
+      }
+    }
+
+    function getVal(id) {
+      return (document.getElementById(id).value || '').trim();
+    }
+
+    function setIfPresent(id, value) {
+      if (value === undefined || value === null) return;
+      document.getElementById(id).value = String(value);
+    }
+
+    function apiCandidates(apiPath) {
+      // Try origin-root first (most common on OpenShift Routes), then path-relative (works behind subpath proxies).
+      var root = new URL('/' + apiPath.replace(/^\//, ''), window.location.origin).toString();
+      var relative = new URL(apiPath.replace(/^\//, ''), window.location.href).toString();
+      if (root === relative) return [root];
+      return [root, relative];
+    }
+
+    async function fetchJsonWithFallback(apiPath, headers, method, body) {
+      var candidates = apiCandidates(apiPath);
+      var lastNonJson = null;
+
+      for (var i = 0; i < candidates.length; i++) {
+        var url = candidates[i];
+        var resp = await fetch(url, {
+          method: method || 'GET',
+          headers: headers || {},
+          body: body
+        });
+
+        var contentType = (resp.headers.get('content-type') || '').toLowerCase();
+        var bodyText = await resp.text();
+
+        if (contentType.indexOf('application/json') !== -1) {
+          return { url: url, resp: resp, json: JSON.parse(bodyText) };
+        }
+
+        // Save useful diagnostics; keep trying other candidates.
+        lastNonJson = {
+          url: url,
+          status: resp.status,
+          contentType: contentType || '(none)',
+          bodyPreview: (bodyText || '').slice(0, 2000)
+        };
+      }
+
+      var err = new Error('Non-JSON response from server');
+      err.nonJson = lastNonJson;
+      throw err;
+    }
+
+    async function loadDefaults() {
+      var headers = {};
+      var token = getVal('ADMIN_TOKEN');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      try {
+        var out = await fetchJsonWithFallback('/api/defaults', headers, 'GET');
+        var resp = out.resp;
+        var json = out.json;
+        if (!resp.ok || !json.ok) {
+          setAlert('warning', 'Could not load defaults: ' + (json && json.error ? json.error : ('HTTP ' + resp.status)));
+          return;
+        }
+
+        var d = json.defaults || {};
+        setIfPresent('GUID', d.GUID);
+        setIfPresent('ROADSHOW', d.ROADSHOW);
+        setIfPresent('BASE_DOMAIN', d.BASE_DOMAIN);
+        setIfPresent('INSTANCE_TYPE', d.INSTANCE_TYPE);
+        setIfPresent('ROOT_VOLUME_SIZE', d.ROOT_VOLUME_SIZE);
+        setIfPresent('AWS_DEFAULT_REGION', d.AWS_DEFAULT_REGION);
+        setIfPresent('USER_EMAIL', d.USER_EMAIL);
+        setIfPresent('USER_TEAM', d.USER_TEAM);
+        setIfPresent('USER_USAGE', d.USER_USAGE);
+        setIfPresent('USER_USAGE_DESCRIPTION', d.USER_USAGE_DESCRIPTION);
+
+        // These only come back when server is configured to allow it and the token is valid
+        if (json.includeSecrets) {
+          setIfPresent('AWS_ACCESS_KEY_ID', d.AWS_ACCESS_KEY_ID);
+          setIfPresent('AWS_SECRET_ACCESS_KEY', d.AWS_SECRET_ACCESS_KEY);
+          setIfPresent('PULL_SECRET', d.PULL_SECRET);
+          setIfPresent('SSH_PUBLIC_KEY', d.SSH_PUBLIC_KEY);
+        }
+
+        if (json.note) setAlert('info', json.note);
+      } catch (e) {
+        // Non-fatal; form still works
+        if (e && e.nonJson) {
+          showResult({
+            ok: false,
+            error: 'Could not load defaults (non-JSON response)',
+            ...e.nonJson
+          }, { url: e.nonJson.url, status: e.nonJson.status });
+          setAlert('warning', 'Could not load defaults (non-JSON response). See Result for details.');
+        } else {
+          setAlert('warning', 'Could not load defaults: ' + e);
+        }
+      }
+    }
+
+    // Persist token locally to make dev/testing easier
+    var tokenEl = document.getElementById('ADMIN_TOKEN');
+    try {
+      var savedToken = localStorage.getItem('hiveUiAdminToken') || '';
+      if (savedToken && !tokenEl.value) tokenEl.value = savedToken;
+      tokenEl.addEventListener('input', function () {
+        localStorage.setItem('hiveUiAdminToken', tokenEl.value || '');
+      });
+    } catch (_e) {}
+
+    // Load defaults on page load
+    loadDefaults();
+
+    document.getElementById('cfgForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      var payload = {
+        AWS_ACCESS_KEY_ID: getVal('AWS_ACCESS_KEY_ID'),
+        AWS_SECRET_ACCESS_KEY: getVal('AWS_SECRET_ACCESS_KEY'),
+        GUID: getVal('GUID'),
+        ROADSHOW: getVal('ROADSHOW'),
+        BASE_DOMAIN: getVal('BASE_DOMAIN'),
+        PULL_SECRET: document.getElementById('PULL_SECRET').value, // keep whitespace
+        SSH_PUBLIC_KEY: document.getElementById('SSH_PUBLIC_KEY').value,
+        INSTANCE_TYPE: getVal('INSTANCE_TYPE'),
+        ROOT_VOLUME_SIZE: getVal('ROOT_VOLUME_SIZE'),
+        AWS_DEFAULT_REGION: getVal('AWS_DEFAULT_REGION'),
+        USER_EMAIL: getVal('USER_EMAIL'),
+        USER_TEAM: getVal('USER_TEAM'),
+        USER_USAGE: getVal('USER_USAGE'),
+        USER_USAGE_DESCRIPTION: getVal('USER_USAGE_DESCRIPTION'),
+        installConfigOverride: document.getElementById('installConfigOverride').value,
+        dryRun: document.getElementById('dryRun').checked
+      };
+
+      var headers = { 'Content-Type': 'application/json' };
+      var token = getVal('ADMIN_TOKEN');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      document.getElementById('runBtn').disabled = true;
+      setAlert('info', 'Running... (this may take a bit)');
+      showResult({ ok: false, message: '(running)' });
+
+      try {
+        var out = await fetchJsonWithFallback(
+          '/api/configure-hive-tenants-roadshow',
+          headers,
+          'POST',
+          JSON.stringify(payload)
+        );
+        var resp = out.resp;
+        var json = out.json;
+
+        showResult(json, { url: out.url, status: resp.status });
+        if (resp.ok && json && json.ok) setAlert('success', 'Success');
+        else setAlert('danger', 'Failed: ' + (json && json.error ? json.error : ('HTTP ' + resp.status)));
+      } catch (err) {
+        if (err && err.nonJson) {
+          showResult({
+            ok: false,
+            error: 'Non-JSON response from server (check route/path/auth)',
+            ...err.nonJson
+          }, { url: err.nonJson.url, status: err.nonJson.status });
+          setAlert('danger', 'Request failed (non-JSON response). See Result for details.');
+        } else {
+          showResult({ ok: false, error: String(err && err.stack ? err.stack : err) });
+          setAlert('danger', 'Request failed: ' + err);
+        }
+      } finally {
+        document.getElementById('runBtn').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

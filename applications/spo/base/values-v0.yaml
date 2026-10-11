@@ -1,0 +1,14 @@
+# list of operators
+operators:
+  # seccomp operator
+  - name: security-profiles-operator
+    namespace:
+      name: openshift-security-profiles
+      create: true
+      global: true
+    channels: [release-alpha-rhel-8] # v0,1
+    version: "security-profiles-operator.v0.10.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

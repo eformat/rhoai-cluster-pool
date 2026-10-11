@@ -1,0 +1,3 @@
+---
+resources:
+  - policy-cluster-admin.yaml

@@ -1,0 +1,84 @@
+---
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    opendatahub.io/model-type: generative
+    openshift.io/display-name: Llama-4-Scout-17B-16E-W4A16
+    security.opendatahub.io/enable-auth: "false"
+  labels:
+    kueue.x-k8s.io/queue-name: default
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  name: llama-4-scout-17b-16e-w4a16
+spec:
+  model:
+    name: llama-4-scout-17b-16e-w4a16
+    uri: "pvc://llama-4-scout/models"
+  parallelism:
+    tensor: 4
+    pipeline: 1
+  replicas: 1
+  router: {}
+  template:
+    containers:
+    - name: main
+      env:
+        - name: TIKTOKEN_CACHE_DIR
+          value: /tmp
+        - name: VLLM_LOGGING_LEVEL
+          value: DEBUG
+      args:
+        - --served-model-name={{.Name}}
+        - --model=/mnt/models
+        - --max-model-len=400000
+        - --enable-ssl-refresh
+        - --ssl-certfile=/var/run/kserve/tls/tls.crt
+        - --ssl-keyfile=/var/run/kserve/tls/tls.key
+        - --distributed-executor-backend=mp
+        - --trust-remote-code
+        - --enable-auto-tool-choice
+        - --tool-call-parser
+        - llama4_pythonic
+        - --chat-template
+        - /app/data/template/tool_chat_template_llama4_pythonic.jinja
+      image: registry.redhat.io/rhaiis-preview/vllm-cuda-rhel9:voxtral-realtime
+      command:
+        - python
+        - -m
+        - vllm.entrypoints.openai.api_server
+      startupProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        initialDelaySeconds: 1800
+        failureThreshold: 10
+        periodSeconds: 20
+      readinessProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        timeoutSeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 60
+      livenessProbe:
+        httpGet:
+          path: /v1/models
+          port: 8000
+          scheme: HTTPS
+        timeoutSeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        failureThreshold: 3
+      resources:
+        limits:
+          cpu: "8"
+          memory: 128Gi
+          nvidia.com/gpu: "4"
+        requests:
+          cpu: "8"
+          memory: 128Gi
+          nvidia.com/gpu: "4"

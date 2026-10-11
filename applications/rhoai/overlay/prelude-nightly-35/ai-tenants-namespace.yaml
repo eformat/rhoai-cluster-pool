@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-tenants
+  labels:
+    opendatahub.io/generated-namespace: "true"
+    app.kubernetes.io/managed-by: maas-controller
+    app.kubernetes.io/part-of: maas-controller

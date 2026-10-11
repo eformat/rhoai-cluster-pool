@@ -1,0 +1,13 @@
+apiVersion: console.openshift.io/v1
+kind: ConsolePlugin
+metadata:
+  name: rhai-nav-plugin
+spec:
+  displayName: RHAI Navigation Plugin
+  backend:
+    type: Service
+    service:
+      basePath: /
+      name: rhai-nav-plugin
+      namespace: {{ .Values.namespace }}
+      port: 9443

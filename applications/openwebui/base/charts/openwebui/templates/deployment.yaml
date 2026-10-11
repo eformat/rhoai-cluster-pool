@@ -1,0 +1,166 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openwebui.fullname" . }}
+  labels:
+    {{- include "openwebui.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    {{- toYaml .Values.deploymentStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "openwebui.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- include "openwebui.config-annotations" . | nindent 8 }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "openwebui.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "openwebui.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.injectServiceCA }}
+      initContainers:
+        - name: ca-bundle-packer
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - |-
+              set -x
+              find /etc/ssl/certs -type f -o -type l -exec cp -P {} /etc/ssl/new-root/ \;
+              update-ca-certificates --etccertsdir /etc/ssl/new-root
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: service-ca
+              mountPath: /usr/local/share/ca-certificates
+            - name: new-ca-root
+              mountPath: /etc/ssl/new-root
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/bash
+          args:
+            - start.sh
+          envFrom:
+            - configMapRef:
+                name: {{ include "openwebui.fullname" . }}
+            - secretRef:
+                name: {{ include "openwebui.fullname" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/backend/data
+            - name: tmp
+              mountPath: /tmp
+            {{- if .Values.injectServiceCA }}
+            - mountPath: /etc/ssl/certs
+              name: new-ca-root
+            {{- end }}
+        {{- if .Values.oauth.enabled }}
+        - name: oauth-proxy
+          image: {{ .Values.oauth.image.registry }}/{{ .Values.oauth.image.repo }}:{{ .Values.oauth.image.tag }}
+          args:
+            - --provider=openshift
+            - --pass-basic-auth=false
+            - --https-address=:8443
+            - --http-address=
+            - --email-domain=*
+            - --upstream=http://localhost:{{ .Values.service.port }}
+            - --openshift-service-account={{ include "openwebui.serviceAccountName" . }}
+            - --tls-key=/etc/tls/private/tls.key
+            - --tls-cert=/etc/tls/private/tls.crt
+            - --cookie-secret-file=/etc/proxy/secrets/session_secret
+            - --openshift-ca=/etc/pki/tls/cert.pem
+            - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - --openshift-ca=/etc/ocp-injected-certs/ca-bundle.crt
+            - >
+              --openshift-sar={{ tpl .Values.oauth.sarTemplate . }}
+          ports:
+            - containerPort: 8443
+              name: oauth
+          volumeMounts:
+            - mountPath: /etc/tls/private
+              name: proxy-svc-tls
+            - mountPath: /etc/proxy/secrets
+              name: proxy-session
+            - mountPath: /etc/ocp-injected-certs
+              name: proxy-ca
+        {{- end }}
+      volumes:
+        - name: data
+          {{- if eq .Values.configuration.data.type "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ include "openwebui.fullname" . }}-data
+            readOnly: false
+          {{- else if eq .Values.configuration.modelStorage.type "emptyDir" }}
+          emptyDir:
+            sizeLimit: {{ .Values.configuration.data.size }}
+            {{- with .Values.configuration.data.emptyDir }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.injectServiceCA }}
+        - name: service-ca
+          configMap:
+            name: {{ include "openwebui.fullname" . }}-ocp-service-ca
+        - name: new-ca-root
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.oauth.enabled }}
+        - name: proxy-svc-tls
+          secret:
+            secretName: {{ include "openwebui.fullname" . }}-proxy-svc-tls
+        - name: proxy-session
+          secret:
+            secretName: {{ include "openwebui.fullname" . }}-proxy-session
+        - name: proxy-ca
+          configMap:
+            name: {{ include "openwebui.fullname" . }}-ocp-injected-certs
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

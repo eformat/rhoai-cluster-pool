@@ -1,0 +1,62 @@
+{{- if .Values.serviceAccount.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "openclaw.fullname" . }}-oauth
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+rules:
+  # Required for OpenShift OAuth proxy to perform authentication/authorization checks
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "openclaw.fullname" . }}-oauth
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "openclaw.fullname" . }}-oauth
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "openclaw.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "openclaw.fullname" . }}-oauth-configmap
+  namespace: openshift-config-managed
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+rules:
+  # Required to read OAuth serving certificate ConfigMap
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["oauth-serving-cert"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "openclaw.fullname" . }}-oauth-configmap
+  namespace: openshift-config-managed
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "openclaw.fullname" . }}-oauth-configmap
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "openclaw.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

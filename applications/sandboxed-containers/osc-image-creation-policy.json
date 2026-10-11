@@ -1,0 +1,70 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VMImportRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:PutRolePolicy",
+        "iam:GetRole",
+        "iam:ListRolePolicies",
+        "iam:DeleteRole",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy"
+      ],
+      "Resource": "arn:aws:iam::130164124975:role/vmimport"
+    },
+    {
+      "Sid": "PassRole",
+      "Effect": "Allow",
+      "Action": ["iam:PassRole", "iam:GetRole"],
+      "Resource": "arn:aws:iam::130164124975:role/vmimport"
+    },
+    {
+      "Sid": "S3BucketManagement",
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket",
+        "s3:DeleteBucket",
+        "s3:GetBucketLocation",
+        "s3:ListBucket",
+        "s3:GetBucketAcl"
+      ],
+      "Resource": "arn:aws:s3:::podvm-*"
+    },
+    {
+      "Sid": "S3ObjectManagement",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::podvm-*/*"
+    },
+    {
+      "Sid": "S3ListAllBuckets",
+      "Effect": "Allow",
+      "Action": ["s3:ListAllMyBuckets"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EC2ImageImport",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ImportSnapshot",
+        "ec2:DescribeImportSnapshotTasks",
+        "ec2:CancelImportTask",
+        "ec2:RegisterImage",
+        "ec2:DeregisterImage",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeSnapshotAttribute",
+        "ec2:ModifySnapshotAttribute",
+        "ec2:CreateSnapshot",
+        "ec2:DeleteSnapshot",
+        "ec2:CopySnapshot",
+        "ec2:CreateVolume",
+        "ec2:DeleteVolume",
+        "ec2:DescribeVolumes"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

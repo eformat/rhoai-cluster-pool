@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rhai-nav-plugin
+    app.kubernetes.io/component: rhai-nav-plugin
+    app.kubernetes.io/instance: rhai-nav-plugin
+    app.kubernetes.io/part-of: rhai-nav-plugin
+    app.openshift.io/runtime-namespace: {{ .Values.namespace }}
+  name: rhai-nav-plugin
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rhai-nav-plugin
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: rhai-nav-plugin
+    spec:
+      serviceAccountName: rhai-nav-plugin
+      initContainers:
+        - name: enable-plugin
+          image: {{ .Values.initImage }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              PLUGIN=rhai-nav-plugin
+              if kubectl get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}' 2>/dev/null | grep -q "$PLUGIN"; then
+                echo "Plugin $PLUGIN already enabled"
+              else
+                kubectl patch consoles.operator.openshift.io cluster --type=json \
+                  -p="[{\"op\":\"add\",\"path\":\"/spec/plugins/-\",\"value\":\"$PLUGIN\"}]"
+                echo "Plugin $PLUGIN enabled"
+              fi
+      containers:
+        - image: {{ .Values.image }}
+          imagePullPolicy: Always
+          name: rhai-nav-plugin
+          ports:
+            - containerPort: 9443
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/serving-cert
+              name: plugin-serving-cert
+              readOnly: true
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+              readOnly: true
+              subPath: nginx.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+        - name: plugin-serving-cert
+          secret:
+            defaultMode: 420
+            secretName: plugin-serving-cert
+        - name: nginx-conf
+          configMap:
+            defaultMode: 420
+            name: nginx-conf

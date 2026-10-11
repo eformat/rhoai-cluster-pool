@@ -1,0 +1,104 @@
+# list of operators
+operators:
+  # rhoai
+  - name: rhods-operator
+    namespace:
+      name: redhat-ods-operator
+      create: true
+      global: true
+    channels: [stable-3.5] # v0,1
+    version: "3.5.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # authorino - managed by kuadrant
+  # - name: authorino-operator
+  #   namespace:
+  #     name: openshift-authorino
+  #     create: true
+  #     global: true
+  #   channels: [stable] # v0,1
+  #   version: "1.2.4" # v1
+  #   catalog: openshift-redhat-operators #v1
+  #   source: redhat-operators # v0
+  #   sourceNamespace: openshift-marketplace # v0
+  #   enabled: true
+
+  # tekton pipelines
+  - name: openshift-pipelines-operator-rh
+    namespace:
+      name: openshift-operators
+      create: false
+    channels: [latest] # v0,1
+    version: "1.23.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # serverless
+  - name: serverless-operator
+    namespace:
+      name: openshift-serverless
+      create: true
+      global: true
+    channels: [stable] # v0,1
+    version: "1.37.1" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # kueue
+  - name: kueue-operator
+    namespace:
+      name: openshift-kueue-operator
+      create: true
+      global: true
+    channels: [stable-v1.4] # v0,1
+    version: "1.4.2" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # leader worker set
+  - name: leader-worker-set
+    namespace:
+      name: openshift-lws-operator
+      create: true
+      global: false
+    channels: [stable-v1.0] # v0,1
+    version: "1.0.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # rhcl - kuadrant
+  - name: rhcl-operator
+    namespace:
+      name: kuadrant-system
+      create: true
+      global: true
+    channels: [stable] # v0,1
+    version: "1.4.3" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true
+
+  # jobset
+  - name: job-set
+    namespace:
+      name: openshift-jobset-operator
+      create: true
+      global: false
+    channels: [stable-v1.0] # v0,1
+    version: "1.0.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

@@ -1,0 +1,12 @@
+---
+resources:
+  - charts/check-install/check-install-configmap.yaml
+
+helmCharts:
+  - name: check-install
+    namespace: openshift-config
+    includeCRDs: false
+    valuesFile: charts/check-install/values.yaml
+    version: 0.0.1
+    releaseName: vault
+    repo:  # we expand chart in folder

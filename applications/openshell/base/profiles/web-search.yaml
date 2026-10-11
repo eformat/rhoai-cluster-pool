@@ -1,0 +1,29 @@
+id: web-search
+display_name: Web Search
+description: Tavily and Brave Search API endpoints and plugin registry
+category: other
+endpoints:
+  - host: api.tavily.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+  - host: api.search.brave.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+  - host: registry.npmjs.org
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    access: read-only
+binaries:
+  - /usr/bin/curl
+  - /usr/local/bin/curl
+  # OpenClaw's node: /usr/bin/node-<major> in the Hummingbird image
+  # (/usr/bin/node links to it; the real path is what is matched),
+  # /usr/local/bin/node in the NemoClaw image.
+  - /usr/bin/node
+  - /usr/bin/node-*
+  - /usr/local/bin/node

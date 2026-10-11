@@ -1,0 +1,7 @@
+apiVersion: v2
+name: olm-v0-chart
+description: A Chart for deploying OLM V0 Operators
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+icon: https://avatars1.githubusercontent.com/u/68044996?s=200&v=4

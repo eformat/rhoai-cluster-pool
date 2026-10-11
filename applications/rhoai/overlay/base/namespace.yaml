@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: llama-serving
+  labels:
+    opendatahub.io/dashboard: "true"
+    openshift.io/cluster-monitoring: "true"
+    kueue.openshift.io/managed: "true"

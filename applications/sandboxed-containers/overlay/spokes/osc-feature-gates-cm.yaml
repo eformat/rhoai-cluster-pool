@@ -1,0 +1,18 @@
+# OSC CoCo feature gate — the OSC reads `confidential` from this ConfigMap
+# (controllers/fg_handler.go, osc-feature-gates in the operator namespace).
+# Default (CM absent) is false, which makes the OSC stamp DISABLECVM=true and
+# its policy-only defaultNonCCInitdata (no cdh.toml/KBS URL) into
+# peer-pods-cm on EVERY reconcile — the CDH inside the pod VM then has no KBS
+# URL and container creation fails with "Get resource failed: ttrpc request
+# error". Setting confidential=true makes the OSC set DISABLECVM=false and
+# leave our INITDATA (from imperative/initdata) in place. The OSC only reads
+# this CM, so there is no reconciliation fight.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: osc-feature-gates
+  namespace: openshift-sandboxed-containers-operator
+data:
+  confidential: "true"
+  layeredImageDeployment: "false"

@@ -1,0 +1,14 @@
+{{- if .Values.rbac.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.rbac.name | default (printf "%s-admin" (include "openwebui.fullname" .)) }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.rbac.clusterRole | default "edit" }}
+subjects:
+{{- toYaml .Values.rbac.subjects | nindent 0 }}
+{{- end }}

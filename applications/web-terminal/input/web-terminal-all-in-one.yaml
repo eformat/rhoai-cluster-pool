@@ -1,0 +1,48 @@
+---
+apiVersion: controller.devfile.io/v1alpha1
+config:
+  workspace:
+    idleTimeout: 8h
+    imagePullPolicy: Always
+kind: DevWorkspaceOperatorConfig
+metadata:
+  name: devworkspace-operator-config
+  namespace: openshift-operators
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+---
+apiVersion: workspace.devfile.io/v1alpha2
+kind: DevWorkspaceTemplate
+metadata:
+  annotations:
+    controller.devfile.io/allow-import-from: '*'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    console.openshift.io/terminal: "true"
+  name: web-terminal-tooling
+  namespace: openshift-operators
+spec:
+  attributes:
+    controller.devfile.io/storage-type: per-workspace
+  components:
+  - container:
+      args:
+      - tail
+      - -f
+      - /dev/null
+      cpuLimit: 800m
+      cpuRequest: 100m
+      image: quay.io/eformat/web-terminal:latest
+      memoryLimit: 1024Mi
+      memoryRequest: 128Mi
+      mountSources: false
+      sourceMapping: /projects
+      volumeMounts:
+      - name: home-storage
+        path: /home/user
+    name: web-terminal-tooling
+  - name: home-storage
+    volume:
+      ephemeral: false

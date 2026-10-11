@@ -1,0 +1,233 @@
+# Default values for openclaw.
+# This is a YAML-formatted file.
+
+# -- Secrets to be created as Kubernetes Secrets
+# These can be referenced by environment variables using valueFrom.secretKeyRef
+# Override at install time with: --set secrets.maas.openai-api-key=sk-xxx
+secrets:
+#  maas:
+#    openai-api-key: ""
+#  openclaw-secrets:
+#    gateway-token: ""
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+openclaw:
+  config:
+    agents:
+      defaults:
+        workspace: /workspace
+        model:
+          primary: vllm/kimi-k2-6
+
+    gateway:
+      bind: "0.0.0.0"
+      port: 18789
+      auth:
+        mode: "token"
+      trustedProxies: ["127.0.0.1", "10.0.0.0/8", "172.16.0.0/12", "100.64.0.0/10"]
+      controlUi:
+        allowedOrigins: ["*"]
+
+    models:
+      providers:
+        vllm:
+          baseUrl: "https://maas.apps.ocp.cloud.rhai-tmm.dev/prelude-maas/kimi-k2-6/v1"
+          apiKey: "${VLLM_API_KEY}"
+          api: openai-completions
+          models:
+            - id: kimi-k2-6
+              name: Kimi K2.6
+              reasoning: true
+              input: ["text"]
+              cost:
+                input: 0
+                output: 0
+                cacheRead: 0
+                cacheWrite: 0
+              contextWindow: 262144
+              maxTokens: 65536
+
+  env:
+    - name: VLLM_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: maas-secret
+          key: token
+
+  image:
+    repository: ghcr.io/openclaw/openclaw
+    tag: "2026.4.21-slim"
+    pullPolicy: IfNotPresent
+
+  init:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 100Mi
+      limits:
+        cpu: 50m
+        memory: 200Mi
+    image:
+      registry: registry.access.redhat.com
+      repository: ubi9/ubi
+      tag: latest
+      pullPolicy: IfNotPresent
+
+  port: 18789
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+clawsuite:
+  enabled: true
+  allowedHosts: ""
+
+  image:
+    repository: quay.io/eformat/openclaw-clawsuite
+    tag: "2026.4.21"
+    pullPolicy: Always
+
+  port: 3000
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+    annotations: {}
+
+  route:
+    enabled: true
+    host: ""
+    path: /
+    tls:
+      termination: reencrypt
+      insecureEdgeTerminationPolicy: Redirect
+    annotations: {}
+    labels: {}
+
+  oauthProxy:
+    port: 9443
+    image:
+      repository: image-registry.openshift-image-registry.svc:5000/openshift/oauth-proxy
+      tag: "v4.4"
+      pullPolicy: IfNotPresent
+    cookieSecret: ""
+    sar: '{"namespace": "{{ .Release.Namespace }}", "resource": "services", "verb": "get"}'
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+  env: []
+
+oauthProxy:
+  image:
+    repository: image-registry.openshift-image-registry.svc:5000/openshift/oauth-proxy
+    tag: "v4.4"
+    pullPolicy: IfNotPresent
+  port: 8443
+  cookieSecret: ""
+  sar: '{"namespace": "{{ .Release.Namespace }}", "resource": "services", "verb": "get"}'
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClass: ""
+  annotations: {}
+  mountPath: /home/node/.openclaw
+
+workspace:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClass: ""
+  annotations: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: true
+
+securityContext:
+  runAsNonRoot: true
+
+ephemeral:
+  cache:
+    sizeLimit: 1Gi
+  home:
+    sizeLimit: 10Gi
+
+networkPolicy:
+  enabled: false
+  allowWanEgress: true
+  additionalIngress: []
+  additionalEgress: []
+  dnsNamespace: "openshift-dns"
+  hostCidr: "YOUR_NODE_CIDR/16"
+
+service:
+  type: ClusterIP
+  port: 443
+  targetPort: 8443
+  annotations: {}
+
+route:
+  enabled: true
+  host: ""
+  path: /
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  annotations: {}
+  labels: {}
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []

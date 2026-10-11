@@ -1,0 +1,4 @@
+---
+prefix: red
+
+clusterDomain: 'apps.{{ (lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain }}'

@@ -1,0 +1,143 @@
+# Default values for llama-stack-playground
+replicaCount: 1
+
+image:
+  repository: quay.io/eformat/streamlit_client  # quay.io/rh-aiservices-bu/llama-stack-playground
+  tag: "0.2.15" # "0.2.12"  # "0.2.4"  # "0.2.1"
+  pullPolicy: Always
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations:
+    serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"llama-stack-playground"}}'
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # runAsUser: 1001
+  # Remove specific UID/GID to let OpenShift assign them
+  # fsGroup: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  # Remove specific UID/GID to let OpenShift assign them
+  # runAsUser: 1001
+  # runAsGroup: 1001
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8501
+  annotations:
+    service.alpha.openshift.io/serving-cert-secret-name: proxy-tls
+
+route:
+  enabled: true
+  annotations: {}
+  host: ""
+  tls:
+    enabled: true
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: llama-stack-playground.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    #cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Playground configuration
+playground:
+  # Llama Stack backend URL
+  llamaStackUrl: "http://llamastack-with-config-service:8321"
+  # Default model to use
+  defaultModel: "granite-31-2b-instruct"
+  # Enable/disable features
+  enableChat: true
+  enableAgents: true
+  enableTools: true
+
+# Environment variables
+env:
+  STREAMLIT_SERVER_PORT: "8501"
+  STREAMLIT_SERVER_ADDRESS: "0.0.0.0"
+  STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+
+# Network Policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: openshift-ingress
+      ports:
+      - protocol: TCP
+        port: 8501
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            app.kubernetes.io/name: llama-stack
+      ports:
+      - protocol: TCP
+        port: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1

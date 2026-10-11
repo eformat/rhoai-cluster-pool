@@ -1,0 +1,13 @@
+# list of operators
+operators:
+  # web-terminal
+  - name: web-terminal
+    namespace:
+      name: openshift-operators
+      create: false
+    channels: [fast] # v0,1
+    version: "1.13.0" # v1
+    catalog: openshift-redhat-operators #v1
+    source: redhat-operators # v0
+    sourceNamespace: openshift-marketplace # v0
+    enabled: true

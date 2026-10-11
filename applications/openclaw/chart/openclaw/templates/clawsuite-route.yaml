@@ -1,0 +1,32 @@
+{{- if and .Values.clawsuite.enabled .Values.clawsuite.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "openclaw.fullname" . }}-clawsuite
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clawsuite
+    {{- with .Values.clawsuite.route.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.clawsuite.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.clawsuite.route.host }}
+  host: {{ .Values.clawsuite.route.host }}
+  {{- end }}
+  path: {{ .Values.clawsuite.route.path }}
+  to:
+    kind: Service
+    name: {{ include "openclaw.fullname" . }}-clawsuite
+    weight: 100
+  port:
+    targetPort: {{ .Values.clawsuite.oauthProxy.port }}
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+{{- end }}
