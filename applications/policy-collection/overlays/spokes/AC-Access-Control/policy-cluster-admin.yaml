@@ -33,6 +33,7 @@ spec:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: admin
+            {{- if (lookup "v1" "Namespace" "" "redhat-ods-applications") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: services.platform.opendatahub.io/v1alpha1
@@ -44,6 +45,7 @@ spec:
                   - admin
                   allowedGroups:
                   - system:authenticated
+            {{- end }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: user.openshift.io/v1
