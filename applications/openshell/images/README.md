@@ -33,10 +33,10 @@ The gateway's driver stages the sandbox runtime into every VM from
 `quay.io/eformat/openshell-sandbox:0.1.2`). No official runtime image matches
 the 0.1.2 supervisor protocol (all published tags were built 2026-09-11..13,
 predating the confirmation refactor), so it is built from the
-`custom-0.1.2-deadline` branch of `/home/mike/git/OpenShell`:
+`custom-0.1.2-deadline` branch of `~/git/OpenShell`:
 
 ```bash
-cd /home/mike/git/OpenShell   # branch custom-0.1.2-deadline
+cd ~/git/OpenShell   # branch custom-0.1.2-deadline
 cargo build --release --target x86_64-unknown-linux-musl -p openshell-sandbox
 install -Dm0755 target/x86_64-unknown-linux-musl/release/openshell-sandbox \
     deploy/docker/.build/prebuilt-binaries/amd64/openshell-sandbox
@@ -48,10 +48,10 @@ podman push quay.io/eformat/openshell-sandbox:0.1.2   # then make public on quay
 ## Gateway image (0.1.2 + deadline patches)
 
 Same tree, glibc build with staged libs (see
-`/home/mike/git/OpenShell/deploy/docker/Dockerfile.gateway-patched`):
+`~/git/OpenShell/deploy/docker/Dockerfile.gateway-patched`):
 
 ```bash
-cd /home/mike/git/OpenShell   # branch custom-0.1.2-deadline
+cd ~/git/OpenShell   # branch custom-0.1.2-deadline
 cargo build --release -p openshell-gateway
 cp target/release/openshell-gateway deploy/docker/.build/prebuilt-binaries/amd64/
 podman build -f deploy/docker/Dockerfile.gateway-patched \
@@ -62,3 +62,41 @@ podman push quay.io/eformat/openshell-gateway:0.1.2-deadline.2
 Requires `deploy/docker/.build/libs/{libz3.so.4.16,libgmp.so.10}` (committed in
 the OpenShell repo) — the gateway binary links z3 4.16 while the base image's
 Fedora snapshot ships 4.15.
+
+## Supervisor image (0.1.2 + attach-timeout window)
+
+The per-sandbox control-plane pod. The official
+`ghcr.io/nvidia/openshell/supervisor:0.1.2` hard-codes a 5-minute attach
+timeout (`ATTACH_REQUEST_TIMEOUT`,
+`crates/openshell-sandbox-backend/src/runtime.rs`): a CoCo pod VM takes ~5 min
+to provision (CVM boot + workspace seed + agent start), which consumes the
+supervisor's whole wait window — it exits with "boundary idempotent control
+request timed out" 3 seconds BEFORE the boundary comes up, and the gateway
+then marks the sandbox Ready from the workload pod phase alone (the CR says
+Ready but the boundary is dead).
+
+Paired with the runtime.rs change that makes the timeout env-overridable
+(`OPENSHELL_ATTACH_REQUEST_TIMEOUT_MS`, default stays 5 min — mirroring the
+gateway's `OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS` pattern); this image bakes
+900000 (15 min, matching the gateway's `provisioningRepairWindowMs`
+chart value). The driver's fixed supervisor pod env list does not set that
+var, so the image ENV reaches the supervisor — no driver change or gateway
+rebuild needed.
+
+```bash
+cd ~/git/OpenShell   # branch custom-0.1.2-deadline (runtime.rs change committed)
+Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release -p openshell-supervisor
+cp target/release/openshell-supervisor deploy/docker/.build/prebuilt-binaries/amd64/
+
+# context = the OpenShell repo root (the COPY path is relative to it)
+podman build -f ~/git/rhoai-cluster-pool/applications/openshell/images/Dockerfile.supervisor \
+    --platform linux/amd64 -t quay.io/eformat/openshell-supervisor:0.1.2-t15 .
+podman push quay.io/eformat/openshell-supervisor:0.1.2-t15   # then make public on quay
+```
+
+Used via `supervisor.image` in
+`applications/openshell/overlay/gateway/values.yaml`.
+
+Upstream note: the attach timeout should be env-overridable in the official
+supervisor (same treatment as the gateway's repair window) — file upstream
+once verified.

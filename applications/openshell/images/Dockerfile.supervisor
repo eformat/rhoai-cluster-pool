@@ -1,0 +1,40 @@
+# Supervisor image with an attach-timeout window sized for peer-pods CoCo
+# pod VMs.
+#
+# The official ghcr.io/nvidia/openshell/supervisor:0.1.2 hard-codes a
+# 5-minute attach timeout (ATTACH_REQUEST_TIMEOUT in
+# ~/git/OpenShell/crates/openshell-sandbox-backend/src/runtime.rs). A CoCo
+# pod VM takes ~5 minutes to provision (CVM boot ~2.5 min + workspace seed
+# ~2 min + agent start), which consumes the supervisor's whole wait window:
+# the supervisor exits with "boundary idempotent control request timed out"
+# 3 seconds BEFORE the boundary comes up (users--alice-openclaw,
+# 2026-10-11), and the gateway then marks the sandbox Ready from the
+# workload pod phase alone — the CR says Ready but the boundary is dead.
+#
+# This build pairs with the runtime.rs change that makes the timeout
+# env-overridable (OPENSHELL_ATTACH_REQUEST_TIMEOUT_MS, default stays 5
+# min — mirroring the gateway's OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS /
+# OPENSHELL_RUNTIME_BOOTSTRAP_GRACE_MS pattern) and bakes 900000 (15 min,
+# matching the gateway's provisioningRepairWindowMs/bootstrapGraceMs chart
+# values) into the image. The driver's fixed supervisor pod env list does
+# not set that var, so the image ENV reaches the supervisor — no driver
+# change or gateway rebuild needed.
+#
+# Build (the supervisor binary must be built and staged first — the cargo
+# build needs the sandbox-backend runtime.rs change above):
+#   cd ~/git/OpenShell
+#   Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release -p openshell-supervisor
+#   cp target/release/openshell-supervisor deploy/docker/.build/prebuilt-binaries/amd64/
+#
+#   podman build -f ~/git/rhoai-cluster-pool/applications/openshell/images/Dockerfile.supervisor \
+#     --platform linux/amd64 -t quay.io/eformat/openshell-supervisor:0.1.2-t15 .
+#   (context = ~/git/OpenShell — the COPY path is relative to it)
+# Push:  podman push quay.io/eformat/openshell-supervisor:0.1.2-t15  (make public)
+# Use:   applications/openshell/overlay/gateway/values.yaml supervisor.image
+FROM gcr.io/distroless/base-nossl-debian13@sha256:af5cb8dd589b8520b8c06bebb9efb73d7e16406cab58e85c51761fff49d370a0
+
+COPY --chmod=0555 deploy/docker/.build/prebuilt-binaries/amd64/openshell-supervisor /openshell-supervisor
+
+ENV OPENSHELL_ATTACH_REQUEST_TIMEOUT_MS=900000
+
+ENTRYPOINT ["/openshell-supervisor"]

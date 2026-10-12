@@ -116,6 +116,29 @@ sandboxRuntime:
     registry: quay.io
     repository: eformat/openshell-sandbox
     tag: 0.1.2
+# Supervisor image (the per-sandbox control-plane pod — the boundary the
+# dashboard connects through). The official ghcr.io/nvidia/openshell/
+# supervisor:0.1.2 hard-codes a 5-minute attach timeout
+# (ATTACH_REQUEST_TIMEOUT, openshell-sandbox-backend/runtime.rs): peer-pods
+# CoCo pod VMs take ~5 min to provision (CVM boot + workspace seed + agent
+# start), which consumes the supervisor's whole wait window — it exits with
+# "boundary idempotent control request timed out" 3 seconds BEFORE the
+# boundary comes up (alice 2026-10-11), and the gateway then marks the
+# sandbox Ready from the workload pod phase alone. This build makes the
+# timeout env-overridable (OPENSHELL_ATTACH_REQUEST_TIMEOUT_MS, default
+# stays 5 min) and bakes 900000 into the image (matching the gateway's
+# provisioningRepairWindowMs/bootstrapGraceMs). Built from the
+# custom-0.1.2-deadline tree with deploy/docker/Dockerfile.supervisor
+# (build from the repo ROOT — deploy/docker/.dockerignore's `build` pattern
+# excludes the .build prebuilt dir from that subdirectory's context).
+supervisor:
+  image:
+    registry: quay.io
+    repository: eformat/openshell-supervisor
+    tag: 0.1.2-t15
+    # The tag is mutated per build; Always makes every pod roll pull the
+    # current digest instead of the node's cached image.
+    pullPolicy: Always
 # Gateway API GRPCRoute — retire the oc port-forward. The Gateway
 # `openshell-gateway` (openshift-ingress ns, added to the CM policy
 # policy-gateway.yaml) terminates client TLS with the platform's Let's Encrypt
