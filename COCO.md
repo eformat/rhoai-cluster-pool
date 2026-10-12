@@ -599,7 +599,10 @@ two sandboxes" benchmark 2026-07-23):
   template engine (`{{"{{"}}` / `{{"}}"}}`) AND the result single-quoted —
   ESO unmarshals the rendered literal as YAML, and an unquoted
   `{{fromSecret ...}}` is a YAML flow mapping -> "invalid map key" render
-  failure. Plain Policy YAML (policy-aws-creds pattern) needs neither.
+  failure. AND the literal IS a Go template end to end — including `#`
+  comment lines: a brace pair in a comment is parsed as an action
+  ("unexpected <.> in operand" parse failure). Plain Policy YAML
+  (policy-aws-creds pattern) needs none of this.
 - **TEE on AWS — round-18 decision: full TEE CoCo**. This deployment now
   uses the OSC's native CVM path: feature gate on → `DISABLECVM=false` →
   SNP CVM pod VMs (`PODVM_INSTANCE_TYPE: m6a.large`). Hardware-rooted
