@@ -224,6 +224,22 @@ spec:
                   issuerRef:
                     kind: Issuer
                     name: letsencrypt-ingress
+    # maas-parameters lives in redhat-ods-applications, which only exists
+    # when RHOAI is installed — a musthave in a missing namespace violates
+    # ("namespaces \"redhat-ods-applications\" not found", cannot be
+    # created). The raw template gates on a spoke-side cluster-local
+    # lookup: no namespace -> empty template -> Compliant; the namespace
+    # appearing later (RHOAI install) triggers creation on the next
+    # evaluation. Same pattern as policy-cluster-autoscaler's roadshow
+    # guard.
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: maas-parameters-spokes
+        spec:
+          object-templates-raw: |
+            {{- if (lookup "v1" "Namespace" "" "redhat-ods-applications") }}
             - complianceType: musthave
               objectDefinition:
                 apiVersion: v1
@@ -234,3 +250,6 @@ spec:
                 data:
                   monitoring-namespace: redhat-ods-applications
                   payload-processing-image: registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:cb1b1816df5e30cd670066b48282b4965d6fa04287db159b8db2300cbab1789b
+            {{- end }}
+          remediationAction: inform  # will be overridden
+          severity: low
