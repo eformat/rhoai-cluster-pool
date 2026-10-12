@@ -11,6 +11,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: openshell-cert-aws-spokes
+  namespace: openshift-gitops
   annotations:
     policy.open-cluster-management.io/categories: AC Access Control
     policy.open-cluster-management.io/controls: AC-3 Access Enforcement
