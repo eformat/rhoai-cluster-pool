@@ -12,14 +12,29 @@ workdir into the workspace PVC. See the Dockerfile header for the full
 failure signature.
 
 ```bash
-podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.3 .
-podman push quay.io/eformat/openshell-openclaw:0.1.3   # then make public on quay
+podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.4 .
+podman push quay.io/eformat/openshell-openclaw:0.1.4   # then make public on quay
 ```
 
-Use `quay.io/eformat/openshell-openclaw:0.1.3` as the sandbox workload image
-in the dashboard's Create sandbox modal. 0.1.3 bakes the openclaw gateway
-main-process command as the image CMD, so UI provisioning works without a
-command override (the CLI `--` override still takes precedence).
+Use `quay.io/eformat/openshell-openclaw:0.1.4` as the sandbox workload image.
+The image CMD is NOT used as the sandbox main process — OpenShell runs the
+supervisor runtime as the pod command, and an empty CreateSandbox command
+override resolves to a login shell (`bash -l`), never the image CMD. 0.1.4
+installs `/etc/profile.d/openshell-openclaw.sh` (from `openclaw-profile.sh`),
+which the login-shell main process sources at startup: it starts the openclaw
+gateway (guarded by a pidfile so exec/TUI sessions never double-start it).
+The dashboard's Create sandbox modal therefore works with no command override
+(0.1.4+); the CLI `--` override remains the explicit alternative:
+
+```bash
+openshell sandbox create --name <name> --from quay.io/eformat/openshell-openclaw:0.1.4 -- \
+  sh -c 'openclaw onboard --non-interactive --accept-risk --skip-health || true; exec openclaw gateway run'
+```
+
+Verify after provisioning: `curl https://<workspace>--<sandbox>--<service>.<domain>/`
+must return the openclaw control UI (HTTP 200), not 502 "Service endpoint is
+not reachable". The gateway log lands in
+`/sandbox/.openclaw/gateway.log` inside the sandbox.
 
 Upstream note: the aipcc base image should ship `/sandbox` world-readable
 (the community `ghcr.io/nvidia/openshell-community/sandboxes/base` does) —
