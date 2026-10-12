@@ -101,7 +101,6 @@ Seeded vault paths (read by the ESOs as
 | `passphrase` | passphrase |
 | `attestationStatus` | status=attested, random |
 | `securityPolicyConfig` | insecure/reject/signed image policies |
-| `peer-pods` | AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY for peer-pod VM lifecycle **and** the cert-manager Route53 DNS-01 creds (spoke `aws-creds` Secret via the hub-side ESO `eso-cert-aws.yaml` — same credential, verified identical; no new vault path) |
 | `networking` | AWS_SUBNET_ID/AWS_VPC_ID/AWS_SG_IDS for peer pods (per spoke; OSC 1.13 requires them in peer-pods-cm) |
 | `keycloak-admin` | username/password for the spoke-realms Job |
 | `kbs-auth-public-key` | dummy publicKey (trustee 1.2 operator requirement) |
@@ -112,7 +111,7 @@ pulled by the spoke initdata Job via ESO.
 
 ### AWS IAM for peer pods
 
-The `peer-pods` vault credentials need an IAM policy with:
+The peer-pod AWS credentials (Hive-managed) needs an IAM policy with:
 
 - `ec2:RunInstances`, `ec2:CreateTags`, `ec2:TerminateInstances`
 - `ec2:DescribeInstances`, `ec2:DescribeImages`, `ec2:DescribeSubnets`, `ec2:DescribeSecurityGroups`
@@ -582,18 +581,23 @@ two sandboxes" benchmark 2026-07-23):
   policy-generator output carry explicit namespaces; only hand-written
   binding yamls lack one. (The `coco-kyverno-policies` app only gets away
   with it because its destination IS `openshift-gitops`.)
-- **Per-spoke AWS networking for peer pods** flows: vault
-  `coco/networking` → `peer-pods-secret-spokes` ESO (hub) bakes creds (into
-  the `peer-pods-secret` Secret) + networking keys (into the
-  `coco-networking` **ConfigMap**) into the ACM Policy via `templateFrom` →
-  both land on the spoke (sticky distribution) → peer-pods-cm reads the
-  networking via `{{fromConfigMap ... "coco-networking" ...}}`.
+- **Per-spoke peer-pods credentials + AWS networking for peer pods** flow:
+  credentials are hydrated ON the spoke from the Hive-managed
+  `kube-system/aws-creds` Secret via ACM `{{fromSecret}}` (spoke-side, no
+  vault) inside the `peer-pods-secret-spokes` ACM Policy; networking flows
+  vault `coco/networking` → `peer-pods-secret-spokes` ESO (hub) bakes the
+  keys (into the `coco-networking` **ConfigMap**) into the same Policy via
+  `templateFrom` → both land on the spoke (sticky distribution) →
+  peer-pods-cm reads the networking via `{{fromConfigMap ... "coco-networking" ...}}`.
   Do NOT use hub-side `{{hub fromSecret ... | base64dec hub}}` for these —
   `base64dec` fails at policy distribution and ACM bakes the Go error text
   into the value; and note ACM's `fromSecret` (hub- AND spoke-side) returns
   the base64-encoded Secret `.data` value, so Secret-backed values need
   decoding — `fromConfigMap` returns plain data and is the safe choice for
-  non-credential identifiers.
+  non-credential identifiers. ACM template functions inside an ESO
+  `templateFrom` literal must be escaped for the ESO v2 Go template engine
+  (e.g. `{{"{{"}}fromSecret ...{{"}}"}}`), or ESO fails with "function
+  not defined" at render time.
 - **TEE on AWS — round-18 decision: full TEE CoCo**. This deployment now
   uses the OSC's native CVM path: feature gate on → `DISABLECVM=false` →
   SNP CVM pod VMs (`PODVM_INSTANCE_TYPE: m6a.large`). Hardware-rooted

@@ -21,10 +21,15 @@
 # change or gateway rebuild needed.
 #
 # Build (the supervisor binary must be built and staged first — the cargo
-# build needs the sandbox-backend runtime.rs change above):
+# build needs the sandbox-backend runtime.rs change above, and MUST use the
+# musl target like the official cross-build.sh: the default gnu target is
+# dynamically linked (libgcc_s.so.1) and the pod dies with exit 127
+# ("error while loading shared libraries") on the distroless base):
 #   cd ~/git/OpenShell
-#   Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release -p openshell-supervisor
-#   cp target/release/openshell-supervisor deploy/docker/.build/prebuilt-binaries/amd64/
+#   Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release \
+#     --target x86_64-unknown-linux-musl -p openshell-supervisor
+#   cp target/x86_64-unknown-linux-musl/release/openshell-supervisor \
+#     deploy/docker/.build/prebuilt-binaries/amd64/
 #
 #   podman build -f ~/git/rhoai-cluster-pool/applications/openshell/images/Dockerfile.supervisor \
 #     --platform linux/amd64 -t quay.io/eformat/openshell-supervisor:0.1.2-t15 .

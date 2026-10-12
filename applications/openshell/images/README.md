@@ -85,8 +85,8 @@ rebuild needed.
 
 ```bash
 cd ~/git/OpenShell   # branch custom-0.1.2-deadline (runtime.rs change committed)
-Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release -p openshell-supervisor
-cp target/release/openshell-supervisor deploy/docker/.build/prebuilt-binaries/amd64/
+Z3_SYS_Z3_HEADER=/usr/include/z3/z3.h cargo build --release --target x86_64-unknown-linux-musl -p openshell-supervisor
+cp target/x86_64-unknown-linux-musl/release/openshell-supervisor deploy/docker/.build/prebuilt-binaries/amd64/
 
 # context = the OpenShell repo root (the COPY path is relative to it)
 podman build -f ~/git/rhoai-cluster-pool/applications/openshell/images/Dockerfile.supervisor \
