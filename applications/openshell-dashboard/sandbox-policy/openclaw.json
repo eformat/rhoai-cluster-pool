@@ -1,0 +1,48 @@
+{
+    "version": 1,
+    "filesystem": {
+      "includeWorkdir": true,
+      "readOnly": [
+        "/usr",
+        "/lib",
+        "/proc",
+        "/app",
+        "/etc",
+        "/opt"
+      ],
+      "readWrite": [
+        "/sandbox",
+        "/tmp"
+      ]
+    },
+    "landlock": {
+      "compatibility": "best_effort"
+    },
+    "process": {
+      "runAsUser": "sandbox",
+      "runAsGroup": "sandbox"
+    },
+    "networkPolicies": {
+      "github": {
+        "endpoints": [
+          {
+            "host": "api.github.com",
+            "port": 443,
+            "protocol": "rest",
+            "enforcement": "NETWORK_ENFORCEMENT_MODE_ENFORCE",
+            "access": "NETWORK_ACCESS_PRESET_READ_ONLY"
+          },
+          {
+            "host": "github.com",
+            "port": 443,
+            "protocol": "tcp"
+          }
+        ],
+        "binaries": [
+          {
+            "path": "/usr/bin/git"
+          }
+        ]
+      }
+    }
+}
