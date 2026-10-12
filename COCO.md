@@ -595,9 +595,11 @@ two sandboxes" benchmark 2026-07-23):
   the base64-encoded Secret `.data` value, so Secret-backed values need
   decoding — `fromConfigMap` returns plain data and is the safe choice for
   non-credential identifiers. ACM template functions inside an ESO
-  `templateFrom` literal must be escaped for the ESO v2 Go template engine
-  (e.g. `{{"{{"}}fromSecret ...{{"}}"}}`), or ESO fails with "function
-  not defined" at render time.
+  `templateFrom` literal need BOTH: the braces escaped for the ESO v2 Go
+  template engine (`{{"{{"}}` / `{{"}}"}}`) AND the result single-quoted —
+  ESO unmarshals the rendered literal as YAML, and an unquoted
+  `{{fromSecret ...}}` is a YAML flow mapping -> "invalid map key" render
+  failure. Plain Policy YAML (policy-aws-creds pattern) needs neither.
 - **TEE on AWS — round-18 decision: full TEE CoCo**. This deployment now
   uses the OSC's native CVM path: feature gate on → `DISABLECVM=false` →
   SNP CVM pod VMs (`PODVM_INSTANCE_TYPE: m6a.large`). Hardware-rooted
