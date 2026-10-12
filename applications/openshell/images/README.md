@@ -12,12 +12,14 @@ workdir into the workspace PVC. See the Dockerfile header for the full
 failure signature.
 
 ```bash
-podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.2 .
-podman push quay.io/eformat/openshell-openclaw:0.1.2   # then make public on quay
+podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.3 .
+podman push quay.io/eformat/openshell-openclaw:0.1.3   # then make public on quay
 ```
 
-Use `quay.io/eformat/openshell-openclaw:0.1.2` as the sandbox workload image
-in the dashboard's Create sandbox modal.
+Use `quay.io/eformat/openshell-openclaw:0.1.3` as the sandbox workload image
+in the dashboard's Create sandbox modal. 0.1.3 bakes the openclaw gateway
+main-process command as the image CMD, so UI provisioning works without a
+command override (the CLI `--` override still takes precedence).
 
 Upstream note: the aipcc base image should ship `/sandbox` world-readable
 (the community `ghcr.io/nvidia/openshell-community/sandboxes/base` does) —

@@ -19,8 +19,19 @@
 # EACCES and the runtime dies instantly, before the boundary opens. Point both
 # at /tmp (world-writable, 1777), which the community sandboxes/base image
 # proves works with the default policy.
-# Build:  podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.2 .
-# Push:   podman push quay.io/eformat/openshell-openclaw:0.1.2  (make public)
+#
+# ALSO (0.1.3): the aipcc base image's default CMD is `openclaw` (bare), which
+# does not run the gateway. The dashboard's Create sandbox modal cannot
+# override the CMD, so UI-provisioned sandboxes ran `openclaw` bare, the agent
+# crashed right after the workspace seed, and the gateway's provisioning
+# repair window (OPENSHELL_PROVISIONING_REPAIR_WINDOW_MS) expired and
+# reclaimed the sandbox ("Pod has been terminated"). Bake the main-process
+# command the CLI create uses (openshell sandbox create ... -- sh -c
+# 'openclaw onboard ...; exec openclaw gateway run') as the image CMD: the
+# gateway resolves the main process from the image config when no command
+# override is given, and an explicit CLI -- override still takes precedence.
+# Build:  podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.3 .
+# Push:   podman push quay.io/eformat/openshell-openclaw:0.1.3  (make public)
 # Use as the sandbox workload image in the dashboard's Create sandbox modal.
 FROM quay.io/aipcc/base-images/agentic/openclaw@sha256:896d1526ee29b53167034ba65d1c758c8da777f441ed094e19f3bcf6d7445c61
 USER root
@@ -28,3 +39,4 @@ RUN chmod -R a+rX /sandbox
 USER sandbox:sandbox
 ENV TMPDIR=/tmp
 ENV SQLITE_TMPDIR=/tmp
+CMD ["sh", "-c", "openclaw onboard --non-interactive --accept-risk --skip-health || true; exec openclaw gateway run"]
