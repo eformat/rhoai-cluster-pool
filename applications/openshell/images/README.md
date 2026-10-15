@@ -12,24 +12,34 @@ workdir into the workspace PVC. See the Dockerfile header for the full
 failure signature.
 
 ```bash
-podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.4 .
-podman push quay.io/eformat/openshell-openclaw:0.1.4   # then make public on quay
+podman build -f Dockerfile.openclaw-fix -t quay.io/eformat/openshell-openclaw:0.1.5 .
+podman push quay.io/eformat/openshell-openclaw:0.1.5   # then make public on quay
 ```
 
-Use `quay.io/eformat/openshell-openclaw:0.1.4` as the sandbox workload image.
+Use `quay.io/eformat/openshell-openclaw:0.1.5` as the sandbox workload image.
 The image CMD is NOT used as the sandbox main process — OpenShell runs the
 supervisor runtime as the pod command, and an empty CreateSandbox command
-override resolves to a login shell (`bash -l`), never the image CMD. 0.1.4
+override resolves to a login shell (`bash -l`), never the image CMD. 0.1.5
 installs `/etc/profile.d/openshell-openclaw.sh` (from `openclaw-profile.sh`),
-which the login-shell main process sources at startup: it starts the openclaw
-gateway (guarded by a pidfile so exec/TUI sessions never double-start it).
-The dashboard's Create sandbox modal therefore works with no command override
-(0.1.4+); the CLI `--` override remains the explicit alternative:
+which the login-shell main process sources at startup: it patches
+`gateway.trustedProxies=["127.0.0.1","::1"]` into the workspace openclaw.json
+(after onboard, only when absent), then starts the openclaw gateway (guarded
+by a pidfile so exec/TUI sessions never double-start it). The dashboard's
+Create sandbox modal therefore works with no command override (0.1.5+), given
+the sandbox policy is attached at create time; the CLI `--` override remains
+the explicit alternative:
 
 ```bash
-openshell sandbox create --name <name> --from quay.io/eformat/openshell-openclaw:0.1.4 -- \
+openshell sandbox create --name <name> --from quay.io/eformat/openshell-openclaw:0.1.5 -- \
   sh -c 'openclaw onboard --non-interactive --accept-risk --skip-health || true; exec openclaw gateway run'
 ```
+
+Per-sandbox manual step (the service URL varies with workspace/sandbox name):
+set `gateway.controlUi.allowedOrigins` to the service URL origin via a node
+one-liner in an exec session — picked up dynamically, no restart. The sandbox
+policy (`../sandbox-policy/openclaw.yaml`) must be attached at create time,
+else Landlock denies `/opt/openclaw` ("Permission denied" in
+`/sandbox/.openclaw/gateway.log`).
 
 Verify after provisioning: `curl https://<workspace>--<sandbox>--<service>.<domain>/`
 must return the openclaw control UI (HTTP 200), not 502 "Service endpoint is
