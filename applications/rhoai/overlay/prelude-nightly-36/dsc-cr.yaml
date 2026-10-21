@@ -49,10 +49,13 @@ spec:
     trainingoperator:
       managementState: Managed
     trustyai:
-      eval:
-        lmeval:
-          permitCodeExecution: deny
-          permitOnline: deny
+      # eval.lmeval removed for RHOAI 3.6.0-ea.2: the DSC CRD still declares
+      # permitOnline/permitCodeExecution as string enum allow|deny, but the EA2
+      # operator's typed apply of the TrustyAI component CR expects booleans
+      # (default false) — passing "deny" fails the whole DSC apply
+      # ("expected boolean, got &{deny}"). The component CRD defaults
+      # (permitCodeExecution=false, permitOnline=false) carry the same deny
+      # semantics, so dropping the block restores DSC Ready.
       managementState: Managed
       mcpGuardrailsMode: true
     workbenches:
