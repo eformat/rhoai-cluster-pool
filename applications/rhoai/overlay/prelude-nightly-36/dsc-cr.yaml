@@ -60,5 +60,11 @@ spec:
       mcpGuardrailsMode: true
     workbenches:
       managementState: Managed
+    monitoring:
+      # Required for aipipelines readiness on 3.6.0-ea.2: DSPO waits for the
+      # monitoring stack, which is only deployed when this component is Managed
+      # (the redhat-ods-monitoring namespace was empty otherwise and
+      # AIPipelinesReady stayed ComponentsNotReady).
+      managementState: Managed
       workbenchNamespace: rhods-notebooks
 
