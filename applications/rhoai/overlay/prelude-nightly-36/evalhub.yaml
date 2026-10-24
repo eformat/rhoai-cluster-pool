@@ -1,0 +1,46 @@
+---
+# EvalHub enablement for the RHOAI 3.6 Evaluations page (Tech Preview).
+# Without this chain the Evaluations page shows "Evaluations unavailable —
+# EvalHub custom resources are currently unavailable".
+#
+# 1. TrustyAI CR patch — spec.enabledServices.evalHub=true. The TrustyAI
+#    module operator redeploys the TrustyAI service operator with EVAL_HUB in
+#    --enable-services, registering the evalhubs.trustyai.opendatahub.io CRD.
+#    ServerSideApply so ArgoCD owns ONLY enabledServices — the DSC controller
+#    keeps managing the rest of the CR it generated (managementState,
+#    mcpGuardrailsMode, eval). Sync-wave 2 so it lands after dsc-cr (wave 1)
+#    has created the component CR.
+# 2. EvalHub CR — sqlite + providers. sqlite is the CRD's documented
+#    lightweight path and the proven-Ready backend: for postgresql the CRD
+#    requires a pre-composed db-url key in the referenced secret (the
+#    operator does not deploy a database; without db-url the server pod fails
+#    FailedMount: references non-existent secret key: db-url and the CR stays
+#    Pending/False). Sync-wave 3 + SkipDryRunOnMissingResource so it applies
+#    on the next sync once the CRD has registered.
+apiVersion: components.platform.opendatahub.io/v1alpha1
+kind: TrustyAI
+metadata:
+  name: default-trustyai
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  enabledServices:
+    evalHub: true
+---
+apiVersion: trustyai.opendatahub.io/v1
+kind: EvalHub
+metadata:
+  name: evalhub
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: 1
+  database:
+    type: sqlite
+  providers:
+    - lm-evaluation-harness
+    - garak
