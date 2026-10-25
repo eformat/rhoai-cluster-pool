@@ -4,19 +4,26 @@
 # EvalHub custom resources are currently unavailable".
 #
 # 1. TrustyAI CR patch — spec.enabledServices.evalHub=true. The TrustyAI
-#    module operator redeploys the TrustyAI service operator with EVAL_HUB in
+#    module operator redeploys the TrustyAI service operator with EVALHUB in
 #    --enable-services, registering the evalhubs.trustyai.opendatahub.io CRD.
 #    ServerSideApply so ArgoCD owns ONLY enabledServices — the DSC controller
 #    keeps managing the rest of the CR it generated (managementState,
 #    mcpGuardrailsMode, eval). Sync-wave 2 so it lands after dsc-cr (wave 1)
 #    has created the component CR.
-# 2. EvalHub CR — sqlite + providers. sqlite is the CRD's documented
-#    lightweight path and the proven-Ready backend: for postgresql the CRD
-#    requires a pre-composed db-url key in the referenced secret (the
-#    operator does not deploy a database; without db-url the server pod fails
-#    FailedMount: references non-existent secret key: db-url and the CR stays
-#    Pending/False). Sync-wave 3 + SkipDryRunOnMissingResource so it applies
-#    on the next sync once the CRD has registered.
+#    NOTE (2026-10-25): the 3.6.0-ea.2 pinned odh-trustyai-module-operator
+#    predates the enabledServices injection (trustyai-service-operator
+#    #915/#920, main since 2026-09-13 — the flag value is EVALHUB, no
+#    underscore; empty --enable-services enables ALL services). In ea.2 the
+#    knob is inert and the operator enforces --enable-services=NEMO_GUARDRAILS
+#    (reverting external patches), so the CRD cannot register and this policy
+#    violates on the EvalHub mapping until the platform ships a module
+#    operator including #915/#920. The manifests below are correct and
+#    converge when it does.
+# 2. RBAC + EvalHub CR — mirrors the proven prelude-nightly-35 pattern:
+#    proxy-access Role/RoleBinding for all authenticated users, the aggregated
+#    evaluator ClusterRole, and the EvalHub CR (sqlite — the CRD's documented
+#    lightweight path; for postgresql the CRD requires a pre-composed db-url
+#    key in the referenced secret, else the server pod fails FailedMount).
 apiVersion: components.platform.opendatahub.io/v1alpha1
 kind: TrustyAI
 metadata:
@@ -29,7 +36,76 @@ spec:
   enabledServices:
     evalHub: true
 ---
-apiVersion: trustyai.opendatahub.io/v1
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: evalhub-proxy-access
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: evalhub-proxy-all-users
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: evalhub-proxy-access
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aggregate-evalhub-permissions
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  - evaluations
+  - collections
+  - providers
+  - lmevaljobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - lmevaljobs/status
+  verbs:
+  - get
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
 kind: EvalHub
 metadata:
   name: evalhub
@@ -39,8 +115,19 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   replicas: 1
+  env:
+    - name: MLFLOW_TRACKING_URI
+      value: "https://mlflow.redhat-ods-applications.svc.cluster.local:8443"
   database:
     type: sqlite
   providers:
     - lm-evaluation-harness
     - garak
+    - garak-kfp
+    - guidellm
+    - lighteval
+    - ibm-clear
+  collections:
+    - leaderboard-v2
+    - safety-and-fairness-v1
+    - toxicity-and-ethical-principles
