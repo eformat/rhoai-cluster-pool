@@ -14,6 +14,7 @@ resources:
   - icsp.yaml
   - postgres-maas.yaml
   - evalhub.yaml
+  - monitoring-operators.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

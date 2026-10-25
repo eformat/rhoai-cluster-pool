@@ -1,0 +1,48 @@
+---
+# UNCOMMITTED PROPOSAL (2026-10-25, observability task): required RHOAI 3.6
+# monitoring operators. DSCI spec.monitoring is Managed, but the RHOAI operator
+# refuses to deploy the monitoring stack until these three OperatorHub
+# operators are installed — DSCI reports MonitoringDependenciesReady=False /
+# MissingOperator ("Red Hat build of OpenTelemetry is required for metrics,
+# traces, and usage logs", "Cluster Observability Operator is required for
+# metrics", "Tempo Operator is required for traces") and the RHOAI dashboard
+# Observe & monitor pages fail with "Unable to reach observability dashboards".
+# Applied live on prelude2 (user-approved) 2026-10-25; this file proposes the
+# same subscriptions for the prelude-nightly-36 overlay (3.6-only — the 3.4 and
+# roadshow overlays use the older ODH prometheus monitoring stack and should
+# NOT get these).
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cluster-observability-operator
+  namespace: redhat-ods-operator
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: cluster-observability-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: opentelemetry-product
+  namespace: redhat-ods-operator
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: opentelemetry-product
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tempo-product
+  namespace: redhat-ods-operator
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: tempo-product
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
