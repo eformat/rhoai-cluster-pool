@@ -56,8 +56,16 @@ spec:
       # ("expected boolean, got &{deny}"). The component CRD defaults
       # (permitCodeExecution=false, permitOnline=false) carry the same deny
       # semantics, so dropping the block restores DSC Ready.
+      # mcpGuardrailsMode=false (2026-10-25): the component CRD docs say it
+      # "deploys only the NeMo Guardrails service" and TAKES PRECEDENCE over
+      # EnabledServices when enabled (effectiveEnabledServices() in the
+      # trustyai-operator-module) — with true it forced
+      # --enable-services=NEMO_GUARDRAILS and EvalHub could never be enabled.
+      # The services are now selected on the TrustyAI component CR
+      # (evalhub.yaml: evalHub + nemoGuardrails — guardrails stay enabled for
+      # the Gen AI playground, RHOAIENG-85769).
       managementState: Managed
-      mcpGuardrailsMode: true
+      mcpGuardrailsMode: false
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks

@@ -1570,6 +1570,7 @@ metadata:
 spec:
   enabledServices:
     evalHub: true
+    nemoGuardrails: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
