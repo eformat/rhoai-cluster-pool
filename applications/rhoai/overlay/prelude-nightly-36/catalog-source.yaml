@@ -8,7 +8,7 @@ spec:
   displayName: RHOAI 3.6-ea2 Nightly
   grpcPodConfig:
     securityContextConfig: restricted
-  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:6f23935b80b9e376059f4ba6a03e7fe5c2f324bd3c2d556d331bc42092c5c093 # 3.6-ea2 # quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:05a4b79b8c4fcf7d492857f6d7b59391e00598a9aec6186a1ec13a71190d3465 # 3.6-ea1
+  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:88f32f6e706c6bf218976539a610373b030105e12d6d60d142cde2c6384d1ed3 # quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:6f23935b80b9e376059f4ba6a03e7fe5c2f324bd3c2d556d331bc42092c5c093 # 3.6-ea2 # quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:05a4b79b8c4fcf7d492857f6d7b59391e00598a9aec6186a1ec13a71190d3465 # 3.6-ea1
   publisher: RHOAI Development Catalog
   sourceType: grpc
   updateStrategy:
