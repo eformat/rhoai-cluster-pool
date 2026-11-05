@@ -148,6 +148,49 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
+  name: placement-spokes-prelude-nightly-36
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - {key: vendor, operator: In, values: ["OpenShift"]}
+            - {key: name, operator: NotIn, values: ["local-cluster"]}
+        celSelector:
+          celExpressions:
+            # RHOAI 3.6 nightly on OCP 4.x. ocp5-m6wl4-4lf4h was briefly in
+            # this placement but is served by its own ocp5 overlay instead
+            # (rhcl-operator channel differs on the OCP 5.0 catalog).
+            - managedCluster.metadata.name.matches('prelude-m6wl4-bx7rc')
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  labels:
+    custom: gitops-operator-policy
+  name: placement-spokes-prelude-nightly-36-ocp5
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - {key: vendor, operator: In, values: ["OpenShift"]}
+            - {key: name, operator: NotIn, values: ["local-cluster"]}
+        celSelector:
+          celExpressions:
+            - managedCluster.metadata.name.matches('ocp5-m6wl4-4lf4h')
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  labels:
+    custom: gitops-operator-policy
   name: placement-spoke-coco
   namespace: openshift-gitops
 spec:

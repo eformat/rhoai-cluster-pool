@@ -1,0 +1,17 @@
+---
+# OCP 5.x overlay for the RHOAI 3.6 nightly stack (ocp5-m6wl4-* pool clusters).
+# Inherits the whole prelude-nightly-36 overlay and patches only what differs
+# on the OCP 5.0 catalogs (verified against the live v5.0 index 2026-11-05):
+#   - rhcl-operator: the v5 index has no `stable` channel, only stable-1.5.
+#     All other subscriptions (pipelines latest, serverless stable, kueue
+#     stable-v1.4, lws/jobset stable-v1.0, COO/opentelemetry/tempo stable)
+#     resolve unchanged, and the ICSP CRD still exists on OCP 5.0, so
+#     icsp.yaml applies as-is.
+# Placement: placement-spokes-prelude-nightly-36-ocp5 (bootstrap/setup-cr.yaml).
+resources:
+  - ../prelude-nightly-36
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+  - path: subscription-rhcl-operator.yaml

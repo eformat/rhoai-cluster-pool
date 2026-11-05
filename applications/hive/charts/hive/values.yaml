@@ -8,3 +8,6 @@ installConfigSecretTemplateRef: roadshow-install-config-template  # ConfigMap fo
 globalPullSecret:
 installConfig:
 sshKey:
+clusterImageSet:
+  name: img5.0.1-x86-64  # ocp5 ClusterImageSet, referenced by ocp5-* tenant pools
+  releaseImage: quay.io/openshift-release-dev/ocp-release@sha256:a43b861d912fad275f7c1c76cae38c2b5a33f4f1245807b376fe59707d3ef98a  # 5.0.1 RHSA-2026:94538, bump digest for 5.0.x
