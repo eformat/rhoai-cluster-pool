@@ -10,6 +10,7 @@
 # Placement: placement-spokes-prelude-nightly-36-ocp5 (bootstrap/setup-cr.yaml).
 resources:
   - ../prelude-nightly-36
+  - maas-gateway-proxy-memory.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
