@@ -28,3 +28,12 @@ policies:
   - name: perf-enhancements
     manifests:
       - path: input/
+  # Same bundle for the OCP 5 pool clusters: the compact single-node
+  # ocp5-m6wl4-* clusters hit the default maxPods=250 ceiling (286 pods
+  # scheduled 2026-11-05) and the rhcl-operator bundle-unpack pod could not
+  # be scheduled ("Too many pods") until maxPods is raised.
+  - name: perf-enhancements-ocp5
+    placement:
+      placementName: placement-spokes-perf-enhancements-ocp5
+    manifests:
+      - path: input/
