@@ -1,0 +1,72 @@
+---
+apiVersion: datasciencecluster.opendatahub.io/v2
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+  namespace: redhat-ods-operator
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  components:
+    aipipelines:
+      argoWorkflowsControllers:
+        managementState: Managed
+      managementState: Managed
+    aigateway:
+      managementState: Managed
+      modelsAsAService:
+        managementState: Managed
+    dashboard:
+      managementState: Managed
+    feastoperator:
+      managementState: Managed
+    kserve:
+      managementState: Managed
+      nim:
+        airGapped: false
+        managementState: Managed
+      rawDeploymentServiceConfig: Headed
+    kueue:
+      defaultClusterQueueName: default
+      defaultLocalQueueName: default
+      managementState: Unmanaged
+    llamastackoperator:
+      managementState: Removed
+    mlflowoperator:
+      managementState: Managed
+    modelregistry:
+      managementState: Managed
+      registriesNamespace: rhoai-model-registries
+    ogx:
+      managementState: Managed
+    ray:
+      managementState: Managed
+    sparkoperator:
+      managementState: Removed
+    trainer:
+      managementState: Managed
+    trainingoperator:
+      managementState: Managed
+    trustyai:
+      # eval.lmeval removed for RHOAI 3.6.0-ea.2: the DSC CRD still declares
+      # permitOnline/permitCodeExecution as string enum allow|deny, but the EA2
+      # operator's typed apply of the TrustyAI component CR expects booleans
+      # (default false) — passing "deny" fails the whole DSC apply
+      # ("expected boolean, got &{deny}"). The component CRD defaults
+      # (permitCodeExecution=false, permitOnline=false) carry the same deny
+      # semantics, so dropping the block restores DSC Ready.
+      # mcpGuardrailsMode=false (2026-10-25): the component CRD docs say it
+      # "deploys only the NeMo Guardrails service" and TAKES PRECEDENCE over
+      # EnabledServices when enabled (effectiveEnabledServices() in the
+      # trustyai-operator-module) — with true it forced
+      # --enable-services=NEMO_GUARDRAILS and EvalHub could never be enabled.
+      # The services are now selected on the TrustyAI component CR
+      # (evalhub.yaml: evalHub + nemoGuardrails — guardrails stay enabled for
+      # the Gen AI playground, RHOAIENG-85769).
+      managementState: Managed
+      mcpGuardrailsMode: false
+    workbenches:
+      managementState: Managed
+      workbenchNamespace: rhods-notebooks
+

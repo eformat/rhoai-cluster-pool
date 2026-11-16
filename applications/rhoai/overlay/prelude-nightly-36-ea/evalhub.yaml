@@ -1,0 +1,133 @@
+---
+# EvalHub enablement for the RHOAI 3.6 Evaluations page (Tech Preview).
+# Without this chain the Evaluations page shows "Evaluations unavailable".
+#
+# 1. DSC: mcpGuardrailsMode=false (dsc-cr.yaml). The TrustyAI component CRD
+#    docs say it "deploys only the NeMo Guardrails service" and TAKES
+#    PRECEDENCE over EnabledServices when enabled
+#    (effectiveEnabledServices() in the trustyai-operator-module) — with true
+#    it forced --enable-services=NEMO_GUARDRAILS and EvalHub could never be
+#    enabled. Guardrails stay enabled via nemoGuardrails in EnabledServices
+#    (the Gen AI playground requires them, RHOAIENG-85769).
+# 2. TrustyAI CR patch — spec.enabledServices: evalHub + nemoGuardrails.
+#    ServerSideApply so ArgoCD owns ONLY enabledServices — the DSC controller
+#    keeps managing the rest of the CR it generated. Sync-wave 2 so it lands
+#    after dsc-cr (wave 1) has created the component CR. The module operator
+#    then injects --enable-services=EVALHUB,NEMO_GUARDRAILS into the service
+#    operator and REGISTERS THE EVALHUBS CRD NATIVELY (no shipped CRD needed —
+#    a shipped-CRD stopgap was used on 2026-10-25 while mcpGuardrailsMode was
+#    still true and the knob was inert; removed once the precedence fix
+#    landed).
+# 3. RBAC + EvalHub CR — mirrors the proven prelude-nightly-35 pattern:
+#    proxy-access Role/RoleBinding for all authenticated users, the aggregated
+#    evaluator ClusterRole, and the EvalHub CR (sqlite — the CRD's documented
+#    lightweight path; for postgresql the CRD requires a pre-composed db-url
+#    key in the referenced secret, else the server pod fails FailedMount).
+apiVersion: components.platform.opendatahub.io/v1alpha1
+kind: TrustyAI
+metadata:
+  name: default-trustyai
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  enabledServices:
+    evalHub: true
+    nemoGuardrails: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: evalhub-proxy-access
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: evalhub-proxy-all-users
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: evalhub-proxy-access
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aggregate-evalhub-permissions
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - evalhubs
+  - evalhubs/proxy
+  - evaluations
+  - collections
+  - providers
+  - lmevaljobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - trustyai.opendatahub.io
+  resources:
+  - lmevaljobs/status
+  verbs:
+  - get
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: EvalHub
+metadata:
+  name: evalhub
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: 1
+  env:
+    - name: MLFLOW_TRACKING_URI
+      value: "https://mlflow.redhat-ods-applications.svc.cluster.local:8443"
+  database:
+    type: sqlite
+  providers:
+    - lm-evaluation-harness
+    - garak
+    - garak-kfp
+    - guidellm
+    - lighteval
+    - ibm-clear
+  collections:
+    - leaderboard-v2
+    - safety-and-fairness-v1
+    - toxicity-and-ethical-principles
