@@ -27,17 +27,17 @@ spec:
                   labels:
                     openshift.io/cluster-monitoring: "true"
                   name: cert-manager-operator
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: operators.coreos.com/v1
-                kind: OperatorGroup
-                metadata:
-                  name: openshift-cert-manager-operator-og
-                  namespace: cert-manager-operator
-                spec:
-                  targetNamespaces:
-                  - cert-manager-operator
-                  upgradeStrategy: Default
+            # - complianceType: musthave
+            #   objectDefinition:
+            #     apiVersion: operators.coreos.com/v1
+            #     kind: OperatorGroup
+            #     metadata:
+            #       name: openshift-cert-manager-operator-og
+            #       namespace: cert-manager-operator
+            #     spec:
+            #       targetNamespaces:
+            #       - cert-manager-operator
+            #       upgradeStrategy: Default
             - complianceType: musthave
               objectDefinition:
                 apiVersion: operators.coreos.com/v1alpha1

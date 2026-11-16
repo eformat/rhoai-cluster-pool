@@ -36,9 +36,10 @@ spec:
     spec:
       containers:
         # BFF — talks to the openshell gateway through the pinned Go SDK.
-        # Gateway range for dashboard 1.2.0: >=0.1.0 <=0.1.2.
+        # Built from ~/git/openshell-dashboard (9a68df0); the gateway line it
+        # supports (0.1.x) is compiled in — see its About panel / labels.
         - name: bff
-          image: quay.io/gkrumbach07/openshell-dashboard:1.2.0
+          image: quay.io/eformat/openshell-dashboard:0.1.8-pre.33
           ports:
             - containerPort: 8080
               name: http

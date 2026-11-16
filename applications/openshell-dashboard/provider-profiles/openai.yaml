@@ -18,3 +18,8 @@ endpoints:
 binaries:
   - /usr/bin/node
   - /usr/bin/node-26
+  # opencode (bun binary) — sync-agent-pvc's in-sandbox agent needs MaaS egress.
+  # The binary has hardlinks; OPA binary identity reports the path that was
+  # actually executed (/usr/local/bin/opencode via PATH), so allow both links.
+  - /usr/local/bin/opencode
+  - /usr/local/sbin/opencode
