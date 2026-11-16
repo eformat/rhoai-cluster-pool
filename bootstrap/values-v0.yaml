@@ -35,7 +35,7 @@ operators:
     namespace:
       name: cert-manager-operator
       create: true
-    channels: [stable-v1] # v0,1
+    channels: [stable-v1.20] # v0,1
     version: "1.20.0" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
