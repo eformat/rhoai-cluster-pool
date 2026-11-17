@@ -191,7 +191,7 @@ kind: Placement
 metadata:
   labels:
     custom: gitops-operator-policy
-  name: placement-spokes-prelude-nightly-36-ea
+  name: placement-spokes-prelude-36-ea
   namespace: openshift-gitops
 spec:
   clusterSets:
