@@ -54,4 +54,4 @@ policies:
     placement:
       placementName: placement-spokes-prelude-36-ea
     manifests:
-      - path: prelude-nightly-36-ea/
+      - path: prelude-36-ea/
