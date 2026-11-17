@@ -7,6 +7,8 @@
 #   ~/git/ph-deploy-configure-rhoai/manifests/05-maas/
 resources:
   - ../base
+  - catalog-source.yaml
+  - icsp.yaml
   - hardware-profile.yaml
   - odh-document.yaml
   - mlflow.yaml
