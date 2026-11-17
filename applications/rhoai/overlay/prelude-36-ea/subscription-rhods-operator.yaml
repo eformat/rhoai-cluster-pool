@@ -7,5 +7,5 @@ spec:
   channel: beta
   installPlanApproval: Automatic
   name: rhods-operator
-  source: openshift-redhat-operators
+  source: redhat-operators
   sourceNamespace: openshift-marketplace
