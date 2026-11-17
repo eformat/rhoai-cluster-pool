@@ -204,7 +204,7 @@ spec:
             - {key: name, operator: NotIn, values: ["local-cluster"]}
         celSelector:
           celExpressions:
-            - managedCluster.metadata.name.matches('ocp5-m6wl4-nrq4q')
+            - managedCluster.metadata.name.matches('ocp5-m6wl4-2plgg')
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
