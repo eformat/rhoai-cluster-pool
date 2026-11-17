@@ -7,5 +7,5 @@ spec:
   channel: beta
   installPlanApproval: Automatic
   name: rhods-operator
-  source: rhoai-catalog-nightly
+  source: openshift-redhat-operators
   sourceNamespace: openshift-marketplace

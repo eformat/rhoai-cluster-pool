@@ -50,7 +50,7 @@ policies:
       placementName: placement-spokes-prelude-nightly-36-ocp5
     manifests:
       - path: prelude-nightly-36-ocp5/
-  - name: rhoai-prelude-nightly-36-ea
+  - name: rhoai-prelude-36-ea
     placement:
       placementName: placement-spokes-prelude-nightly-36-ea
     manifests:
