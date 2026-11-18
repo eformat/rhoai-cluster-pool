@@ -35,7 +35,14 @@ spec:
     podTemplate:
       spec:
         containers:
-          - volumeMounts:
+          # Java4Shell (CVE-2026-114938) mitigation: disable the vulnerable
+          # AVX-512 Base64 intrinsic until the rhbk base image ships a patched
+          # OpenJDK (calif.io/java4shell#recommendations + OpenJDK advisory
+          # 2026-11-17). Remove once the image is patched.
+          - env:
+              - name: JDK_JAVA_OPTIONS
+                value: -XX:-UseBASE64Intrinsics
+            volumeMounts:
               - name: prelude-theme
                 mountPath: /opt/keycloak/themes/prelude/login/theme.properties
                 subPath: theme.properties
