@@ -39,7 +39,11 @@ spec:
           # AVX-512 Base64 intrinsic until the rhbk base image ships a patched
           # OpenJDK (calif.io/java4shell#recommendations + OpenJDK advisory
           # 2026-11-17). Remove once the image is patched.
-          - env:
+          # name: keycloak is REQUIRED: this rhbk operator appends a name-less
+          # fragment carrying env as a second container (SSA fails with
+          # containers[1].name/image Required) instead of merging it.
+          - name: keycloak
+            env:
               - name: JDK_JAVA_OPTIONS
                 value: -XX:-UseBASE64Intrinsics
             volumeMounts:
