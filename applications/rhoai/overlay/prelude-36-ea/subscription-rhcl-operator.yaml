@@ -1,0 +1,13 @@
+---
+# OCP 5 delta: the redhat-operators index for OCP 5.0 publishes the
+# rhcl-operator package ONLY under the stable-1.5 channel (-> rhcl-operator.v1.5.0).
+# The `stable` channel used on the 4.x indexes (values-v0.yaml) does not exist
+# on the v5 index, so the subscription never resolves there
+# (ConstraintsNotSatisfiable / ResolutionFailed, seen 2026-11-05).
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhcl-operator
+  namespace: kuadrant-system
+spec:
+  channel: stable-1.5

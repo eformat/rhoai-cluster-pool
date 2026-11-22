@@ -15,6 +15,7 @@ resources:
   - postgres-maas.yaml
   - evalhub.yaml
   - monitoring-operators.yaml
+  - maas-gateway-proxy-memory.yaml
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -23,3 +24,4 @@ patches:
   - path: dsc-cr.yaml
   - path: odh-dashboard.yaml
   - path: subscription-rhods-operator.yaml
+  - path: subscription-rhcl-operator.yaml

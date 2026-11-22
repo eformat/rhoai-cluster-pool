@@ -1,0 +1,41 @@
+---
+# RHCL 1.5 wasm-shim OOM fix for the MaaS gateway (RHOAIENG-76586).
+# All 10 maas-default-gateway istio-proxy pods were OOMKilled at the default
+# 1Gi limit while compiling the RHCL 1.5 wasm plugin ("Wasm remote code fetch
+# is unstable" spam then OOM, observed 2026-11-05 on ocp5-m6wl4-4lf4h).
+# Red Hat's documented workaround: a Gateway infrastructure.parametersRef
+# pointing at a ConfigMap whose `deployment` key strategic-merges the gateway
+# deployment (istio-proxy memory 2Gi).
+# NOTE: maas-default-gateway has no owner/GatewayConfig (created directly by
+# the maas-api, unlike data-science-gateway whose paramsRef comes from the
+# operator's GatewayConfig default-gateway), so the parametersRef is enforced
+# here via musthave policy. If the 4.x prelude-nightly-36 clusters upgrade to
+# RHCL 1.5 via the `stable` channel and hit the same OOM, move this file up
+# to the shared prelude-nightly-36 overlay.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maas-default-gateway-proxy-config
+  namespace: openshift-ingress
+data:
+  deployment: |
+    spec:
+      template:
+        spec:
+          containers:
+          - name: istio-proxy
+            resources:
+              limits:
+                memory: 2Gi
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: maas-default-gateway
+  namespace: openshift-ingress
+spec:
+  infrastructure:
+    parametersRef:
+      group: ""
+      kind: ConfigMap
+      name: maas-default-gateway-proxy-config
