@@ -64,6 +64,7 @@ spec:
     globalProjectPrompts: true
     gpuaas: true
     guardrails: true
+    hardwareProfileDRA: true
     llmGatewayField: true
     maasAuthPolicies: true
     mcpCatalog: true
