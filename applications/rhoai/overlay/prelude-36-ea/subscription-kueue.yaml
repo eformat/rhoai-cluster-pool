@@ -1,11 +1,14 @@
+---
+# kustomize strategic-merge patch: must match the base v0-chart Subscription
+# identity exactly (name kueue-operator / ns openshift-kueue-operator - the
+# values `name` drives BOTH metadata.name and the OLM package name, so the
+# subscription cannot be renamed without breaking the package lookup).
+# Only the channel is patched; base values-v0.yaml already sets stable-v1.5,
+# so this patch is explicit belt-and-braces for the ea overlay.
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: openshift-kueue-operator
+  name: kueue-operator
   namespace: openshift-kueue-operator
 spec:
   channel: stable-v1.5
-  installPlanApproval: Automatic
-  name: kueue-operator
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
