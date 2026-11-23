@@ -7,7 +7,7 @@ operators:
       create: true
       global: false
     channels: [stable] # v0,1
-    version: "nfd.4.22.0-202609151774" # v1
+    version: "nfd.5.0.0-202611030132" # v1
     catalog: openshift-redhat-operators #v1
     source: redhat-operators # v0
     sourceNamespace: openshift-marketplace # v0
@@ -20,7 +20,7 @@ operators:
       create: true
       global: false
     channels: [v26.7] # v0,1
-    version: "26.7.0" # v1
+    version: "26.7.3" # v1
     catalog: openshift-certified-operators #v1
     source: certified-operators # v0
     sourceNamespace: openshift-marketplace # v0
