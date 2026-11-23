@@ -23,6 +23,26 @@ spec:
       # TimeSlicing (interval: Default|Short|Medium|Long). No memory
       # isolation; mutually exclusive with MPS on the same GPU.
       TimeSlicingSettings: true
+      # Consumable shares (alpha): system-mediated GPU sharing - the driver
+      # republishes ResourceSlices with allowMultipleAllocations: true and a
+      # fixed share count, so INDEPENDENT per-pod ResourceClaims (the shape
+      # dashboard DRA hardware profiles generate) co-allocate one GPU,
+      # scheduler-enforced. The DRA analog of the old device-plugin
+      # time-slicing 'replicas'; k8s 1.36 has DRAConsumableCapacity on by
+      # default. MPS must not be used on shared claims.
+      ConsumableShares: true
+    # CONSUMABLE_SHARES mode: positive integer = N shares per GPU/device,
+    # each claim consumes one share unless it requests more via
+    # capacity.requests. 4 mirrors the old device-plugin
+    # timeSlicing.replicas: 4 - four concurrent workbenches per L40S.
+    # Alternatives: 'memory' (claims consume advertised memory unless they
+    # request less) or 'unlimited' (no scheduler cap - avoid on shared
+    # nodes). Requires the ConsumableShares gate above.
+    gpus:
+      kubeletPlugin:
+        env:
+          - name: CONSUMABLE_SHARES
+            value: "4"
     computeDomains:
       enabled: false
   daemonsets:

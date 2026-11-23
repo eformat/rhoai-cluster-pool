@@ -29,4 +29,8 @@ spec:
       - name: memory
         nominalQuota: 112Gi
       - name: nvidia.com/gpu
-        nominalQuota: '1'
+        # count-based DRA quota: one unit per allocated claim (share) via
+        # the deviceClassMappings in rhoai/overlay/base/kueue-cr.yaml.
+        # 4 = concurrent workbenches matching CONSUMABLE_SHARES=4 in the
+        # GPUCluster (dra-stack component).
+        nominalQuota: '4'
