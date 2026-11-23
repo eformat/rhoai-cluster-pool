@@ -11,9 +11,12 @@ spec:
   driverType: gpu
   repository: nvcr.io/nvidia
   image: driver
-  # driver shipped with gpu-operator 26.7.3 (DRA driver requires >= 580)
-  # alternative: pin the operator CSV's driver-image digest instead of the release tag
-  version: "595.91.07"
+  # 595.112.07: first rhel10 driver image that includes gpu-driver-container #986
+  # (arch-guarded unzboot copy) - 595.91.07-rhel10 (built 2026-08-17) predates the
+  # fix and CrashLoopBackOffs on amd64 DTK builds:
+  #   cp: cannot stat '/usr/bin/unzboot': No such file or directory
+  # DRA driver requires >= 580; alternative: pin the operator CSV's digest
+  version: "595.112.07"
   nodeSelector:
     feature.node.kubernetes.io/pci-10de.present: "true"
   tolerations:
