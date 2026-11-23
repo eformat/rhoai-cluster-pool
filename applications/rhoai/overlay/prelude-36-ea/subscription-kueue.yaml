@@ -1,7 +1,7 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: kueue-operator
+  name: openshift-kueue-operator
   namespace: openshift-kueue-operator
 spec:
   channel: stable-v1.5
