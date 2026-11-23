@@ -64,10 +64,7 @@ spec:
     globalProjectPrompts: true
     gpuaas: true
     guardrails: true
-    # hardwareProfileDRA: true  # TODO: re-enable when the cluster's RHOAI build
-    # carries odh-dashboard PR #10283 (RHOAIENG-96325) - the OdhDashboardConfig
-    # CRD in 3.6.0-ea.2 has no hardwareProfileDRA field, so ACM rejects the
-    # policy with: unknown field "spec.dashboardConfig.hardwareProfileDRA"
+    hardwareProfileDRA: true
     llmGatewayField: true
     maasAuthPolicies: true
     mcpCatalog: true
