@@ -35,3 +35,7 @@ spec:
     maxCount: 128Gi
     minCount: 1Gi
     resourceType: Memory
+  scheduling:
+    kueue:
+      localQueueName: default
+    type: Queue
