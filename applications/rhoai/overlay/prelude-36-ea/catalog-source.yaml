@@ -5,10 +5,10 @@ metadata:
   name: rhoai-catalog-nightly
   namespace: openshift-marketplace
 spec:
-  displayName: RHOAI 3.6-ea2 Nightly
+  displayName: RHOAI 3.6 Nightly
   grpcPodConfig:
     securityContextConfig: restricted
-  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.6@sha256:da67fa72d88ef29e6e15d2d71d017112865ad4c58b85b12cb256f4441add834e
+  image: quay.io/rhoai/rhoai-fbc-fragment@sha256:2b4efe2b2f3a9f5fc8e86c90094893fd0956405c9e602e98e9857124069b76ba
   publisher: RHOAI Development Catalog
   sourceType: grpc
   updateStrategy:
