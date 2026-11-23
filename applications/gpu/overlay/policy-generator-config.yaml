@@ -35,8 +35,8 @@ policies:
       placementName: placement-spokes-l40s
     manifests:
       - path: l40s/
-  # - name: gpu-l40s-dra
-  #   placement:
-  #     placementName: placement-spokes-l40s-dra
-  #   manifests:
-  #     - path: l40s-dra/
+  - name: gpu-l40s-dra
+    placement:
+      placementName: placement-spokes-l40s-dra
+    manifests:
+      - path: l40s-dra/
