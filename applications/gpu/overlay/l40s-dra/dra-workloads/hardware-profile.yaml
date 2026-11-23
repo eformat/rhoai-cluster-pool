@@ -1,0 +1,24 @@
+---
+# DRA hardware profile: references a ResourceClaimTemplate by NAME that must
+# exist in the workload's namespace (validated at admission; the dashboard
+# greys the profile out when the template is missing in the project).
+# Visible across projects because it lives in the dashboard namespace
+# (redhat-ods-applications). Requires the odh-dashboard hardwareProfileDRA
+# feature flag to be selectable in workbench / model deployment forms.
+apiVersion: infrastructure.opendatahub.io/v1
+kind: HardwareProfile
+metadata:
+  name: l40s-dra-gpu
+  namespace: redhat-ods-applications
+  annotations:
+    opendatahub.io/display-name: NVIDIA L40S GPU (DRA)
+    opendatahub.io/description: >-
+      DRA-allocated NVIDIA L40S (48GB): one dedicated GPU per workload via the
+      single-l40s-gpu ResourceClaimTemplate in the workload's namespace
+    opendatahub.io/disabled: "false"
+    opendatahub.io/dashboard-feature-visibility: '[]'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  dra:
+    resourceClaimTemplateName: single-l40s-gpu

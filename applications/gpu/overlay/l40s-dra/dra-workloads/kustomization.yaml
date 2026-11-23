@@ -1,0 +1,7 @@
+---
+# Only the HardwareProfile rides the normal policy path (namespaced to the
+# dashboard namespace, so valid for ArgoCD/ACM as-is). The ResourceClaimTemplate
+# in this directory is intentionally NOT referenced here: it is a
+# per-user-project object with no fixed namespace.
+resources:
+  - hardware-profile.yaml
