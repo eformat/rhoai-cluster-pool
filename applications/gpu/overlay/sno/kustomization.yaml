@@ -2,5 +2,10 @@
 resources:
   - ../../base
 
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+components:
+  - ../../components/device-plugin-stack
+
 patches:
   - path: configmap.yaml

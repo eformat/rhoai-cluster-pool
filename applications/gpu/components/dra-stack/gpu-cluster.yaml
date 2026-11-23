@@ -1,0 +1,27 @@
+---
+# cluster-scoped singleton - the name MUST be gpu-cluster
+# DRA stack alternative to ClusterPolicy: a cluster must have either
+# GPUCluster or ClusterPolicy, never both
+apiVersion: nvidia.com/v1alpha1
+kind: GPUCluster
+metadata:
+  name: gpu-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  draDriver:
+    # Dynamic MIG (alpha): the DRA driver creates/destroys MIG partitions
+    # per ResourceClaim; kubelet plugin owns the MIG config on the node.
+    # K8s >= 1.36 (OCP 5.x) enables DRAPartitionableDevices by default.
+    featureGates:
+      DynamicMIG: true
+    computeDomains:
+      enabled: false
+  daemonsets:
+    tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+  dcgmExporter:
+    enabled: true

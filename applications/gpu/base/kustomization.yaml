@@ -2,9 +2,10 @@
 resources:
   - nfd-cr.yaml
 #  - nfd-rbac-hack.yaml  # broken in 4.19.1
-  - configmap.yaml
-  - gpu-cluster-policy.yaml
   - nvidia-dcgm-exporter-dashboard-cm.yaml
+
+# cluster-policy + time-slicing configmap moved to components/device-plugin-stack
+# DRA stack (GPUCluster/NVIDIADriver) lives in components/dra-stack
 
 helmGlobals:
   chartHome: ../../olm
