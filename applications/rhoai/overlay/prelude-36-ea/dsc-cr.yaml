@@ -47,7 +47,7 @@ spec:
     trainer:
       managementState: Managed
     trainingoperator:
-      managementState: Managed
+      managementState: Removed
     trustyai:
       # eval.lmeval removed for RHOAI 3.6.0-ea.2: the DSC CRD still declares
       # permitOnline/permitCodeExecution as string enum allow|deny, but the EA2
