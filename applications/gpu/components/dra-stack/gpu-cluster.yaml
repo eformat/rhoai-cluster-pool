@@ -14,8 +14,15 @@ spec:
     # Dynamic MIG (alpha): the DRA driver creates/destroys MIG partitions
     # per ResourceClaim; kubelet plugin owns the MIG config on the node.
     # K8s >= 1.36 (OCP 5.x) enables DRAPartitionableDevices by default.
+    # Dormant on L40S (no MIG silicon) - activates on MIG-capable nodes
+    # (A100/H100/H200/B200/RTX PRO 6000 Blackwell).
     featureGates:
       DynamicMIG: true
+      # Time-slicing (alpha): share one full GPU across containers/pods via
+      # CUDA context switching - per-claim GpuConfig sharing.strategy:
+      # TimeSlicing (interval: Default|Short|Medium|Long). No memory
+      # isolation; mutually exclusive with MPS on the same GPU.
+      TimeSlicingSettings: true
     computeDomains:
       enabled: false
   daemonsets:
