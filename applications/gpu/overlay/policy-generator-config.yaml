@@ -46,11 +46,13 @@ policies:
   - name: gpu-l40s-dra-claim-templates
     placement:
       placementName: placement-spokes-l40s-dra
-    # applies the ResourceClaimTemplate into every dashboard-created project
-    # on l40s-dra spokes; the DRA HardwareProfile requires it to exist in the
-    # workload's namespace before the profile is selectable in the dashboard
+    # applies per-project objects into every dashboard-created project on
+    # l40s-dra spokes: the ResourceClaimTemplate the DRA HardwareProfile
+    # references, and the LocalQueue (default) the profile's scheduling block
+    # requires for Kueue admission
     namespaceSelector:
       matchLabels:
         opendatahub.io/dashboard: "true"
     manifests:
       - path: l40s-dra/dra-workloads/resourceclaimtemplate.yaml
+      - path: l40s-dra/dra-workloads/localqueue.yaml

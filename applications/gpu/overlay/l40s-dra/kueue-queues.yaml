@@ -1,0 +1,32 @@
+---
+# Kueue quota for DRA spokes: the logical resource nvidia.com/gpu comes from
+# the deviceClassMappings in applications/rhoai/overlay/base/kueue-cr.yaml
+# (DeviceClass gpu.nvidia.com -> nvidia.com/gpu). Quota sized to one
+# g6e.4xlarge L40S node (16 vCPU / ~120Gi allocatable / 1 GPU).
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  labels:
+    platform.opendatahub.io/part-of: kueue
+  name: l40s-dra-flavor
+spec: {}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  labels:
+    platform.opendatahub.io/part-of: kueue
+  name: l40s-dra-cq
+spec:
+  namespaceSelector: {}  # match all
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: l40s-dra-flavor
+      resources:
+      - name: cpu
+        nominalQuota: '16'
+      - name: memory
+        nominalQuota: 112Gi
+      - name: nvidia.com/gpu
+        nominalQuota: '1'
