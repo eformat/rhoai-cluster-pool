@@ -22,3 +22,16 @@ metadata:
 spec:
   dra:
     resourceClaimTemplateName: single-l40s-gpu
+  identifiers:
+  - defaultCount: 4
+    displayName: CPU
+    identifier: cpu
+    maxCount: 16
+    minCount: 1
+    resourceType: CPU
+  - defaultCount: 16Gi
+    displayName: Memory
+    identifier: memory
+    maxCount: 128Gi
+    minCount: 1Gi
+    resourceType: Memory
