@@ -25,3 +25,4 @@ patches:
   - path: odh-dashboard.yaml
   - path: subscription-rhods-operator.yaml
   - path: subscription-rhcl-operator.yaml
+  - path: subscription-kueue.yaml
