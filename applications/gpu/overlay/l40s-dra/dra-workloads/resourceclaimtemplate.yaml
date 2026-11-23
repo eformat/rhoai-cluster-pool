@@ -1,0 +1,24 @@
+---
+# Per-user-project ResourceClaimTemplate referenced by the l40s-dra-gpu
+# HardwareProfile (spec.dra.resourceClaimTemplateName). Namespace is
+# intentionally omitted - this object is applied into EACH workload namespace:
+#   manually:            oc apply -n <project> -f resourceclaimtemplate.yaml
+#   planned (post-test): its own ACM ConfigurationPolicy with a
+#                        namespaceSelector (e.g. user/dashboard projects) so
+#                        every selected namespace gets the template; do NOT add
+#                        it to the gpu-l40s-dra policy manifests.
+# Variant idea (later): a time-sliced twin profile + template with an opaque
+# GpuConfig (sharing.strategy: TimeSlicing) for multi-tenant sharing.
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: single-l40s-gpu
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
